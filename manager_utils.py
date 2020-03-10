@@ -105,8 +105,6 @@ def find_all_boxes(openvibe_folder, io_dic_type, settings_dic_type):
                     script_name = elem
 
                 # script = re.findall(r"m_sScriptFilename = \"(.*{}.py)\";".format(script_name), file_cpp)[0]
-                print(elem)
-                print('-------')
                 script = re.findall(
                     r"m_sScriptFilename = \"(.*.py)\";", file_cpp)[0]
 
@@ -207,10 +205,6 @@ def info_msg(msg) :
     box.exec_()
 
 def insert_line_in_file(filename, string, tag):
-    print('filename :', filename)
-    print('string :', string)
-    print('tag :', tag)
-    print('-----------------------')
 
     with open(filename, 'r+') as f:
         text = f.read()
@@ -381,8 +375,6 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
     path_file_cpp = path_dir_box + 'ovp{}.cpp'.format(box_name)
     path_file_header = path_dir_box + 'ovp{}.h'.format(box_name)
 
-    print('-------------------------------')
-    print(path_file_header)
 
     path_pattern_cpp = '{}Assets/BoxManager/ovpNewBoxPattern.cpp'.format(
         manager_folder)

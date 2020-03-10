@@ -1186,9 +1186,7 @@ the manager with the argument : \"mode=developer\".""")
         if self.current_box is None :
             return
 
-        print(mu.boxes)
         mu.delete_box(mu.openvibe_folder, self.current_box.name)
-        print(mu.boxes)
         # mu.compile(mu.manager_folder, mu.openvibe_folder)
 
         self.dropdown_boxname.removeItem(self.dropdown_boxname.currentIndex())
