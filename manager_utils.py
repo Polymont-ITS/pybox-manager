@@ -394,9 +394,6 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
         new_line = "#define OVP_ClassId_BoxAlgorithm_{}                 OpenViBE::CIdentifier({}, {})"\
             .format(box_name, new_id1, new_id2)
 
-
-
-        return
         insert_line_in_file(filename, new_line, tag)
         new_line = "#define OVP_ClassId_BoxAlgorithm_{}Desc                 OpenViBE::CIdentifier({}, {})"\
             .format(box_name, new_id3, new_id4)
