@@ -4,7 +4,7 @@
 
 #if defined TARGET_HAS_ThirdPartyPython3
 
-#include "ovpNewBoxPattern.h"
+#include "ovpCBoxAlgorithmPython3.h"
 
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
 
@@ -82,25 +82,25 @@ static bool setMatrixInfosFromPyObject(PyObject* obj, IMatrix* matrix)
 }
 ///-------------------------------------------------------------------------------------------------
 
-bool CBoxAlgorithmNewBoxPattern::m_isPythonInitialized    = false;
-PyObject* CBoxAlgorithmNewBoxPattern::m_mainModule        = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_mainDictionnary   = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_matrixHeader      = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_matrixBuffer      = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_matrixEnd         = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_signalHeader      = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_signalBuffer      = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_signalEnd         = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_stimulationHeader = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_stimulation       = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_stimulationSet    = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_stimulationEnd    = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_buffer            = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_execFileFunction  = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_stdout            = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_stderr            = nullptr;
+bool CBoxAlgorithmPython3::m_isPythonInitialized    = false;
+PyObject* CBoxAlgorithmPython3::m_mainModule        = nullptr;
+PyObject* CBoxAlgorithmPython3::m_mainDictionnary   = nullptr;
+PyObject* CBoxAlgorithmPython3::m_matrixHeader      = nullptr;
+PyObject* CBoxAlgorithmPython3::m_matrixBuffer      = nullptr;
+PyObject* CBoxAlgorithmPython3::m_matrixEnd         = nullptr;
+PyObject* CBoxAlgorithmPython3::m_signalHeader      = nullptr;
+PyObject* CBoxAlgorithmPython3::m_signalBuffer      = nullptr;
+PyObject* CBoxAlgorithmPython3::m_signalEnd         = nullptr;
+PyObject* CBoxAlgorithmPython3::m_stimulationHeader = nullptr;
+PyObject* CBoxAlgorithmPython3::m_stimulation       = nullptr;
+PyObject* CBoxAlgorithmPython3::m_stimulationSet    = nullptr;
+PyObject* CBoxAlgorithmPython3::m_stimulationEnd    = nullptr;
+PyObject* CBoxAlgorithmPython3::m_buffer            = nullptr;
+PyObject* CBoxAlgorithmPython3::m_execFileFunction  = nullptr;
+PyObject* CBoxAlgorithmPython3::m_stdout            = nullptr;
+PyObject* CBoxAlgorithmPython3::m_stderr            = nullptr;
 
-bool CBoxAlgorithmNewBoxPattern::logSysStd(const bool out)
+bool CBoxAlgorithmPython3::logSysStd(const bool out)
 {
 	PyObject* pyLog = PyObject_CallMethod((out ? m_stdout : m_stderr), "getvalue", nullptr);
 	if (pyLog == nullptr)
@@ -132,7 +132,7 @@ bool CBoxAlgorithmNewBoxPattern::logSysStd(const bool out)
 	return true;
 }
 
-void CBoxAlgorithmNewBoxPattern::buildPythonSettings()
+void CBoxAlgorithmPython3::buildPythonSettings()
 {
 	const IBox* boxCtx = getBoxAlgorithmContext()->getStaticBoxContext();
 	for (uint32_t i = 2; i < boxCtx->getSettingCount(); ++i)
@@ -144,7 +144,7 @@ void CBoxAlgorithmNewBoxPattern::buildPythonSettings()
 	}
 }
 
-bool CBoxAlgorithmNewBoxPattern::initializePythonSafely()
+bool CBoxAlgorithmPython3::initializePythonSafely()
 {
 	// Only the first Python box does the initialization of the global parts
 	if (m_isPythonInitialized) { return true; }
@@ -311,7 +311,7 @@ bool CBoxAlgorithmNewBoxPattern::initializePythonSafely()
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::initialize()
+bool CBoxAlgorithmPython3::initialize()
 {
 	m_box                 = nullptr;
 	m_boxInput            = nullptr;
@@ -327,7 +327,7 @@ bool CBoxAlgorithmNewBoxPattern::initialize()
 
 	//Initialize the clock frequency of the box depending on the first setting of the box
 	m_clockFrequency = FSettingValueAutoCast(*this->getBoxAlgorithmContext(), 0);
-	m_scriptFilename = "../../extras/contrib/applications/developer-tools/openvibe-python/ScriptBox/TrainerML.py";
+	m_scriptFilename = FSettingValueAutoCast(*this->getBoxAlgorithmContext(), 1);
 
 	if (strlen(m_scriptFilename.toASCIIString()) == 0)
 	{
@@ -341,13 +341,13 @@ bool CBoxAlgorithmNewBoxPattern::initialize()
 	for (size_t i = 0; i < boxCtx.getInputCount(); ++i)
 	{
 		boxCtx.getInputType(i, typeID);
-		if (typeID == OV_TypeId_StreamedMatrix) { m_decoders.push_back(new TStreamedMatrixDecoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_Signal) { m_decoders.push_back(new TSignalDecoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_FeatureVector) { m_decoders.push_back(new TFeatureVectorDecoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_Spectrum) { m_decoders.push_back(new TSpectrumDecoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_ChannelLocalisation) { m_decoders.push_back(new TChannelLocalisationDecoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_Stimulations) { m_decoders.push_back(new TStimulationDecoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_ExperimentInfo) { m_decoders.push_back(new TExperimentInfoDecoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
+		if (typeID == OV_TypeId_StreamedMatrix) { m_decoders.push_back(new TStreamedMatrixDecoder<CBoxAlgorithmPython3>(*this, i)); }
+		else if (typeID == OV_TypeId_Signal) { m_decoders.push_back(new TSignalDecoder<CBoxAlgorithmPython3>(*this, i)); }
+		else if (typeID == OV_TypeId_FeatureVector) { m_decoders.push_back(new TFeatureVectorDecoder<CBoxAlgorithmPython3>(*this, i)); }
+		else if (typeID == OV_TypeId_Spectrum) { m_decoders.push_back(new TSpectrumDecoder<CBoxAlgorithmPython3>(*this, i)); }
+		else if (typeID == OV_TypeId_ChannelLocalisation) { m_decoders.push_back(new TChannelLocalisationDecoder<CBoxAlgorithmPython3>(*this, i)); }
+		else if (typeID == OV_TypeId_Stimulations) { m_decoders.push_back(new TStimulationDecoder<CBoxAlgorithmPython3>(*this, i)); }
+		else if (typeID == OV_TypeId_ExperimentInfo) { m_decoders.push_back(new TExperimentInfoDecoder<CBoxAlgorithmPython3>(*this, i)); }
 		else
 		{
 			this->getLogManager() << LogLevel_Error << "Codec to decode " << typeID.str() << " is not implemented.\n";
@@ -359,13 +359,13 @@ bool CBoxAlgorithmNewBoxPattern::initialize()
 	for (size_t i = 0; i < boxCtx.getOutputCount(); ++i)
 	{
 		boxCtx.getOutputType(i, typeID);
-		if (typeID == OV_TypeId_StreamedMatrix) { m_encoders.push_back(new TStreamedMatrixEncoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_Signal) { m_encoders.push_back(new TSignalEncoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_FeatureVector) { m_encoders.push_back(new TFeatureVectorEncoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_Spectrum) { m_encoders.push_back(new TSpectrumEncoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_ChannelLocalisation) { m_encoders.push_back(new TChannelLocalisationEncoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_Stimulations) { m_encoders.push_back(new TStimulationEncoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_ExperimentInfo) { m_encoders.push_back(new TExperimentInfoEncoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
+		if (typeID == OV_TypeId_StreamedMatrix) { m_encoders.push_back(new TStreamedMatrixEncoder<CBoxAlgorithmPython3>(*this, i)); }
+		else if (typeID == OV_TypeId_Signal) { m_encoders.push_back(new TSignalEncoder<CBoxAlgorithmPython3>(*this, i)); }
+		else if (typeID == OV_TypeId_FeatureVector) { m_encoders.push_back(new TFeatureVectorEncoder<CBoxAlgorithmPython3>(*this, i)); }
+		else if (typeID == OV_TypeId_Spectrum) { m_encoders.push_back(new TSpectrumEncoder<CBoxAlgorithmPython3>(*this, i)); }
+		else if (typeID == OV_TypeId_ChannelLocalisation) { m_encoders.push_back(new TChannelLocalisationEncoder<CBoxAlgorithmPython3>(*this, i)); }
+		else if (typeID == OV_TypeId_Stimulations) { m_encoders.push_back(new TStimulationEncoder<CBoxAlgorithmPython3>(*this, i)); }
+		else if (typeID == OV_TypeId_ExperimentInfo) { m_encoders.push_back(new TExperimentInfoEncoder<CBoxAlgorithmPython3>(*this, i)); }
 		else
 		{
 			this->getLogManager() << LogLevel_Error << "Codec to encode " << typeID.str() << " is not implemented.\n";
@@ -535,7 +535,7 @@ bool CBoxAlgorithmNewBoxPattern::initialize()
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::uninitialize()
+bool CBoxAlgorithmPython3::uninitialize()
 {
 	for (size_t i = 0; i < m_decoders.size(); ++i)
 	{
@@ -585,19 +585,19 @@ bool CBoxAlgorithmNewBoxPattern::uninitialize()
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::processClock(CMessageClock& /*messageClock*/)
+bool CBoxAlgorithmPython3::processClock(CMessageClock& /*messageClock*/)
 {
 	getBoxAlgorithmContext()->markAlgorithmAsReadyToProcess();
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::processInput(const size_t /*index*/)
+bool CBoxAlgorithmPython3::processInput(const size_t /*index*/)
 {
 	getBoxAlgorithmContext()->markAlgorithmAsReadyToProcess();
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::transferStreamedMatrixInputChunksToPython(const size_t index)
+bool CBoxAlgorithmPython3::transferStreamedMatrixInputChunksToPython(const size_t index)
 {
 	IBoxIO& boxCtx = this->getDynamicBoxContext();
 
@@ -620,7 +620,7 @@ bool CBoxAlgorithmNewBoxPattern::transferStreamedMatrixInputChunksToPython(const
 
 		if (m_decoders[index]->isHeaderReceived())
 		{
-			IMatrix* matrix = dynamic_cast<TStreamedMatrixDecoder<CBoxAlgorithmNewBoxPattern>*>(m_decoders[index])->getOutputMatrix();
+			IMatrix* matrix = dynamic_cast<TStreamedMatrixDecoder<CBoxAlgorithmPython3>*>(m_decoders[index])->getOutputMatrix();
 			size_t nDim     = matrix->getDimensionCount();
 
 			PyObject* pySizeDim = PyList_New(nDim);
@@ -759,7 +759,7 @@ bool CBoxAlgorithmNewBoxPattern::transferStreamedMatrixInputChunksToPython(const
 			}
 			Py_CLEAR(pyArg);
 
-			IMatrix* matrix    = dynamic_cast<TStreamedMatrixDecoder<CBoxAlgorithmNewBoxPattern>*>(m_decoders[index])->getOutputMatrix();
+			IMatrix* matrix    = dynamic_cast<TStreamedMatrixDecoder<CBoxAlgorithmPython3>*>(m_decoders[index])->getOutputMatrix();
 			double* bufferBase = matrix->getBuffer();
 			for (size_t i = 0; i < matrix->getBufferElementCount(); ++i)
 			{
@@ -823,10 +823,10 @@ bool CBoxAlgorithmNewBoxPattern::transferStreamedMatrixInputChunksToPython(const
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::transferStreamedMatrixOutputChunksFromPython(const size_t index)
+bool CBoxAlgorithmPython3::transferStreamedMatrixOutputChunksFromPython(const size_t index)
 {
 	IBoxIO& boxCtx  = this->getDynamicBoxContext();
-	IMatrix* matrix = dynamic_cast<TStreamedMatrixEncoder<CBoxAlgorithmNewBoxPattern>*>(m_encoders[index])->getInputMatrix();
+	IMatrix* matrix = dynamic_cast<TStreamedMatrixEncoder<CBoxAlgorithmPython3>*>(m_encoders[index])->getInputMatrix();
 
 	if (!PyList_Check(m_boxOutput))
 	{
@@ -907,7 +907,7 @@ bool CBoxAlgorithmNewBoxPattern::transferStreamedMatrixOutputChunksFromPython(co
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::transferSignalInputChunksToPython(const size_t index)
+bool CBoxAlgorithmPython3::transferSignalInputChunksToPython(const size_t index)
 {
 	IBoxIO& boxCtx = this->getDynamicBoxContext();
 
@@ -930,7 +930,7 @@ bool CBoxAlgorithmNewBoxPattern::transferSignalInputChunksToPython(const size_t 
 
 		if (m_decoders[index]->isHeaderReceived())
 		{
-			IMatrix* matrix = dynamic_cast<TSignalDecoder<CBoxAlgorithmNewBoxPattern> *>(m_decoders[index])->getOutputMatrix();
+			IMatrix* matrix = dynamic_cast<TSignalDecoder<CBoxAlgorithmPython3> *>(m_decoders[index])->getOutputMatrix();
 			size_t nDim     = matrix->getDimensionCount();
 
 			PyObject* pySizeDim = PyList_New(nDim);
@@ -1011,7 +1011,7 @@ bool CBoxAlgorithmNewBoxPattern::transferSignalInputChunksToPython(const size_t 
 				return false;
 			}
 			if (PyTuple_SetItem(
-					pyArg, 4, PyLong_FromLong(long(dynamic_cast<TSignalDecoder<CBoxAlgorithmNewBoxPattern>*>(m_decoders[index])->getOutputSamplingRate())))
+					pyArg, 4, PyLong_FromLong(long(dynamic_cast<TSignalDecoder<CBoxAlgorithmPython3>*>(m_decoders[index])->getOutputSamplingRate())))
 				!= 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 4 (samplingRate) in tuple pyArg.\n";
@@ -1079,7 +1079,7 @@ bool CBoxAlgorithmNewBoxPattern::transferSignalInputChunksToPython(const size_t 
 			}
 			Py_CLEAR(pyArg);
 
-			IMatrix* matrix    = dynamic_cast<TSignalDecoder<CBoxAlgorithmNewBoxPattern> *>(m_decoders[index])->getOutputMatrix();
+			IMatrix* matrix    = dynamic_cast<TSignalDecoder<CBoxAlgorithmPython3> *>(m_decoders[index])->getOutputMatrix();
 			double* bufferBase = matrix->getBuffer();
 			for (size_t i = 0; i < matrix->getBufferElementCount(); ++i)
 			{
@@ -1142,10 +1142,10 @@ bool CBoxAlgorithmNewBoxPattern::transferSignalInputChunksToPython(const size_t 
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::transferSignalOutputChunksFromPython(const size_t index)
+bool CBoxAlgorithmPython3::transferSignalOutputChunksFromPython(const size_t index)
 {
 	IBoxIO& boxCtx  = this->getDynamicBoxContext();
-	IMatrix* matrix = dynamic_cast<TSignalEncoder<CBoxAlgorithmNewBoxPattern>*>(m_encoders[index])->getInputMatrix();
+	IMatrix* matrix = dynamic_cast<TSignalEncoder<CBoxAlgorithmPython3>*>(m_encoders[index])->getInputMatrix();
 
 	if (!PyList_Check(m_boxOutput))
 	{
@@ -1191,7 +1191,7 @@ bool CBoxAlgorithmNewBoxPattern::transferSignalOutputChunksFromPython(const size
 				this->getLogManager() << LogLevel_Error << "Failed to load signal header sampling rate.\n";
 				return false;
 			}
-			TParameterHandler<uint64_t>& sampling = dynamic_cast<TSignalEncoder<CBoxAlgorithmNewBoxPattern>*>(m_encoders[index])->getInputSamplingRate();
+			TParameterHandler<uint64_t>& sampling = dynamic_cast<TSignalEncoder<CBoxAlgorithmPython3>*>(m_encoders[index])->getInputSamplingRate();
 			sampling                              = uint64_t(PyLong_AsLong(pySampling));
 			m_encoders[index]->encodeHeader();
 			Py_CLEAR(pySampling);
@@ -1235,7 +1235,7 @@ bool CBoxAlgorithmNewBoxPattern::transferSignalOutputChunksFromPython(const size
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::transferStimulationInputChunksToPython(const size_t index)
+bool CBoxAlgorithmPython3::transferStimulationInputChunksToPython(const size_t index)
 {
 	IBoxIO& boxCtx     = this->getDynamicBoxContext();
 	PyObject* pyBuffer = PyList_GetItem(m_boxInput, Py_ssize_t(index));
@@ -1290,7 +1290,7 @@ bool CBoxAlgorithmNewBoxPattern::transferStimulationInputChunksToPython(const si
 
 		if (m_decoders[index]->isBufferReceived())
 		{
-			IStimulationSet* stimSet = dynamic_cast<TStimulationDecoder<CBoxAlgorithmNewBoxPattern>*>(m_decoders[index])->getOutputStimulationSet();
+			IStimulationSet* stimSet = dynamic_cast<TStimulationDecoder<CBoxAlgorithmPython3>*>(m_decoders[index])->getOutputStimulationSet();
 
 			PyObject* pyArg = PyTuple_New(2);
 			if (pyArg == nullptr)
@@ -1420,10 +1420,10 @@ bool CBoxAlgorithmNewBoxPattern::transferStimulationInputChunksToPython(const si
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::transferStimulationOutputChunksFromPython(const size_t index)
+bool CBoxAlgorithmPython3::transferStimulationOutputChunksFromPython(const size_t index)
 {
 	IBoxIO& boxCtx           = this->getDynamicBoxContext();
-	IStimulationSet* stimSet = dynamic_cast<TStimulationEncoder<CBoxAlgorithmNewBoxPattern>*>(m_encoders[index])->getInputStimulationSet();
+	IStimulationSet* stimSet = dynamic_cast<TStimulationEncoder<CBoxAlgorithmPython3>*>(m_encoders[index])->getInputStimulationSet();
 
 	if (!PyList_Check(m_boxOutput))
 	{
@@ -1527,7 +1527,7 @@ bool CBoxAlgorithmNewBoxPattern::transferStimulationOutputChunksFromPython(const
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::process()
+bool CBoxAlgorithmPython3::process()
 {
 	const IBox& boxCtx = this->getStaticBoxContext();
 	CIdentifier typeID;

@@ -143,6 +143,11 @@ def find_all_boxes(openvibe_folder, io_dic_type, settings_dic_type):
                         keys = list(settings_dic_type.keys())
                         values = list(settings_dic_type.values())
 
+                        # print('keys :', keys)
+                        # print('------------')
+                        # print('values :', values)
+                        # print('------------')
+
                         box.settings[settings_compt] = [
                             sett[0], keys[values.index(sett[1])], sett[3]]
                         settings_compt += 1
@@ -207,9 +212,6 @@ def insert_line_in_file(filename, string, tag):
     with open(filename, 'r+') as f:
         text = f.read()
 
-        print('filename : ',filename)
-        print('string : ',string)
-        print('tag : ',tag)
 
 # filename :  box-algorithms/KNearestNeighbors/ovpKNearestNeighbors.h
 # string :                  prototype.addInput  ("input_Stimulations", OV_TypeId_Stimulations);
@@ -345,24 +347,20 @@ def generate_new_id(openvibe_folder, nb_id=4):
     with open(filename_tmp, 'r') as f:
         text = f.read()
 
-        # we remove all the paranthesis which will be useless
-        text = text.replace('(',', ')
+        # we delete paranthesis
         text = text.replace(')','')
 
+        # we remove all the paranthesis which will be useless
+        matchs = re.findall(r"\((.*)$", text, flags=re.MULTILINE)
+    
+    # we clean the array
+    arr = []
 
-        arr = text.split('\n')
-        # we get the last line to get the most values 
-        text = arr[-2]
+    for match in matchs:
+        for elem in match.split(','):
+            arr.append(elem.replace(' ',''))
 
-        arr = text.split(',')
-
-        # we discard first one for easiness purposes 
-        arr = arr[1:]
-
-    indexes = arr[0:nb_id]
-
-    # we get only the ten first digits because it's the way OV works but the id generator changed its behaviour for un unknown reason
-    indexes = list(map(lambda x: x[:11], indexes))
+    indexes = arr[:nb_id]
 
     if system == 'Linux' :  
         pass
@@ -426,7 +424,7 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
         filename = 'ovp_defines.h'
         tag = '#define OVP_ClassId_BoxAlgorithm_Python3Desc                OpenViBE::CIdentifier(0x404B6FFD, 0x12BDD423)'
         time.sleep(1)
-        new_id1, new_id2, new_id3, new_id4 = generate_new_id(openvibe_folder)
+        new_id1, new_id2, new_id3, new_id4 = generate_new_id(openvibe_folder, nb_id=4)
         new_line = "#define OVP_ClassId_BoxAlgorithm_{}                OpenViBE::CIdentifier({}, {})"\
             .format(box_name, new_id1, new_id2)
 

@@ -4,7 +4,7 @@
 
 from StimulationsCodes import *
 import sys, traceback, collections
-from StringIO import StringIO
+from io import StringIO
 from pathlib import Path
 import re
 
@@ -13,9 +13,11 @@ class NewStd(StringIO):
     def __init__(self):
         StringIO.__init__(self)
     def flush(self):
-        self.buf = str()
+        self.truncate(0)
+        self.seek(0)
+
     def isempty(self):
-        if len(self.buf) == 0:
+        if len(self.len) == 0:
             return True
         else:
             return False
@@ -30,10 +32,11 @@ def execfileHandlingException(filename, maindictionary):
     # absolute path is ok 
     try:
         maindictionary['box'] = OVBox(default=True) 
-        execfile(filename, maindictionary) 
+
+        exec(compile(open(filename, "rb").read(), filename, 'exec'), maindictionary) 
         return 0;
 
-    # need relative_path because previous path was incorrect (Box created on another machine)
+    # need relative_path 
     except IOError:
         
         path = str(Path().absolute())
@@ -82,11 +85,11 @@ def decoratorFunction(target):
     """ add a try except block to protect openvibe box in case of exception """
     def wrapper(self):
         try :
-            print "using decorator"
-            print 'Calling function "%s"' % target.__name__
+            print('using decorator')
+            print('Calling function "%s"' % target.__name__)
             return target(self)
         except:
-            print traceback.format_exc()
+            print(traceback.format_exc())
 
     return wrapper
 
@@ -183,45 +186,45 @@ class OVBuffer(object):
 
 
 class OVBox(object):
-	def __init__(self, default=False):
-		self.input = list()
-		self.output = list()
-		self.setting = dict()
-		self.var = dict()
-		self._clock = 0
-		self._currentTime = 0.
-		self.default= default
-	def addInput(self, inputType):
-		self.input.append(OVBuffer(inputType))
-	def addOutput(self, outputType):
-		self.output.append(OVBuffer(outputType))
-	def getClock(self):
-		return self._clock
-	def getCurrentTime(self):
-		return self._currentTime
-	def initialize(self):
-		if self.default == True:
-			print "The box instance has not been created by user script, using default one from openvibe.py (dummy box)."
-		pass
-	def process(self):
-		pass
-	def uninitialize(self):
-		pass
-	def realInitialize(self):
-		try :
-			self.initialize()
-		except:
-			print traceback.format_exc()
-	def realProcess(self):
-		try :
-			self.process()
-		except:
-			print traceback.format_exc()
-	def realUninitialize(self):
-		try :
-			self.uninitialize()
-		except:
-			print traceback.format_exc()
+    def __init__(self, default=False):
+        self.input = list()
+        self.output = list()
+        self.setting = dict()
+        self.var = dict()
+        self._clock = 0
+        self._currentTime = 0.
+        self.default= default
+    def addInput(self, inputType):
+        self.input.append(OVBuffer(inputType))
+    def addOutput(self, outputType):
+        self.output.append(OVBuffer(outputType))
+    def getClock(self):
+        return self._clock
+    def getCurrentTime(self):
+        return self._currentTime
+    def initialize(self):
+        if self.default == True:
+            print("The box instance has not been created by user script, using default one from openvibe.py (dummy box).")
+        pass
+    def process(self):
+        pass
+    def uninitialize(self):
+        pass
+    def realInitialize(self):
+        try :
+            self.initialize()
+        except:
+            print(traceback.format_exc())
+    def realProcess(self):
+        try :
+            self.process()
+        except:
+            print(traceback.format_exc())
+    def realUninitialize(self):
+        try :
+            self.uninitialize()
+        except:
+            print(traceback.format_exc())
 
 
 
