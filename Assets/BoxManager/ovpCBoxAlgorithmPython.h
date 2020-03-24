@@ -27,12 +27,12 @@ namespace OpenViBEPlugins
 		public:
 			virtual void release(void) { delete this; }
 
-			virtual OpenViBE::uint64 getClockFrequency(void);
-			virtual OpenViBE::boolean initialize(void);
-			virtual OpenViBE::boolean uninitialize(void);
-			virtual OpenViBE::boolean processClock(OpenViBE::CMessageClock& rMessageClock);
-			virtual OpenViBE::boolean processInput(OpenViBE::uint32 ui32InputIndex);
-			virtual OpenViBE::boolean process(void);
+			virtual uint64_t getClockFrequency(void);
+			virtual bool initialize(void);
+			virtual bool uninitialize(void);
+			virtual bool processClock(OpenViBE::CMessageClock& rMessageClock);
+			virtual bool processInput(uint32_t ui32InputIndex);
+			virtual bool process(void);
 
 			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_Python);
 			
@@ -45,12 +45,12 @@ namespace OpenViBEPlugins
 			static PyObject *m_pExecFileFunction ;
 			static PyObject *m_pSysStdout, *m_pSysStderr;
 			
-			static OpenViBE::boolean m_bPythonInitialized;
+			static bool m_bPythonInitialized;
 
 
 		protected:
 
-			OpenViBE::uint64 m_ui64ClockFrequency;
+			uint64_t m_ui64ClockFrequency;
 			OpenViBE::CString m_sScriptFilename;
 			
 			std::vector < OpenViBEToolkit::TDecoder < CBoxAlgorithmPython >* > m_vDecoders;
@@ -60,21 +60,21 @@ namespace OpenViBEPlugins
 			
 			PyObject *m_pBox, *m_pBoxInput, *m_pBoxOutput, *m_pBoxSetting, *m_pBoxCurrentTime;
 			PyObject *m_pBoxInitialize, *m_pBoxProcess, *m_pBoxUninitialize;
-            OpenViBE::boolean m_bInitializeSucceeded ;
+            bool m_bInitializeSucceeded ;
             
 			
-			OpenViBE::boolean logSysStdout(void);
-			OpenViBE::boolean logSysStderr(void);
+			bool logSysStdout(void);
+			bool logSysStderr(void);
 			void buildPythonSettings(void);
 
-			OpenViBE::boolean initializePythonSafely();
-			OpenViBE::boolean clearPyObjectMap();
-			OpenViBE::boolean transferStreamedMatrixInputChunksToPython(const OpenViBE::uint32 input_index);
-			OpenViBE::boolean transferStreamedMatrixOutputChunksFromPython(const OpenViBE::uint32 output_index);
-			OpenViBE::boolean transferSignalInputChunksToPython(const OpenViBE::uint32 input_index);
-			OpenViBE::boolean transferSignalOutputChunksFromPython(const OpenViBE::uint32 output_index);
-			OpenViBE::boolean transferStimulationInputChunksToPython(const OpenViBE::uint32 input_index);
-			OpenViBE::boolean transferStimulationOutputChunksFromPython(const OpenViBE::uint32 output_index);
+			bool initializePythonSafely();
+			bool clearPyObjectMap();
+			bool transferStreamedMatrixInputChunksToPython(const uint32_t index);
+			bool transferStreamedMatrixOutputChunksFromPython(const uint32_t index);
+			bool transferSignalInputChunksToPython(const uint32_t index);
+			bool transferSignalOutputChunksFromPython(const uint32_t index);
+			bool transferStimulationInputChunksToPython(const uint32_t index);
+			bool transferStimulationOutputChunksFromPython(const uint32_t index);
 
 
 			
@@ -83,13 +83,13 @@ namespace OpenViBEPlugins
 		class CBoxAlgorithmPythonListener : public OpenViBEToolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >
 		{
 		public:
-			virtual OpenViBE::boolean onInputAdded(OpenViBE::Kernel::IBox& rBox, const OpenViBE::uint32 ui32Index) 
+			virtual bool onInputAdded(OpenViBE::Kernel::IBox& rBox, const uint32_t ui32Index) 
 			{
 				rBox.setInputType(ui32Index, OV_TypeId_StreamedMatrix);
 				return true;
 			};
 
-			virtual OpenViBE::boolean onOutputAdded(OpenViBE::Kernel::IBox& rBox, const OpenViBE::uint32 ui32Index) 
+			virtual bool onOutputAdded(OpenViBE::Kernel::IBox& rBox, const uint32_t ui32Index) 
 			{ 
 				rBox.setOutputType(ui32Index, OV_TypeId_StreamedMatrix);
 				return true; 
@@ -118,7 +118,7 @@ namespace OpenViBEPlugins
 			virtual OpenViBE::Plugins::IBoxListener* createBoxListener(void) const               { return new CBoxAlgorithmPythonListener; }
 			virtual void releaseBoxListener(OpenViBE::Plugins::IBoxListener* pBoxListener) const { delete pBoxListener; }
 
-			virtual OpenViBE::boolean getBoxPrototype(OpenViBE::Kernel::IBoxProto& rBoxAlgorithmPrototype) const
+			virtual bool getBoxPrototype(OpenViBE::Kernel::IBoxProto& rBoxAlgorithmPrototype) const
 			{
 				//rBoxAlgorithmPrototype.addInput  ("Input",  OV_TypeId_StreamedMatrix);
 				//rBoxAlgorithmPrototype.addInput  ("Input stimulations", OV_TypeId_Stimulations);
