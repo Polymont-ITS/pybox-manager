@@ -136,7 +136,7 @@ Pour l'éxécuter : `python pybox_manager.py`
 (Compatible python 2.7 et python 3.X.)
 
 Une option est disponible pour activer les settings dit "développeurs" c-à-d ceux que vous avez créés.
-Pour ceci lancer le manager avec l'option `-mode=developer`
+Pour ceci lancer le manager avec l'option `mode=developer`
 
 
 ## Box Manager
