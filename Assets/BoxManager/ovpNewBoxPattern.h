@@ -1,146 +1,147 @@
-#pragma once
+#ifndef __OpenViBEPlugins_BoxAlgorithm_NewBoxPattern_H__
+#define __OpenViBEPlugins_BoxAlgorithm_NewBoxPattern_H__
 
-#if defined TARGET_HAS_ThirdPartyPython3
+#if defined TARGET_HAS_ThirdPartyPython
 
 #include <Python.h>
 
-#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
+#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
-#include "../ovp_defines.h"
+#include "../../ovp_defines.h"
 #include <openvibe/ov_all.h>
 #include <toolkit/ovtk_all.h>
 
+#include <string.h>
 #include <string>
 #include <vector>
 //#include <map>
 
-namespace OpenViBE
+namespace OpenViBEPlugins
 {
-	namespace Plugins
+	namespace Python
 	{
-		namespace Python
+		
+
+		class CBoxAlgorithmNewBoxPattern : virtual public OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >
 		{
-			class CBoxAlgorithmNewBoxPattern final : virtual public Toolkit::TBoxAlgorithm<IBoxAlgorithm>
+		public:
+			virtual void release(void) { delete this; }
+
+			virtual OpenViBE::uint64 getClockFrequency(void);
+			virtual OpenViBE::boolean initialize(void);
+			virtual OpenViBE::boolean uninitialize(void);
+			virtual OpenViBE::boolean processClock(OpenViBE::CMessageClock& rMessageClock);
+			virtual OpenViBE::boolean processInput(OpenViBE::uint32 ui32InputIndex);
+			virtual OpenViBE::boolean process(void);
+
+			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_NewBoxPattern);
+
+		protected:
+
+			OpenViBE::uint64 m_ui64ClockFrequency;
+			OpenViBE::CString m_sScriptFilename;
+			
+			std::vector < OpenViBEToolkit::TDecoder < CBoxAlgorithmNewBoxPattern >* > m_vDecoders;
+			std::vector < OpenViBEToolkit::TEncoder < CBoxAlgorithmNewBoxPattern >* > m_vEncoders;
+
+			//std::map<char,PyObject *> m_PyObjectMap;
+			
+			PyObject *m_pBox, *m_pBoxInput, *m_pBoxOutput, *m_pBoxSetting, *m_pBoxCurrentTime;
+			PyObject *m_pBoxInitialize, *m_pBoxProcess, *m_pBoxUninitialize;
+            OpenViBE::boolean m_bInitializeSucceeded ;
+            
+			
+			OpenViBE::boolean logSysStdout(void);
+			OpenViBE::boolean logSysStderr(void);
+			void buildPythonSettings(void);
+
+			OpenViBE::boolean initializePythonSafely();
+			OpenViBE::boolean clearPyObjectMap();
+			OpenViBE::boolean transferStreamedMatrixInputChunksToPython(const OpenViBE::uint32 input_index);
+			OpenViBE::boolean transferStreamedMatrixOutputChunksFromPython(const OpenViBE::uint32 output_index);
+			OpenViBE::boolean transferSignalInputChunksToPython(const OpenViBE::uint32 input_index);
+			OpenViBE::boolean transferSignalOutputChunksFromPython(const OpenViBE::uint32 output_index);
+			OpenViBE::boolean transferStimulationInputChunksToPython(const OpenViBE::uint32 input_index);
+			OpenViBE::boolean transferStimulationOutputChunksFromPython(const OpenViBE::uint32 output_index);
+
+
+			
+		};
+		
+		class CBoxAlgorithmNewBoxPatternListener : public OpenViBEToolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >
+		{
+		public:
+			virtual OpenViBE::boolean onInputAdded(OpenViBE::Kernel::IBox& rBox, const OpenViBE::uint32 ui32Index) 
 			{
-			public:
-				void release() override { delete this; }
-
-				uint64_t getClockFrequency() override { return m_clockFrequency << 32; }
-				bool initialize() override;
-				bool uninitialize() override;
-				bool processClock(CMessageClock& messageClock) override;
-				bool processInput(const size_t index) override;
-				bool process() override;
-
-				_IsDerivedFromClass_Final_(Toolkit::TBoxAlgorithm<IBoxAlgorithm>, OVP_ClassId_BoxAlgorithm_NewBoxPattern)
-
-			protected:
-
-				uint64_t m_clockFrequency = 0;
-				CString m_scriptFilename;
-
-				std::vector<Toolkit::TDecoder<CBoxAlgorithmNewBoxPattern>*> m_decoders;
-				std::vector<Toolkit::TEncoder<CBoxAlgorithmNewBoxPattern>*> m_encoders;
-
-				//std::map<char,PyObject *> m_PyObjectMap;
-				PyObject *m_box            = nullptr, *m_boxInput      = nullptr, *m_boxOutput  = nullptr, *m_boxSetting      = nullptr,
-						 *m_boxCurrentTime = nullptr, *m_boxInitialize = nullptr, *m_boxProcess = nullptr, *m_boxUninitialize = nullptr;
-				bool m_initializeSucceeded = false;
-
-
-				bool logSysStd(const bool out);
-				bool logSysStdout() { return logSysStd(true); }
-				bool logSysStderr() { return logSysStd(false); }
-				void buildPythonSettings();
-
-				bool initializePythonSafely();
-				//bool clearPyObjectMap();
-				bool transferStreamedMatrixInputChunksToPython(const size_t index);
-				bool transferStreamedMatrixOutputChunksFromPython(const size_t index);
-				bool transferSignalInputChunksToPython(const size_t index);
-				bool transferSignalOutputChunksFromPython(const size_t index);
-				bool transferStimulationInputChunksToPython(const size_t index);
-				bool transferStimulationOutputChunksFromPython(const size_t index);
-
-				static bool m_isPythonInitialized;
-
-				// These are all borrowed references in python v3.7. Do not free them.
-				static PyObject *m_mainModule, *m_mainDictionnary;
-				static PyObject *m_matrixHeader, *m_matrixBuffer, *m_matrixEnd;
-				static PyObject *m_signalHeader, *m_signalBuffer, *m_signalEnd;
-				static PyObject *m_stimulationHeader, *m_stimulation, *m_stimulationSet, *m_stimulationEnd;
-				static PyObject* m_buffer;
-				static PyObject* m_execFileFunction;
-				static PyObject *m_stdout, *m_stderr;
+				rBox.setInputType(ui32Index, OV_TypeId_StreamedMatrix);
+				return true;
 			};
 
-			class CBoxAlgorithmNewBoxPatternListener final : public Toolkit::TBoxListener<IBoxListener>
-			{
-			public:
-				bool onInputAdded(Kernel::IBox& box, const size_t index) override
-				{
-					box.setInputType(index, OV_TypeId_StreamedMatrix);
-					return true;
-				}
-
-				bool onOutputAdded(Kernel::IBox& box, const size_t index) override
-				{
-					box.setOutputType(index, OV_TypeId_StreamedMatrix);
-					return true;
-				}
-
-				_IsDerivedFromClass_Final_(Toolkit::TBoxListener<IBoxListener>, OV_UndefinedIdentifier)
+			virtual OpenViBE::boolean onOutputAdded(OpenViBE::Kernel::IBox& rBox, const OpenViBE::uint32 ui32Index) 
+			{ 
+				rBox.setOutputType(ui32Index, OV_TypeId_StreamedMatrix);
+				return true; 
 			};
 
-			class CBoxAlgorithmNewBoxPatternDesc final : virtual public IBoxAlgorithmDesc
+			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier);
+		};
+		
+		class CBoxAlgorithmNewBoxPatternDesc : virtual public OpenViBE::Plugins::IBoxAlgorithmDesc
+		{
+		public:
+
+			virtual void release(void) { }
+
+			virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString("NewBoxPattern"); }
+			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("Aurelien Van Langhenhove and Laurent George"); }
+			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("CICIT Garches, Inria"); }
+			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Default Python Description"); }
+			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString(""); }
+			virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("Scripting"); }
+			virtual OpenViBE::CString getVersion(void) const             { return OpenViBE::CString("0.1"); }
+			virtual OpenViBE::CString getStockItemName(void) const       { return OpenViBE::CString("gtk-missing-image"); }
+
+			virtual OpenViBE::CIdentifier getCreatedClass(void) const    { return OVP_ClassId_BoxAlgorithm_NewBoxPattern; }
+			virtual OpenViBE::Plugins::IPluginObject* create(void)       { return new OpenViBEPlugins::Python::CBoxAlgorithmNewBoxPattern; }
+			virtual OpenViBE::Plugins::IBoxListener* createBoxListener(void) const               { return new CBoxAlgorithmNewBoxPatternListener; }
+			virtual void releaseBoxListener(OpenViBE::Plugins::IBoxListener* pBoxListener) const { delete pBoxListener; }
+
+			virtual OpenViBE::boolean getBoxPrototype(OpenViBE::Kernel::IBoxProto& rBoxAlgorithmPrototype) const
 			{
-			public:
+				//rBoxAlgorithmPrototype.addInput  ("Input",  OV_TypeId_StreamedMatrix);
+				//rBoxAlgorithmPrototype.addInput  ("Input stimulations", OV_TypeId_Stimulations);
+				//rBoxAlgorithmPrototype.addOutput ("Output", OV_TypeId_StreamedMatrix);
+				//rBoxAlgorithmPrototype.addOutput ("Output stimulations", OV_TypeId_Stimulations);
+				rBoxAlgorithmPrototype.addSetting("Clock frequency (Hz)", OV_TypeId_Integer, "64");
+				//rBoxAlgorithmPrototype.addSetting("Script", OV_TypeId_Script, "");
+				//rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_IsUnstable);
+				
+				rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddInput);
+				rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);
+				rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddOutput);
+				rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyOutput);
+				rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddSetting);
+				rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifySetting);
 
-				void release() override { }
+				rBoxAlgorithmPrototype.addInputSupport(OV_TypeId_Signal);
+				rBoxAlgorithmPrototype.addInputSupport(OV_TypeId_Stimulations);
+				rBoxAlgorithmPrototype.addInputSupport(OV_TypeId_StreamedMatrix);
 
-				CString getName() const override { return CString("Python 3 scripting"); }
-				CString getAuthorName() const override { return CString("Aurelien Van Langhenhove and Laurent George"); }
-				CString getAuthorCompanyName() const override { return CString("CICIT Garches, Inria"); }
-				CString getShortDescription() const override { return CString("This box executes a python script."); }
-				CString getDetailedDescription() const override { return CString(""); }
-				CString getCategory() const override { return CString("Scripting"); }
-				CString getVersion() const override { return CString("0.1"); }
-				CString getStockItemName() const override { return CString("gtk-convert"); }
+				rBoxAlgorithmPrototype.addOutputSupport(OV_TypeId_Signal);
+				rBoxAlgorithmPrototype.addOutputSupport(OV_TypeId_Stimulations);
+				rBoxAlgorithmPrototype.addOutputSupport(OV_TypeId_StreamedMatrix);
+				
+				return true;
+			}
 
-				CIdentifier getCreatedClass() const override { return OVP_ClassId_BoxAlgorithm_NewBoxPattern; }
-				IPluginObject* create() override { return new CBoxAlgorithmNewBoxPattern; }
-				IBoxListener* createBoxListener() const override { return new CBoxAlgorithmNewBoxPatternListener; }
-				void releaseBoxListener(IBoxListener* listener) const override { delete listener; }
+			_IsDerivedFromClass_Final_(OpenViBE::Plugins::IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_NewBoxPatternDesc);
+		};
+	};
+};
 
-				bool getBoxPrototype(Kernel::IBoxProto& prototype) const override
-				{
-					prototype.addSetting("Clock frequency (Hz)", OV_TypeId_Integer, "64");
-					// prototype.addSetting("Script", OV_TypeId_Script, "");
+#endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
-					prototype.addFlag(Kernel::BoxFlag_CanAddInput);
-					prototype.addFlag(Kernel::BoxFlag_CanModifyInput);
-					prototype.addFlag(Kernel::BoxFlag_CanAddOutput);
-					prototype.addFlag(Kernel::BoxFlag_CanModifyOutput);
-					prototype.addFlag(Kernel::BoxFlag_CanAddSetting);
-					prototype.addFlag(Kernel::BoxFlag_CanModifySetting);
+#endif // TARGET_HAS_ThirdPartyPython
 
-					prototype.addInputSupport(OV_TypeId_Signal);
-					prototype.addInputSupport(OV_TypeId_Stimulations);
-					prototype.addInputSupport(OV_TypeId_StreamedMatrix);
+#endif // __OpenViBEPlugins_BoxAlgorithm_NewBoxPattern_H__
 
-					prototype.addOutputSupport(OV_TypeId_Signal);
-					prototype.addOutputSupport(OV_TypeId_Stimulations);
-					prototype.addOutputSupport(OV_TypeId_StreamedMatrix);
-
-					return true;
-				}
-
-				_IsDerivedFromClass_Final_(IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_NewBoxPatternDesc)
-			};
-		} // namespace Python
-	}  // namespace Plugins
-}  // namespace OpenViBE
-
-#endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
-
-#endif // TARGET_HAS_ThirdPartyPython3

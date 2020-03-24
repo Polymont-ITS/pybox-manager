@@ -2,1602 +2,2072 @@
 // Windows debug build doesn't typically link as most people don't have the python debug library.
 #else
 
-#if defined TARGET_HAS_ThirdPartyPython3
+#if defined TARGET_HAS_ThirdPartyPython
 
 #include "ovpNewBoxPattern.h"
+#include "../ovpCBoxAlgorithmPython.h"
 
-#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
+#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
-#include <openvibe/ovTimeArithmetics.h>
-#include <fstream>
 #include <iostream>
 
+#include <openvibe/ovITimeArithmetics.h>
+
 using namespace OpenViBE;
-using namespace /*OpenViBE::*/Kernel;
-using namespace /*OpenViBE::*/Plugins;
-using namespace /*OpenViBE::*/Toolkit;
-using namespace /*OpenViBE::Plugins::*/Python;
+using namespace OpenViBE::Kernel;
+using namespace OpenViBE::Plugins;
 
-using namespace std;
+using namespace OpenViBEPlugins;
+using namespace OpenViBEPlugins::Python;
 
-//****************************
-//***** Static Functions *****
-//****************************
-///-------------------------------------------------------------------------------------------------
-static bool appendToPyObject(PyObject* obj, PyObject* buffer)
+using namespace OpenViBEToolkit;
+
+// CBoxAlgorithmPython::m_bPythonInitialized = false;
+
+// CBoxAlgorithmPython::m_pMainModule = nullptr;
+// CBoxAlgorithmPython::m_pMainDictionnary = nullptr;
+// CBoxAlgorithmPython::m_pOVStreamedMatrixHeader = nullptr;
+// CBoxAlgorithmPython::m_pOVStreamedMatrixBuffer = nullptr;
+// CBoxAlgorithmPython::m_pOVStreamedMatrixEnd = nullptr;
+// CBoxAlgorithmPython::m_pOVSignalHeader = nullptr;
+// CBoxAlgorithmPython::m_pOVSignalBuffer = nullptr;
+// CBoxAlgorithmPython::m_pOVSignalEnd = nullptr;
+// CBoxAlgorithmPython::m_pOVStimulationHeader = nullptr;
+// CBoxAlgorithmPython::m_pOVStimulation = nullptr;
+// CBoxAlgorithmPython::m_pOVStimulationSet = nullptr;
+// CBoxAlgorithmPython::m_pOVStimulationEnd = nullptr;
+// CBoxAlgorithmPython::m_pOVBuffer = nullptr;
+// CBoxAlgorithmPython::m_pExecFileFunction = nullptr;
+// CBoxAlgorithmPython::m_pSysStdout = nullptr;
+// CBoxAlgorithmPython::m_pSysStderr = nullptr;
+
+OpenViBE::boolean CBoxAlgorithmNewBoxPattern::logSysStdout(void)
 {
-	PyObject* methodToCall = PyUnicode_FromString("append");
-	PyObject* result       = PyObject_CallMethodObjArgs(buffer, methodToCall, obj, NULL);
-	Py_CLEAR(methodToCall);
-	if (result == nullptr) { return false; }
-	Py_CLEAR(result);
-	return true;
-}
-
-static bool getLenFromPyObject(PyObject* obj, size_t& len)
-{
-	PyObject* pyLen = PyObject_CallMethod(obj, "__len__", nullptr);
-	if (pyLen == nullptr) { return false; }
-	len = size_t(PyLong_AsUnsignedLongMask(pyLen));
-	Py_CLEAR(pyLen);
-	return true;
-}
-
-static void getTimeFromPyObject(PyObject* obj, const char* attr, uint64_t& time)
-{
-	PyObject* pyTime = PyObject_GetAttrString(obj, attr);
-	time             = TimeArithmetics::secondsToTime(PyFloat_AsDouble(pyTime));
-	Py_CLEAR(pyTime);
-}
-
-static void getTimesFromPyObject(PyObject* obj, uint64_t& start, uint64_t& end)
-{
-	getTimeFromPyObject(obj, "startTime", start);
-	getTimeFromPyObject(obj, "endTime", end);
-}
-
-static bool setMatrixInfosFromPyObject(PyObject* obj, IMatrix* matrix)
-{
-	PyObject* pyNDim = PyObject_CallMethod(obj, "getDimensionCount", nullptr);
-	if (pyNDim == nullptr) { return false; }
-
-	const size_t nDim = PyLong_AsUnsignedLongMask(pyNDim);
-	matrix->setDimensionCount(nDim);
-	Py_CLEAR(pyNDim);
-
-	PyObject* pySizeDim  = PyObject_GetAttrString(obj, "dimensionSizes");
-	PyObject* pyLabelDim = PyObject_GetAttrString(obj, "dimensionLabels");
-
-	size_t offset = 0;
-	for (size_t i = 0; i < nDim; ++i)
+	//New reference
+	PyObject* l_pPyStringToLog = PyObject_CallMethod(CBoxAlgorithmPython::m_pSysStdout, (char *) "getvalue", NULL);
+	if (l_pPyStringToLog == NULL)
 	{
-		const size_t size = PyLong_AsUnsignedLongMask(PyList_GetItem(pySizeDim, Py_ssize_t(i)));
-		matrix->setDimensionSize(i, size);
-		for (size_t j = 0; j < size; ++j) { matrix->setDimensionLabel(i, j, PyBytes_AS_STRING(PyList_GetItem(pyLabelDim, offset + j))); }
-		offset = offset + size;
-	}
-	Py_CLEAR(pySizeDim);
-	Py_CLEAR(pyLabelDim);
-	return true;
-}
-///-------------------------------------------------------------------------------------------------
-
-bool CBoxAlgorithmNewBoxPattern::m_isPythonInitialized    = false;
-PyObject* CBoxAlgorithmNewBoxPattern::m_mainModule        = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_mainDictionnary   = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_matrixHeader      = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_matrixBuffer      = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_matrixEnd         = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_signalHeader      = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_signalBuffer      = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_signalEnd         = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_stimulationHeader = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_stimulation       = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_stimulationSet    = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_stimulationEnd    = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_buffer            = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_execFileFunction  = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_stdout            = nullptr;
-PyObject* CBoxAlgorithmNewBoxPattern::m_stderr            = nullptr;
-
-bool CBoxAlgorithmNewBoxPattern::logSysStd(const bool out)
-{
-	PyObject* pyLog = PyObject_CallMethod((out ? m_stdout : m_stderr), "getvalue", nullptr);
-	if (pyLog == nullptr)
-	{
-		this->getLogManager() << LogLevel_Error << "Failed to call sys.std" << (out ? "out" : "err") << ".getvalue().\n";
+		this->getLogManager() << LogLevel_Error << "Failed to call sys.stdout.getvalue().\n";
 		return false;
 	}
-
-	char* log = PyBytes_AS_STRING(PyUnicode_AsEncodedString(pyLog, "utf-8", "strict"));
-	if (log == nullptr)
+	
+	char *l_StringToLog = PyString_AsString(l_pPyStringToLog);
+	if(l_StringToLog == NULL)
 	{
-		this->getLogManager() << LogLevel_Error << "Failed to convert pyLog to (char *).\n";
-		Py_CLEAR(pyLog);
+		this->getLogManager() << LogLevel_Error << "Failed to convert l_pPyStringToLog to (char *).\n";
+		Py_CLEAR(l_pPyStringToLog);
 		return false;
 	}
-	Py_CLEAR(pyLog);
-
-	if (strlen(log) > 0)
+	Py_CLEAR(l_pPyStringToLog);
+	
+	if( strlen(const_cast<char *>(l_StringToLog)) > 0)
 	{
-		this->getLogManager() << LogLevel_Info << log;
-		PyObject* result = PyObject_CallMethod((out ? m_stdout : m_stderr), "flush", nullptr);
-		if (result == nullptr)
+		this->getLogManager() << LogLevel_Info << l_StringToLog;
+		
+		PyObject* l_pResult = PyObject_CallMethod(CBoxAlgorithmPython::m_pSysStdout, (char *) "flush", NULL);
+		if (l_pResult == NULL)
 		{
-			this->getLogManager() << LogLevel_Error << "Failed to call sys.std" << (out ? "out" : "err") << ".flush().\n";
+			this->getLogManager() << LogLevel_Error << "Failed to call sys.stdout.flush().\n";
 			return false;
 		}
-		Py_CLEAR(result);
+		Py_CLEAR(l_pResult);
 	}
 	return true;
 }
 
-void CBoxAlgorithmNewBoxPattern::buildPythonSettings()
+OpenViBE::boolean CBoxAlgorithmNewBoxPattern::logSysStderr(void)
 {
-	const IBox* boxCtx = getBoxAlgorithmContext()->getStaticBoxContext();
-	for (uint32_t i = 2; i < boxCtx->getSettingCount(); ++i)
+	//New reference
+	PyObject* l_pPyStringToLog = PyObject_CallMethod(CBoxAlgorithmPython::m_pSysStderr, (char *) "getvalue", NULL);
+	if (l_pPyStringToLog == NULL)
 	{
-		CString name;
-		boxCtx->getSettingName(i, name);
-		const CString value = FSettingValueAutoCast(*this->getBoxAlgorithmContext(), i);
-		PyDict_SetItemString(m_boxSetting, name.toASCIIString(), PyUnicode_FromString(value.toASCIIString()));
+		this->getLogManager() << LogLevel_Error << "Failed to call sys.stderr.getvalue().\n";
+		return false;
+	}
+	
+	char *l_StringToLog = PyString_AsString(l_pPyStringToLog);
+	if(l_StringToLog == NULL)
+	{
+		this->getLogManager() << LogLevel_Error << "Failed to convert l_pPyStringToLog to (char *).\n";
+		Py_CLEAR(l_pPyStringToLog);
+		return false;
+	}
+	Py_CLEAR(l_pPyStringToLog);
+	
+	if( strlen(const_cast<char *>(l_StringToLog)) > 0)
+	{
+		this->getLogManager() << LogLevel_Error << l_StringToLog;
+		
+		PyObject* l_pResult = PyObject_CallMethod(CBoxAlgorithmPython::m_pSysStderr, (char *) "flush", NULL);
+		if (l_pResult == NULL)
+		{
+			this->getLogManager() << LogLevel_Error << "Failed to call sys.stderr.flush().\n";
+			return false;
+		}
+		Py_CLEAR(l_pResult);
+	}
+	return true;
+}
+
+uint64 CBoxAlgorithmNewBoxPattern::getClockFrequency(void)
+{
+	getLogManager() << LogLevel_Trace << "Clock frequency requested at time " << getPlayerContext().getCurrentTime() << "\n";
+
+	return m_ui64ClockFrequency<<32;
+}
+
+void CBoxAlgorithmNewBoxPattern::buildPythonSettings(void)
+{  
+	const IBox * l_rStaticBoxContext=getBoxAlgorithmContext()->getStaticBoxContext();
+	for (uint32 i=0; i<l_rStaticBoxContext->getSettingCount(); i++)
+	{
+		CString l_sName;
+		l_rStaticBoxContext->getSettingName(i, l_sName);
+
+		const CString l_sValue = FSettingValueAutoCast(*this->getBoxAlgorithmContext(), i);
+
+		PyDict_SetItemString(m_pBoxSetting, l_sName, PyString_FromString(l_sValue));
 	}
 }
 
-bool CBoxAlgorithmNewBoxPattern::initializePythonSafely()
+OpenViBE::boolean CBoxAlgorithmNewBoxPattern::initializePythonSafely()
 {
 	// Only the first Python box does the initialization of the global parts
-	if (m_isPythonInitialized) { return true; }
+	if (CBoxAlgorithmPython::m_bPythonInitialized)
+	{
+		return true;
+	}
 
-	this->getLogManager() << LogLevel_Info << "Discovered Python is " << Py_GetVersion() << " (" << Py_GetPlatform() << ")\n";
-	this->getLogManager() << LogLevel_Debug << "The Python path is [" << Py_GetPath() << "]\n";
+	this->getLogManager() << LogLevel_Info << "Discovered Python is " << CString(Py_GetVersion()) << " (" << CString(Py_GetPlatform()) << ")\n";
+	this->getLogManager() << LogLevel_Debug << "The Python path is [" << CString(Py_GetPath()) << "]\n";
 
-	const string cmd = string("import sys\nsys.path.append('") + Directories::getDataDir().toASCIIString() + "/plugins/python3')\nsys.argv = [\"openvibe\"]\n";
-	// cmd += "import openvibe\n" + "from StimulationsCodes import *\n";
-	this->getLogManager() << LogLevel_Trace << "Running [\n" << cmd << "\n].\n";
+	OpenViBE::CString l_sCommand;
+	l_sCommand = l_sCommand + "import sys\n";
+	l_sCommand = l_sCommand + "sys.path.append('";
+	l_sCommand = l_sCommand + OpenViBE::Directories::getDataDir();
+	l_sCommand = l_sCommand + "/plugins/python')\n";
+	l_sCommand = l_sCommand + "sys.argv = [\"openvibe\"]\n";
+	// l_sCommand = l_sCommand + "import openvibe\n";
+	// l_sCommand = l_sCommand + "from StimulationsCodes import *\n";
+	this->getLogManager() << LogLevel_Trace << "Running [" << l_sCommand << "].\n";
 
-	PyRun_SimpleString(cmd.c_str());
+	PyRun_SimpleString(l_sCommand);
 
-	m_mainModule      = PyImport_AddModule("__main__");
-	m_mainDictionnary = PyModule_GetDict(m_mainModule);
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pMainModule = PyImport_AddModule("__main__");
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pMainDictionnary = PyModule_GetDict(CBoxAlgorithmPython::m_pMainModule);
 
-	//****************************************
-	/*
 	//Execute the script which contains the different classes to interact with OpenViBE
-	const char* path = (Directories::getDataDir() + "/plugins/python3/openvibe.py").toASCIIString();
-	FILE* file       = fopen(path, "r");
-	if (!file)
+	//New reference
+	OpenViBE::CString l_sFilePath = OpenViBE::Directories::getDataDir() + "/plugins/python/openvibe.py";
+	PyObject *l_pScriptFile = PyFile_FromString( (char *)l_sFilePath.toASCIIString(), (char *) "r");
+	if (l_pScriptFile == NULL)
 	{
-		this->getLogManager() << LogLevel_Error << "Failed to open '" << path << "'.\n";
+		this->getLogManager() << LogLevel_Error << "Failed to open '" << l_sFilePath << "'.\n";
 		return false;
 	}
-	this->getLogManager() << LogLevel_Info << "file open check\n";
 
-	if (PyRun_SimpleFile(file, path) == -1)
+	if (PyRun_SimpleFile(PyFile_AsFile(l_pScriptFile), (char *)l_sFilePath.toASCIIString() ) == -1)
 	{
-		this->getLogManager() << LogLevel_Error << "Failed to run '" << path << "'.\n";
+		this->getLogManager() << LogLevel_Error << "Failed to run " << l_sFilePath << ".\n";
+		Py_CLEAR(l_pScriptFile);
 		return false;
 	}
-	fclose(file);
+	Py_CLEAR(l_pScriptFile);
 
-	this->getLogManager() << LogLevel_Info << "file run check\n";
-	*/
-	const string path = string(Directories::getDataDir().toASCIIString()) + "/plugins/python3/openvibe.py";
-	ifstream file;
-	file.open(path);
-	if (!file.is_open())
-	{
-		this->getLogManager() << LogLevel_Error << "Failed to open '" << path << "'.\n";
-		return false;
-	}
-	const std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-	if (PyRun_SimpleString(str.c_str()) == -1)	// Yolo but PyRun_File crash
-	{
-		this->getLogManager() << LogLevel_Error << "Failed to run '" << path << "'.\n";
-		return false;
-	}
-	//this->getLogManager() << LogLevel_Trace << "Running [\n" << str << "\n].\n";
-	file.close();
-	//****************************************
-
-	// Apply References
-	//****************************************
-	m_stdout = PySys_GetObject("stdout");
-	if (m_stdout == nullptr)
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pSysStdout = PySys_GetObject((char *) "stdout");
+	if (CBoxAlgorithmPython::m_pSysStdout == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "sys.stdout does not exist.\n";
 		return false;
 	}
-	m_stderr = PySys_GetObject("stderr");
-	if (m_stderr == nullptr)
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pSysStderr = PySys_GetObject((char *) "stderr");
+	if (CBoxAlgorithmPython::m_pSysStderr == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "sys.stderr does not exist.\n";
 		return false;
 	}
 
-	m_execFileFunction = PyDict_GetItemString(m_mainDictionnary, "execfileHandlingException");
-	if (m_execFileFunction == nullptr)
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pExecFileFunction = PyDict_GetItemString(CBoxAlgorithmPython::m_pMainDictionnary, "execfileHandlingException");
+	if (CBoxAlgorithmPython::m_pExecFileFunction == NULL  )
 	{
-		this->getLogManager() << LogLevel_Error << "openvibe.py doesn't have a execfileHandlingException function, quitting" << ".\n";
+		this->getLogManager() << LogLevel_Error << "openvibe.py doesn't have a execfileHandlingException function, quitting"  << ".\n";
 		return false;
 	}
 
-	if (!PyCallable_Check(m_execFileFunction))
-	{
-		this->getLogManager() << LogLevel_Error << "openvibe.py doesn't have a execfileHandlingException function callable, " << ".\n";
+	if (!PyCallable_Check(CBoxAlgorithmPython::m_pExecFileFunction)){
+		this->getLogManager() << LogLevel_Error << "openvibe.py doesn't have a execfileHandlingException function callable, "  << ".\n";
 		return false;
 	}
 
-	//		Streams
-	m_matrixHeader = PyDict_GetItemString(m_mainDictionnary, "OVStreamedMatrixHeader");
-	if (m_matrixHeader == nullptr)
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pOVStreamedMatrixHeader = PyDict_GetItemString(CBoxAlgorithmPython::m_pMainDictionnary, "OVStreamedMatrixHeader");
+	if (CBoxAlgorithmPython::m_pOVStreamedMatrixHeader == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to load class \"OVStreamedMatrixHeader\".\n";
 		return false;
 	}
 
-	m_matrixBuffer = PyDict_GetItemString(m_mainDictionnary, "OVStreamedMatrixBuffer");
-	if (m_matrixBuffer == nullptr)
+
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pOVStreamedMatrixBuffer = PyDict_GetItemString(CBoxAlgorithmPython::m_pMainDictionnary, "OVStreamedMatrixBuffer");
+	if (CBoxAlgorithmPython::m_pOVStreamedMatrixBuffer == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to load class \"OVStreamedMatrixBuffer\".\n";
 		return false;
 	}
 
-	m_matrixEnd = PyDict_GetItemString(m_mainDictionnary, "OVStreamedMatrixEnd");
-	if (m_matrixEnd == nullptr)
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pOVStreamedMatrixEnd = PyDict_GetItemString(CBoxAlgorithmPython::m_pMainDictionnary, "OVStreamedMatrixEnd");
+	if (CBoxAlgorithmPython::m_pOVStreamedMatrixEnd == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to load class \"OVStreamedMatrixEnd\".\n";
 		return false;
 	}
 
-	m_signalHeader = PyDict_GetItemString(m_mainDictionnary, "OVSignalHeader");
-	if (m_signalHeader == nullptr)
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pOVSignalHeader = PyDict_GetItemString(CBoxAlgorithmPython::m_pMainDictionnary, "OVSignalHeader");
+	if (CBoxAlgorithmPython::m_pOVSignalHeader == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to load class \"OVSignalHeader\".\n";
 		return false;
 	}
 
-	m_signalBuffer = PyDict_GetItemString(m_mainDictionnary, "OVSignalBuffer");
-	if (m_signalBuffer == nullptr)
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pOVSignalBuffer = PyDict_GetItemString(CBoxAlgorithmPython::m_pMainDictionnary, "OVSignalBuffer");
+	if (CBoxAlgorithmPython::m_pOVSignalBuffer == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to load class \"OVSignalBuffer\".\n";
 		return false;
 	}
 
-	m_signalEnd = PyDict_GetItemString(m_mainDictionnary, "OVSignalEnd");
-	if (m_signalEnd == nullptr)
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pOVSignalEnd = PyDict_GetItemString(CBoxAlgorithmPython::m_pMainDictionnary, "OVSignalEnd");
+	if (CBoxAlgorithmPython::m_pOVSignalEnd == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to load class \"OVSignalEnd\".\n";
 		return false;
 	}
 
-	m_stimulationHeader = PyDict_GetItemString(m_mainDictionnary, "OVStimulationHeader");
-	if (m_stimulationHeader == nullptr)
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pOVStimulationHeader = PyDict_GetItemString(CBoxAlgorithmPython::m_pMainDictionnary, "OVStimulationHeader");
+	if (CBoxAlgorithmPython::m_pOVStimulationHeader == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to load class \"OVStimulationHeader\".\n";
 		return false;
 	}
 
-	m_stimulation = PyDict_GetItemString(m_mainDictionnary, "OVStimulation");
-	if (m_stimulation == nullptr)
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pOVStimulation = PyDict_GetItemString(CBoxAlgorithmPython::m_pMainDictionnary, "OVStimulation");
+	if (CBoxAlgorithmPython::m_pOVStimulation == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to load class \"OVStimulation\".\n";
 		return false;
 	}
 
-	m_stimulationSet = PyDict_GetItemString(m_mainDictionnary, "OVStimulationSet");
-	if (m_stimulationSet == nullptr)
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pOVStimulationSet = PyDict_GetItemString(CBoxAlgorithmPython::m_pMainDictionnary, "OVStimulationSet");
+	if (CBoxAlgorithmPython::m_pOVStimulationSet == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to load class \"OVStimulationSet\".\n";
 		return false;
 	}
 
-	m_stimulationEnd = PyDict_GetItemString(m_mainDictionnary, "OVStimulationEnd");
-	if (m_stimulationEnd == nullptr)
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pOVStimulationEnd = PyDict_GetItemString(CBoxAlgorithmPython::m_pMainDictionnary, "OVStimulationEnd");
+	if (CBoxAlgorithmPython::m_pOVStimulationEnd == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to load class \"OVStimulationEnd\".\n";
 		return false;
 	}
 
-	m_buffer = PyDict_GetItemString(m_mainDictionnary, "OVBuffer");
-	if (m_buffer == nullptr)
+	//Borrowed reference
+	CBoxAlgorithmPython::m_pOVBuffer = PyDict_GetItemString(CBoxAlgorithmPython::m_pMainDictionnary, "OVBuffer");
+	if (CBoxAlgorithmPython::m_pOVBuffer == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to load class \"OVBuffer\".\n";
 		return false;
 	}
 
-	m_isPythonInitialized = true;
+	CBoxAlgorithmPython::m_bPythonInitialized = true;
+
 	this->getLogManager() << LogLevel_Info << "Python Interpreter initialized\n";
+
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::initialize()
+OpenViBE::boolean CBoxAlgorithmNewBoxPattern::initialize(void)
 {
-	m_box                 = nullptr;
-	m_boxInput            = nullptr;
-	m_boxOutput           = nullptr;
-	m_boxCurrentTime      = nullptr;
-	m_boxSetting          = nullptr;
-	m_boxInitialize       = nullptr;
-	m_boxProcess          = nullptr;
-	m_boxUninitialize     = nullptr;
-	m_initializeSucceeded = false;
+	m_pBox = nullptr;
+	m_pBoxInput = nullptr;
+	m_pBoxOutput = nullptr;
+	m_pBoxCurrentTime = nullptr;
+	m_pBoxSetting = nullptr;
+	m_pBoxInitialize = nullptr;
+	m_pBoxProcess = nullptr;
+	m_pBoxUninitialize = nullptr;
+	m_bInitializeSucceeded = false;
 
-	if (!initializePythonSafely()) { return false; }
+	if (!initializePythonSafely())
+	{
+		return false;
+	}
+
+
 
 	//Initialize the clock frequency of the box depending on the first setting of the box
-	m_clockFrequency = FSettingValueAutoCast(*this->getBoxAlgorithmContext(), 0);
-	m_scriptFilename = "../../extras/contrib/applications/developer-tools/openvibe-python/ScriptBox/TrainerML.py";
+	m_ui64ClockFrequency = FSettingValueAutoCast(*this->getBoxAlgorithmContext(), 0);
+	m_sScriptFilename = "/home/vegeta/Documents/openvibe-python/ScriptBox/NewBoxPattern.py";
 
-	if (strlen(m_scriptFilename.toASCIIString()) == 0)
+	if(strlen(m_sScriptFilename.toASCIIString()) == 0)
 	{
 		this->getLogManager() << LogLevel_Error << "You have to choose a script.\n";
 		return false;
 	}
-	
+
 	//Create the decoders for the inputs
-	const IBox& boxCtx = this->getStaticBoxContext();
-	CIdentifier typeID;
-	for (size_t i = 0; i < boxCtx.getInputCount(); ++i)
+    const IBox& l_rStaticBoxContext = this->getStaticBoxContext();
+	OpenViBE::CIdentifier l_oTypeIdentifier;
+	for(uint32 input=0; input<l_rStaticBoxContext.getInputCount(); input++)
 	{
-		boxCtx.getInputType(i, typeID);
-		if (typeID == OV_TypeId_StreamedMatrix) { m_decoders.push_back(new TStreamedMatrixDecoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_Signal) { m_decoders.push_back(new TSignalDecoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_FeatureVector) { m_decoders.push_back(new TFeatureVectorDecoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_Spectrum) { m_decoders.push_back(new TSpectrumDecoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_ChannelLocalisation) { m_decoders.push_back(new TChannelLocalisationDecoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_Stimulations) { m_decoders.push_back(new TStimulationDecoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_ExperimentInfo) { m_decoders.push_back(new TExperimentInfoDecoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
+		l_rStaticBoxContext.getInputType(input, l_oTypeIdentifier);
+		if (l_oTypeIdentifier == OV_TypeId_StreamedMatrix)
+		{
+			m_vDecoders.push_back( new TStreamedMatrixDecoder <CBoxAlgorithmNewBoxPattern> (*this, input) );
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Signal)
+		{
+			m_vDecoders.push_back( new TSignalDecoder <CBoxAlgorithmNewBoxPattern> (*this, input) );
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_FeatureVector)
+		{
+			m_vDecoders.push_back( new TFeatureVectorDecoder <CBoxAlgorithmNewBoxPattern> (*this, input) );
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Spectrum)
+		{
+			m_vDecoders.push_back( new TSpectrumDecoder <CBoxAlgorithmNewBoxPattern> (*this, input) );
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_ChannelLocalisation)
+		{
+			m_vDecoders.push_back( new TChannelLocalisationDecoder <CBoxAlgorithmNewBoxPattern> (*this, input) );
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Stimulations)
+		{
+			m_vDecoders.push_back( new TStimulationDecoder <CBoxAlgorithmNewBoxPattern> (*this, input) );
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_ExperimentInformation)
+		{
+			m_vDecoders.push_back( new TExperimentInformationDecoder <CBoxAlgorithmNewBoxPattern> (*this, input) );
+		}
 		else
 		{
-			this->getLogManager() << LogLevel_Error << "Codec to decode " << typeID.str() << " is not implemented.\n";
+			this->getLogManager() << LogLevel_Error << "Codec to decode " << l_oTypeIdentifier.toString() << " is not implemented.\n";
 			return false;
 		}
 	}
 
 	//Create the encoders for the outputs
-	for (size_t i = 0; i < boxCtx.getOutputCount(); ++i)
+	for(uint32 output=0; output<l_rStaticBoxContext.getOutputCount(); output++)
 	{
-		boxCtx.getOutputType(i, typeID);
-		if (typeID == OV_TypeId_StreamedMatrix) { m_encoders.push_back(new TStreamedMatrixEncoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_Signal) { m_encoders.push_back(new TSignalEncoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_FeatureVector) { m_encoders.push_back(new TFeatureVectorEncoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_Spectrum) { m_encoders.push_back(new TSpectrumEncoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_ChannelLocalisation) { m_encoders.push_back(new TChannelLocalisationEncoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_Stimulations) { m_encoders.push_back(new TStimulationEncoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
-		else if (typeID == OV_TypeId_ExperimentInfo) { m_encoders.push_back(new TExperimentInfoEncoder<CBoxAlgorithmNewBoxPattern>(*this, i)); }
+		l_rStaticBoxContext.getOutputType(output, l_oTypeIdentifier);
+		if (l_oTypeIdentifier == OV_TypeId_StreamedMatrix)
+		{
+			m_vEncoders.push_back( new TStreamedMatrixEncoder <CBoxAlgorithmNewBoxPattern> (*this, output) );
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Signal)
+		{
+			m_vEncoders.push_back( new TSignalEncoder <CBoxAlgorithmNewBoxPattern> (*this, output) );
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_FeatureVector)
+		{
+			m_vEncoders.push_back( new TFeatureVectorEncoder <CBoxAlgorithmNewBoxPattern> (*this, output) );
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Spectrum)
+		{
+			m_vEncoders.push_back( new TSpectrumEncoder <CBoxAlgorithmNewBoxPattern> (*this, output) );
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_ChannelLocalisation)
+		{
+			m_vEncoders.push_back( new TChannelLocalisationEncoder <CBoxAlgorithmNewBoxPattern> (*this, output) );
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Stimulations)
+		{
+			m_vEncoders.push_back( new TStimulationEncoder <CBoxAlgorithmNewBoxPattern> (*this, output) );
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_ExperimentInformation)
+		{
+			m_vEncoders.push_back( new TExperimentInformationEncoder <CBoxAlgorithmNewBoxPattern> (*this, output) );
+		}
 		else
 		{
-			this->getLogManager() << LogLevel_Error << "Codec to encode " << typeID.str() << " is not implemented.\n";
+			this->getLogManager() << LogLevel_Error << "Codec to encode " << l_oTypeIdentifier.toString() << " is not implemented.\n";
 			return false;
 		}
 	}
 
-	PyObject* pyTmp = Py_BuildValue("s,O", m_scriptFilename.toASCIIString(), m_mainDictionnary);
-	if (pyTmp == nullptr) { this->getLogManager() << LogLevel_Error << "Failed to load [" << m_scriptFilename << "]"; }
 
-	PyObject* result = PyObject_CallObject(m_execFileFunction, pyTmp);
-	if (result == nullptr || PyLong_AsLong(result) != 0)
+
+
+
+
+	//New reference
+	PyObject *l_pTemporyPyObject = Py_BuildValue("s,O", m_sScriptFilename.toASCIIString(), CBoxAlgorithmPython::m_pMainDictionnary);
+	//New reference
+	PyObject *l_pResult = PyObject_CallObject(CBoxAlgorithmPython::m_pExecFileFunction, l_pTemporyPyObject);
+	if (l_pResult == NULL || PyInt_AsLong(l_pResult)!=0)
 	{
-		this->getLogManager() << LogLevel_Error << "Failed to run [" << m_scriptFilename << "], result = "
-				<< (result ? std::to_string(PyLong_AsLong(result)) : "NULL") << "\n";
-		logSysStdout();
+		this->getLogManager() << LogLevel_Error << "Failed to run [" << m_sScriptFilename << "]";
+		if(l_pResult) 
+		{
+			this->getLogManager() << ", result = " << (int32)PyInt_AsLong(l_pResult) << "\n";
+		} 
+		else
+		{
+			this->getLogManager() << ", result = NULL\n";
+		}
+		logSysStdout(); 
 		logSysStderr();
-		Py_CLEAR(pyTmp);
-		Py_CLEAR(result);
+		Py_CLEAR(l_pTemporyPyObject);
+		Py_CLEAR(l_pResult);
 		return false;
 	}
 
-	Py_CLEAR(pyTmp);
-	Py_CLEAR(result);
+	Py_CLEAR(l_pTemporyPyObject);
+	Py_CLEAR(l_pResult);
 
-	m_box = PyObject_GetAttrString(m_mainModule, "box"); // la box qui vient juste d'etre creee
-	if (m_box == nullptr)
+	/*
+	PyObject *l_pScriptFile = PyFile_FromString((char *) m_sScriptFilename.toASCIIString(), (char *) "r");
+	if (l_pScriptFile == NULL)
+	{
+		this->getLogManager() << LogLevel_Error << "Failed to open " << m_sScriptFilename.toASCIIString() << ".\n";
+		Py_CLEAR(l_pScriptFile);
+		return false;
+	}
+
+	if (PyRun_SimpleFile(PyFile_AsFile(l_pScriptFile), m_sScriptFilename.toASCIIString()) == -1)
+	{
+		this->getLogManager() << LogLevel_Error << "Failed to run " << m_sScriptFilename.toASCIIString() << ".\n";
+		Py_CLEAR(l_pScriptFile);
+		return false;
+	}
+	Py_CLEAR(l_pScriptFile);
+	*/
+
+	//New reference
+	m_pBox = PyObject_GetAttrString(CBoxAlgorithmPython::m_pMainModule, "box"); // la box qui vient juste d'etre creee
+	if (m_pBox == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to load \"box\" object.\n";
 		return false;
 	}
-
-	m_boxInput = PyObject_GetAttrString(m_box, "input");
-	if (m_boxInput == nullptr)
+	//New reference
+	m_pBoxInput = PyObject_GetAttrString(m_pBox, "input");
+	if (m_pBoxInput == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to load \"box.input\".\n";
 		return false;
 	}
-
-	m_boxOutput = PyObject_GetAttrString(m_box, "output");
-	if (m_boxOutput == nullptr)
+	//New reference
+	m_pBoxOutput = PyObject_GetAttrString(m_pBox, "output");
+	if (m_pBoxOutput == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to load \"box.output\".\n";
 		return false;
 	}
 
-	std::string type;
-	for (size_t i = 0; i < boxCtx.getInputCount(); ++i)
+	CString l_sInputOutputType;
+	for(uint32 input=0; input<l_rStaticBoxContext.getInputCount(); input++)
 	{
-		boxCtx.getInputType(i, typeID);
-		if (typeID == OV_TypeId_StreamedMatrix) { type = "StreamedMatrix"; }
-		else if (typeID == OV_TypeId_Signal) { type = "Signal"; }
-		else if (typeID == OV_TypeId_FeatureVector) { type = "FeatureVector"; }
-		else if (typeID == OV_TypeId_Spectrum) { type = "Spectrum"; }
-		else if (typeID == OV_TypeId_ChannelLocalisation) { type = "ChannelLocalisation"; }
-		else if (typeID == OV_TypeId_Stimulations) { type = "Stimulations"; }
-		else if (typeID == OV_TypeId_ExperimentInfo) { type = "ExperimentInfo"; }
-		PyObject* res = PyObject_CallMethod(m_box, "addInput", "s", type.c_str());
-		if (res == nullptr)
+		OpenViBE::CIdentifier l_oTypeIdentifier;
+		l_rStaticBoxContext.getInputType(input, l_oTypeIdentifier);
+		if (l_oTypeIdentifier == OV_TypeId_StreamedMatrix)
+		{
+			l_sInputOutputType = "StreamedMatrix";
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Signal)
+		{
+			l_sInputOutputType = "Signal";
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_FeatureVector)
+		{
+			l_sInputOutputType = "FeatureVector";
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Spectrum)
+		{
+			l_sInputOutputType = "Spectrum";
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_ChannelLocalisation)
+		{
+			l_sInputOutputType = "ChannelLocalisation";
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Stimulations)
+		{
+			l_sInputOutputType = "Stimulations";
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_ExperimentInformation)
+		{
+			l_sInputOutputType = "ExperimentInformation";
+		}
+		//New reference
+		PyObject* l_pResult = PyObject_CallMethod(m_pBox, const_cast<char *>("addInput"), const_cast<char *>("s"), const_cast <char*>(l_sInputOutputType.toASCIIString()));
+		if (l_pResult == NULL)
 		{
 			this->getLogManager() << LogLevel_Error << "Failed to call box.addInput().\n";
 			return false;
 		}
-		Py_CLEAR(res);
+		Py_CLEAR(l_pResult);
 	}
 
-	for (size_t i = 0; i < boxCtx.getOutputCount(); ++i)
+	for(uint32 output=0; output<l_rStaticBoxContext.getOutputCount(); output++)
 	{
-		boxCtx.getOutputType(i, typeID);
-		if (typeID == OV_TypeId_StreamedMatrix) { type = "StreamedMatrix"; }
-		else if (typeID == OV_TypeId_Signal) { type = "Signal"; }
-		else if (typeID == OV_TypeId_FeatureVector) { type = "FeatureVector"; }
-		else if (typeID == OV_TypeId_Spectrum) { type = "Spectrum"; }
-		else if (typeID == OV_TypeId_ChannelLocalisation) { type = "ChannelLocalisation"; }
-		else if (typeID == OV_TypeId_Stimulations) { type = "Stimulations"; }
-		else if (typeID == OV_TypeId_ExperimentInfo) { type = "ExperimentInfo"; }
-		PyObject* res = PyObject_CallMethod(m_box, "addOutput", "s", type.c_str());
-		if (res == nullptr)
+		OpenViBE::CIdentifier l_oTypeIdentifier;
+		l_rStaticBoxContext.getOutputType(output, l_oTypeIdentifier);
+		if (l_oTypeIdentifier == OV_TypeId_StreamedMatrix)
+		{
+			l_sInputOutputType = "StreamedMatrix";
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Signal)
+		{
+			l_sInputOutputType = "Signal";
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_FeatureVector)
+		{
+			l_sInputOutputType = "FeatureVector";
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Spectrum)
+		{
+			l_sInputOutputType = "Spectrum";
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_ChannelLocalisation)
+		{
+			l_sInputOutputType = "ChannelLocalisation";
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Stimulations)
+		{
+			l_sInputOutputType = "Stimulations";
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_ExperimentInformation)
+		{
+			l_sInputOutputType = "ExperimentInformation";
+		}
+		//New reference
+		PyObject* l_pResult = PyObject_CallMethod(m_pBox, const_cast<char *>("addOutput"), const_cast<char *>("s"), const_cast <char*>(l_sInputOutputType.toASCIIString()));
+		if (l_pResult == NULL)
 		{
 			this->getLogManager() << LogLevel_Error << "Failed to call box.addOutput().\n";
 			return false;
 		}
-		Py_CLEAR(res);
+		Py_CLEAR(l_pResult);
 	}
 
-	m_boxSetting = PyObject_GetAttrString(m_box, "setting");
-	if (m_boxSetting == nullptr)
+	//New reference
+	m_pBoxSetting = PyObject_GetAttrString(m_pBox,"setting");
+	if (m_pBoxSetting == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to load \"box.setting\".\n";
 		return false;
 	}
 	buildPythonSettings();
 
-	if (!PyObject_HasAttrString(m_box, "_clock"))
+	if (!PyObject_HasAttrString(m_pBox, "_clock"))
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to initialize \"box._clock\" attribute because it does not exist.\n";
 		return false;
 	}
-
-	PyObject* pyBoxClock = PyLong_FromLong(long(m_clockFrequency));
-	if (pyBoxClock == nullptr)
+	//New reference
+	PyObject *l_pBoxClock = PyInt_FromLong((long) m_ui64ClockFrequency);
+	if (l_pBoxClock == NULL)
 	{
-		this->getLogManager() << LogLevel_Error << "Failed to convert m_ClockFrequency into PyInt.\n";
+		this->getLogManager() << LogLevel_Error << "Failed to convert m_ui64ClockFrequency into PyInt.\n";
 		return false;
 	}
-	if (PyObject_SetAttrString(m_box, "_clock", pyBoxClock) == -1)
+	if (PyObject_SetAttrString(m_pBox, "_clock", l_pBoxClock) == -1)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to initialize \"box._clock\" attribute.\n";
 		return false;
 	}
-	Py_CLEAR(pyBoxClock);
+	Py_CLEAR(l_pBoxClock);
 
-	if (!PyObject_HasAttrString(m_box, "_currentTime"))
+	if (!PyObject_HasAttrString(m_pBox, "_currentTime"))
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to initialize \"box._currentTime\" attribute because it does not exist.\n";
 		return false;
 	}
-
-	m_boxCurrentTime = PyFloat_FromDouble(TimeArithmetics::timeToSeconds(this->getPlayerContext().getCurrentTime()));
-	if (m_boxCurrentTime == nullptr)
+	//New reference
+	m_pBoxCurrentTime = PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(this->getPlayerContext().getCurrentTime()));
+	if (m_pBoxCurrentTime == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to convert the current time into a PyFloat.\n";
 		return false;
 	}
-	if (PyObject_SetAttrString(m_box, "_currentTime", m_boxCurrentTime) == -1)
+	if (PyObject_SetAttrString(m_pBox, "_currentTime", m_pBoxCurrentTime) == -1)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to initialize \"box._currentTime\" attribute.\n";
 		return false;
 	}
 
-	if (!PyObject_HasAttrString(m_box, "realInitialize"))
+	if (!PyObject_HasAttrString(m_pBox, "realInitialize"))
 	{
 		this->getLogManager() << LogLevel_Error << "No realInitialize.\n";
 		return false;
 	}
 
-	m_boxInitialize = PyObject_GetAttrString(m_box, "realInitialize");
-	if (m_boxInitialize == nullptr) { this->getLogManager() << LogLevel_ImportantWarning << "Failed to load \"box.realInitialize\" function.\n"; }
-	else if (!PyCallable_Check(m_boxInitialize)) { this->getLogManager() << LogLevel_ImportantWarning << "\"box.realInitialize\" is not callable.\n"; }
-
-	m_boxProcess = PyObject_GetAttrString(m_box, "realProcess");
-	if (m_boxProcess == nullptr) { this->getLogManager() << LogLevel_ImportantWarning << "Failed to load \"box.realProcess\" function.\n"; }
-	else if (!PyCallable_Check(m_boxProcess)) { this->getLogManager() << LogLevel_ImportantWarning << "\"box.realProcess\" is not callable.\n"; }
-
-	m_boxUninitialize = PyObject_GetAttrString(m_box, "realUninitialize");
-	if (m_boxUninitialize == nullptr) { this->getLogManager() << LogLevel_ImportantWarning << "Failed to load \"box.realUninitialize\" function.\n"; }
-	else if (!PyCallable_Check(m_boxUninitialize)) { this->getLogManager() << LogLevel_ImportantWarning << "\"box.realUninitialize\" is not callable.\n"; }
-
-	//Execute the initialize function defined in the python user script
-	if (m_boxInitialize && PyCallable_Check(m_boxInitialize))
+	//New reference
+	m_pBoxInitialize = PyObject_GetAttrString(m_pBox, "realInitialize");
+	if (m_pBoxInitialize == NULL)
 	{
-		PyObject* res          = PyObject_CallObject(m_boxInitialize, nullptr);
-		const bool stdoutError = logSysStdout(); // souci car la si l'init plante pas de sortie au bon endroit
-		const bool stderrError = logSysStderr();
-		if ((res == nullptr) || (!stdoutError) || (!stderrError))
-		{
-			if (res == nullptr) { this->getLogManager() << LogLevel_Error << "Failed to call \"box.__initialize\" function.\n"; }
-			if (!stdoutError) { this->getLogManager() << LogLevel_Error << "logSysStdout() failed during box.__initialization.\n"; }
-			if (!stderrError) { this->getLogManager() << LogLevel_Error << "logSysStderr() failed during box.__initialization.\n"; }
-			Py_CLEAR(res);
-			return false;
-		}
-		Py_CLEAR(res);
+		this->getLogManager() << LogLevel_ImportantWarning << "Failed to load \"box.realInitialize\" function.\n";
+	}
+	else if (!PyCallable_Check(m_pBoxInitialize))
+	{
+		this->getLogManager() << LogLevel_ImportantWarning << "\"box.realInitialize\" is not callable.\n";
 	}
 
-	m_initializeSucceeded = true;
+	//New reference
+	m_pBoxProcess = PyObject_GetAttrString(m_pBox, "realProcess");
+	if (m_pBoxProcess == NULL)
+	{
+		this->getLogManager() << LogLevel_ImportantWarning << "Failed to load \"box.realProcess\" function.\n";
+	}
+	else if (!PyCallable_Check(m_pBoxProcess))
+	{
+		this->getLogManager() << LogLevel_ImportantWarning << "\"box.realProcess\" is not callable.\n";
+	}
+
+	//New reference
+	m_pBoxUninitialize = PyObject_GetAttrString(m_pBox, "realUninitialize");
+	if (m_pBoxUninitialize == NULL)
+	{
+		this->getLogManager() << LogLevel_ImportantWarning << "Failed to load \"box.realUninitialize\" function.\n";
+	}
+	else if (!PyCallable_Check(m_pBoxUninitialize))
+	{
+		this->getLogManager() << LogLevel_ImportantWarning << "\"box.realUninitialize\" is not callable.\n";
+	}
+
+	//Execute the initialize function defined in the python user script
+	if (m_pBoxInitialize && PyCallable_Check(m_pBoxInitialize))
+	{
+		//New reference
+		PyObject *l_pResult = PyObject_CallObject(m_pBoxInitialize, NULL);
+		OpenViBE::boolean l_bLogSysStdoutError = logSysStdout(); // souci car la si l'init plante pas de sortie au bon endroit
+		OpenViBE::boolean l_bLogSysStderrError = logSysStderr();
+		if ((l_pResult == NULL) || (!l_bLogSysStdoutError) || (!l_bLogSysStderrError))
+		{
+			if(l_pResult == NULL)
+			{
+				this->getLogManager() << LogLevel_Error << "Failed to call \"box.__initialize\" function.\n";
+			}
+			if(!l_bLogSysStdoutError)
+			{
+				this->getLogManager() << LogLevel_Error << "logSysStdout() failed during box.__initialization.\n";
+			}
+			if(!l_bLogSysStderrError)
+			{
+				this->getLogManager() << LogLevel_Error << "logSysStderr() failed during box.__initialization.\n";
+			}
+			Py_CLEAR(l_pResult);
+			return false;
+		}
+		Py_CLEAR(l_pResult);
+	}
+
+	m_bInitializeSucceeded = true;
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::uninitialize()
+OpenViBE::boolean CBoxAlgorithmNewBoxPattern::uninitialize(void)
 {
-	for (size_t i = 0; i < m_decoders.size(); ++i)
+	for(uint32 i = 0; i < m_vDecoders.size(); i++)
 	{
-		m_decoders[i]->uninitialize();
-		delete m_decoders[i];
+		m_vDecoders[i]->uninitialize();
+		delete m_vDecoders[i];
 	}
-	m_decoders.clear();
+	m_vDecoders.clear();
 
-	for (size_t i = 0; i < m_encoders.size(); ++i)
+	for(uint32 i = 0; i < m_vEncoders.size(); i++)
 	{
-		m_encoders[i]->uninitialize();
-		delete m_encoders[i];
+		m_vEncoders[i]->uninitialize();
+		delete m_vEncoders[i];
 	}
-	m_encoders.clear();
+	m_vEncoders.clear();
 
-	if (m_initializeSucceeded)	// we call this uninit only if init had succeeded Execute the uninitialize function defined in the python script
-	{	// il y a un souci ici si le script n'a pas ete charge ca ne passe pas
-		if (m_boxUninitialize && PyCallable_Check(m_boxUninitialize))
+	if (m_bInitializeSucceeded)
+	{ // we call this uninit only if init had succeeded
+		//Execute the uninitialize function defined in the python script
+		// il y a un souci ici si le script n'a pas ete charge ca ne passe pas
+		if (m_pBoxUninitialize && PyCallable_Check(m_pBoxUninitialize))
 		{
-			PyObject* result       = PyObject_CallObject(m_boxUninitialize, nullptr);
-			const bool stdoutError = logSysStdout();
-			const bool stderrError = logSysStderr();
-			if ((result == nullptr) || (!stdoutError) || (!stderrError))
+			//New reference
+			PyObject *l_pResult = PyObject_CallObject(m_pBoxUninitialize, NULL);
+			OpenViBE::boolean l_bLogSysStdoutError = logSysStdout();
+			OpenViBE::boolean l_bLogSysStderrError = logSysStderr();
+			if ((l_pResult == NULL) || (!l_bLogSysStdoutError) || (!l_bLogSysStderrError))
 			{
-				if (result == nullptr) { this->getLogManager() << LogLevel_Error << "Failed to call \"box.__uninitialize\" function.\n"; }
-				if (!stdoutError) { this->getLogManager() << LogLevel_Error << "logSysStdout() failed during box.__uninitialization.\n"; }
-				if (!stderrError) { this->getLogManager() << LogLevel_Error << "logSysStderr() failed during box.__uninitialization.\n"; }
-				Py_CLEAR(result);
+				if(l_pResult == NULL)
+				{
+					this->getLogManager() << LogLevel_Error << "Failed to call \"box.__uninitialize\" function.\n";
+				}
+				if(!l_bLogSysStdoutError)
+				{
+					this->getLogManager() << LogLevel_Error << "logSysStdout() failed during box.__uninitialization.\n";
+				}
+				if(!l_bLogSysStderrError)
+				{
+					this->getLogManager() << LogLevel_Error << "logSysStderr() failed during box.__uninitialization.\n";
+				}
+				Py_CLEAR(l_pResult);
 				return false;
 			}
-			Py_CLEAR(result);
+			Py_CLEAR(l_pResult);
 		}
 	}
 
 	// Note: Py_CLEAR is safe to use on NULL pointers, so we can clean everything here
-	Py_CLEAR(m_box);
-	Py_CLEAR(m_boxInput);
-	Py_CLEAR(m_boxOutput);
-	Py_CLEAR(m_boxCurrentTime);
-	Py_CLEAR(m_boxSetting);
-	Py_CLEAR(m_boxInitialize);
-	Py_CLEAR(m_boxProcess);
-	Py_CLEAR(m_boxUninitialize);
+	Py_CLEAR(m_pBox);
+	Py_CLEAR(m_pBoxInput);
+	Py_CLEAR(m_pBoxOutput);
+	Py_CLEAR(m_pBoxCurrentTime);
+	Py_CLEAR(m_pBoxSetting);
+	Py_CLEAR(m_pBoxInitialize);
+	Py_CLEAR(m_pBoxProcess);
+	Py_CLEAR(m_pBoxUninitialize);
 
 	// Py_Initialize() and Py_Finalize() are called in ovp_main.cpp, we never uninitialize Python here
 
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::processClock(CMessageClock& /*messageClock*/)
+OpenViBE::boolean CBoxAlgorithmNewBoxPattern::processClock(CMessageClock& rMessageClock)
+{
+	this->getLogManager() << LogLevel_Trace << "Received clock message at time " << rMessageClock.getTime() << "\n";
+	getBoxAlgorithmContext()->markAlgorithmAsReadyToProcess();
+	return true;
+}
+
+OpenViBE::boolean CBoxAlgorithmNewBoxPattern::processInput(uint32 ui32InputIndex)
 {
 	getBoxAlgorithmContext()->markAlgorithmAsReadyToProcess();
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::processInput(const size_t /*index*/)
+OpenViBE::boolean CBoxAlgorithmNewBoxPattern::transferStreamedMatrixInputChunksToPython(const uint32 input_index)
 {
-	getBoxAlgorithmContext()->markAlgorithmAsReadyToProcess();
-	return true;
-}
+	IBoxIO& l_rDynamicBoxContext=this->getDynamicBoxContext();
 
-bool CBoxAlgorithmNewBoxPattern::transferStreamedMatrixInputChunksToPython(const size_t index)
-{
-	IBoxIO& boxCtx = this->getDynamicBoxContext();
-
-	if (!PyList_Check(m_boxInput))
+	if (!PyList_Check(m_pBoxInput))
 	{
 		this->getLogManager() << LogLevel_Error << "box.input must be a list.\n";
 		return false;
 	}
 
-	PyObject* pyBuffer = PyList_GetItem(m_boxInput, Py_ssize_t(index));
-	if (pyBuffer == nullptr)
+	//Borrowed reference
+	PyObject *l_pBuffer = PyList_GetItem(m_pBoxInput, (Py_ssize_t) input_index);
+	if (l_pBuffer == NULL)
 	{
-		this->getLogManager() << LogLevel_Error << "Failed to get box.input[" << index << "].\n";
+		this->getLogManager() << LogLevel_Error << "Failed to get box.input[" << input_index << "].\n";
 		return false;
 	}
 	//Expose input streamed matrix chunks to python
-	for (size_t idx = 0; idx < boxCtx.getInputChunkCount(index); ++idx)
+	for(uint32 chunk_index=0; chunk_index < l_rDynamicBoxContext.getInputChunkCount(input_index); chunk_index++)
 	{
-		m_decoders[index]->decode(idx);
+		m_vDecoders[input_index]->decode(chunk_index);
 
-		if (m_decoders[index]->isHeaderReceived())
+		if (m_vDecoders[input_index]->isHeaderReceived())
 		{
-			IMatrix* matrix = dynamic_cast<TStreamedMatrixDecoder<CBoxAlgorithmNewBoxPattern>*>(m_decoders[index])->getOutputMatrix();
-			size_t nDim     = matrix->getDimensionCount();
+			uint32 l_ui32DimensionCount, l_ui32DimensionSize;
+			IMatrix* l_pMatrix = ( (TStreamedMatrixDecoder <CBoxAlgorithmNewBoxPattern> *) m_vDecoders[input_index] )->getOutputMatrix();
+			l_ui32DimensionCount = l_pMatrix->getDimensionCount();
 
-			PyObject* pySizeDim = PyList_New(nDim);
-			if (pySizeDim == nullptr)
+			//New reference
+			PyObject *l_pDimensionSize = PyList_New(l_ui32DimensionCount);
+			if (l_pDimensionSize == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new list pySizeDim.\n";
+				this->getLogManager() << LogLevel_Error << "Failed to create a new list l_pDimensionSize.\n";
 				return false;
 			}
 
-			PyObject* pyLabelDim = PyList_New(0);
-			if (pyLabelDim == nullptr)
+			//New reference
+			PyObject *l_pDimensionLabel = PyList_New(0);
+			if (l_pDimensionLabel == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new list pyLabelDim.\n";
-				Py_CLEAR(pySizeDim);
+				this->getLogManager() << LogLevel_Error << "Failed to create a new list l_pDimensionLabel.\n";
+				Py_CLEAR(l_pDimensionSize);
 				return false;
 			}
 
-			for (size_t i = 0; i < nDim; ++i)
+			for (uint32 i=0; i<l_ui32DimensionCount; i++)
 			{
-				size_t dimSize = matrix->getDimensionSize(i);
-				if (PyList_SetItem(pySizeDim, i, PyLong_FromLong(dimSize)) == -1)
+				l_ui32DimensionSize = l_pMatrix->getDimensionSize(i);
+				if (PyList_SetItem(l_pDimensionSize, i, PyInt_FromLong(l_ui32DimensionSize)) == -1)
 				{
 					this->getLogManager() << LogLevel_Error << "Failed to set item " << i << " in dimension size list.\n";
-					Py_CLEAR(pySizeDim);
-					Py_CLEAR(pyLabelDim);
+					Py_CLEAR(l_pDimensionSize);
+					Py_CLEAR(l_pDimensionLabel);
 					return false;
 				}
-				for (size_t j = 0; j < dimSize; ++j)
+				for (uint32 j=0; j<l_ui32DimensionSize; j++)
 				{
-					if (PyList_Append(pyLabelDim, PyUnicode_FromString(matrix->getDimensionLabel(i, j))) == -1)
+					if (PyList_Append(l_pDimensionLabel, PyString_FromString(l_pMatrix->getDimensionLabel(i, j))) == -1)
 					{
-						this->getLogManager() << LogLevel_Error << "Failed to append \"" << matrix->getDimensionLabel(i, j) << "\" in dimension label list.\n";
-						Py_CLEAR(pySizeDim);
-						Py_CLEAR(pyLabelDim);
+						this->getLogManager() << LogLevel_Error << "Failed to append \"" << l_pMatrix->getDimensionLabel(i, j) << "\" in dimension label list.\n";
+						Py_CLEAR(l_pDimensionSize);
+						Py_CLEAR(l_pDimensionLabel);
 						return false;
 					}
 				}
 			}
 
-			PyObject* pyArg = PyTuple_New(4);
-			if (pyArg == nullptr)
+			//New reference
+			PyObject *l_pArg = PyTuple_New(4);
+			if (l_pArg == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
-				Py_CLEAR(pySizeDim);
-				Py_CLEAR(pyLabelDim);
+				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple l_pArg.\n";
+				Py_CLEAR(l_pDimensionSize);
+				Py_CLEAR(l_pDimensionLabel);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 0, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkStartTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
-				Py_CLEAR(pySizeDim);
-				Py_CLEAR(pyLabelDim);
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pDimensionSize);
+				Py_CLEAR(l_pDimensionLabel);
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 1, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkEndTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
-				Py_CLEAR(pySizeDim);
-				Py_CLEAR(pyLabelDim);
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pDimensionSize);
+				Py_CLEAR(l_pDimensionLabel);
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 2, pySizeDim) != 0)
+			if (PyTuple_SetItem(l_pArg, 2, l_pDimensionSize) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 2 (dimension size) in tuple pyArg.\n";
-				Py_CLEAR(pySizeDim);
-				Py_CLEAR(pyLabelDim);
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 2 (dimension size) in tuple l_pArg.\n";
+				Py_CLEAR(l_pDimensionSize);
+				Py_CLEAR(l_pDimensionLabel);
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 3, pyLabelDim) != 0)
+			if (PyTuple_SetItem(l_pArg, 3, l_pDimensionLabel) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 3 (dimension label) in tuple pyArg.\n";
-				Py_CLEAR(pySizeDim);
-				Py_CLEAR(pyLabelDim);
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 3 (dimension label) in tuple l_pArg.\n";
+				Py_CLEAR(l_pDimensionSize);
+				Py_CLEAR(l_pDimensionLabel);
+				Py_CLEAR(l_pArg);
 				return false;
 			}
+			//New reference
+			PyObject *l_pOVStreamedMatrixHeader = PyObject_Call(CBoxAlgorithmPython::m_pOVStreamedMatrixHeader, l_pArg, NULL);
+			if (l_pOVStreamedMatrixHeader == NULL)
+			{
+				this->getLogManager() << LogLevel_Error << "Failed to create a new OVStreamedMatrixHeader l_pOVStreamedMatrixHeader.\n";
+				Py_CLEAR(l_pDimensionSize);
+				Py_CLEAR(l_pDimensionLabel);
+				Py_CLEAR(l_pArg);
+				return false;
+			}
+			Py_CLEAR(l_pDimensionSize);
+			Py_CLEAR(l_pDimensionLabel);
+			Py_CLEAR(l_pArg);
 
-			PyObject* pyMatrixHeader = PyObject_Call(m_matrixHeader, pyArg, nullptr);
-			if (pyMatrixHeader == nullptr)
+			//New reference
+			PyObject* l_pMethodToCall = PyString_FromString("append");
+			//New reference
+			PyObject *l_pResult = PyObject_CallMethodObjArgs(l_pBuffer, l_pMethodToCall, l_pOVStreamedMatrixHeader, NULL);
+			Py_CLEAR(l_pMethodToCall);
+			if (l_pResult == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new OVStreamedMatrixHeader pyMatrixHeader.\n";
-				Py_CLEAR(pySizeDim);
-				Py_CLEAR(pyLabelDim);
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to append chunk to box.input[" << input_index << "].\n";
+				Py_CLEAR(l_pOVStreamedMatrixHeader);
 				return false;
 			}
-			Py_CLEAR(pySizeDim);
-			Py_CLEAR(pyLabelDim);
-			Py_CLEAR(pyArg);
-
-			if (!appendToPyObject(pyMatrixHeader, pyBuffer))
-			{
-				this->getLogManager() << LogLevel_Error << "Failed to append an OVStreamedMatrixHeader to box.input[" << index << "].\n";
-				Py_CLEAR(pyMatrixHeader);
-				return false;
-			}
-			Py_CLEAR(pyMatrixHeader);
+			Py_CLEAR(l_pResult);
+			Py_CLEAR(l_pOVStreamedMatrixHeader);
 		}
 
-		if (m_decoders[index]->isBufferReceived())
+		if (m_vDecoders[input_index]->isBufferReceived())
 		{
-			PyObject* pyArg = PyTuple_New(3);
-			if (pyArg == nullptr)
+			//New reference
+			PyObject *l_pArg = PyTuple_New(3);
+			if (l_pArg == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
+				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple l_pArg.\n";
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 0, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkStartTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 1, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkEndTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 2, PyList_New(0)) != 0)
+			if (PyTuple_SetItem(l_pArg, 2, PyList_New(0)) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 2 (bufferElements) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 2 (bufferElements) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
 
-			PyObject* pyMatrixBuffer = PyObject_Call(m_matrixBuffer, pyArg, nullptr);
-			if (pyMatrixBuffer == nullptr)
+			//New reference
+			PyObject *l_pOVStreamedMatrixBuffer = PyObject_Call(CBoxAlgorithmPython::m_pOVStreamedMatrixBuffer, l_pArg, NULL);
+			if (l_pOVStreamedMatrixBuffer == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new OVStreamedMatrixBuffer pyMatrixBuffer.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to create a new OVStreamedMatrixBuffer l_pOVStreamedMatrixBuffer.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			Py_CLEAR(pyArg);
+			Py_CLEAR(l_pArg);
 
-			IMatrix* matrix    = dynamic_cast<TStreamedMatrixDecoder<CBoxAlgorithmNewBoxPattern>*>(m_decoders[index])->getOutputMatrix();
-			double* bufferBase = matrix->getBuffer();
-			for (size_t i = 0; i < matrix->getBufferElementCount(); ++i)
+			IMatrix* l_pMatrix = ( (TStreamedMatrixDecoder <CBoxAlgorithmNewBoxPattern> *) m_vDecoders[input_index] )->getOutputMatrix();
+			float64* l_pBufferBase = l_pMatrix->getBuffer();
+			for (uint32 element_index = 0; element_index < l_pMatrix->getBufferElementCount(); element_index++)
 			{
-				if (PyList_Append(pyMatrixBuffer, PyFloat_FromDouble(bufferBase[i])) == -1)
+				if (PyList_Append(l_pOVStreamedMatrixBuffer, PyFloat_FromDouble(l_pBufferBase[element_index])) == -1)
 				{
-					this->getLogManager() << LogLevel_Error << "Failed to append element " << i << " to pyMatrixBuffer.\n";
-					Py_CLEAR(pyMatrixBuffer);
+					this->getLogManager() << LogLevel_Error << "Failed to append element " << element_index << " to l_pOVStreamedMatrixBuffer.\n";
+					Py_CLEAR(l_pOVStreamedMatrixBuffer);
 					return false;
 				}
 			}
 
-			if (!appendToPyObject(pyMatrixBuffer, pyBuffer))
+			//New reference
+			PyObject* l_pMethodToCall = PyString_FromString("append");
+			//New reference
+			PyObject *l_pResult = PyObject_CallMethodObjArgs(l_pBuffer, l_pMethodToCall, l_pOVStreamedMatrixBuffer, NULL);
+			Py_CLEAR(l_pMethodToCall);
+			if (l_pResult == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to append an OVStreamedMatrixBuffer to box.input[" << index << "].\n";
-				Py_CLEAR(pyMatrixBuffer);
+				this->getLogManager() << LogLevel_Error << "Failed to append an OVStreamedMatrixBuffer to box.input[" << input_index << "].\n";
+				Py_CLEAR(l_pOVStreamedMatrixBuffer);
 				return false;
 			}
-			Py_CLEAR(pyMatrixBuffer);
+			Py_CLEAR(l_pResult);
+			Py_CLEAR(l_pOVStreamedMatrixBuffer);
 		}
 
-		if (m_decoders[index]->isEndReceived())
+		if (m_vDecoders[input_index]->isEndReceived())
 		{
-			PyObject* pyArg = PyTuple_New(2);
-			if (pyArg == nullptr)
+			//New reference
+			PyObject *l_pArg = PyTuple_New(2);
+			if (l_pArg == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
+				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple l_pArg.\n";
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 0, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkStartTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 1, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkEndTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
 
-			PyObject* pyMatrixEnd = PyObject_Call(m_matrixEnd, pyArg, nullptr);
-			if (pyMatrixEnd == nullptr)
+			//New reference
+			PyObject *l_pOVStreamedMatrixEnd = PyObject_Call(CBoxAlgorithmPython::m_pOVStreamedMatrixEnd, l_pArg, NULL);
+			if (l_pOVStreamedMatrixEnd == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new OVStreamedMatrixEnd pyMatrixEnd.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to create a new OVStreamedMatrixEnd l_pOVStreamedMatrixEnd.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			Py_CLEAR(pyArg);
+			Py_CLEAR(l_pArg);
 
-			if (!appendToPyObject(pyMatrixEnd, pyBuffer))
+			//New reference
+			PyObject* l_pMethodToCall = PyString_FromString("append");
+			//New reference
+			PyObject *l_pResult = PyObject_CallMethodObjArgs(l_pBuffer, l_pMethodToCall, l_pOVStreamedMatrixEnd, NULL);
+			Py_CLEAR(l_pMethodToCall);
+			if (l_pResult == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to append an OVStreamedMatrixEnd to box.input[" << index << "].\n";
-				Py_CLEAR(pyMatrixEnd);
+				this->getLogManager() << LogLevel_Error << "Failed to append an OVStreamedMatrixEnd to box.input[" << input_index << "].\n";
+				Py_CLEAR(l_pOVStreamedMatrixEnd);
 				return false;
 			}
-			Py_CLEAR(pyMatrixEnd);
+			Py_CLEAR(l_pResult);
+			Py_CLEAR(l_pOVStreamedMatrixEnd);
 		}
 	}
 
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::transferStreamedMatrixOutputChunksFromPython(const size_t index)
+OpenViBE::boolean CBoxAlgorithmNewBoxPattern::transferStreamedMatrixOutputChunksFromPython(const uint32 output_index)
 {
-	IBoxIO& boxCtx  = this->getDynamicBoxContext();
-	IMatrix* matrix = dynamic_cast<TStreamedMatrixEncoder<CBoxAlgorithmNewBoxPattern>*>(m_encoders[index])->getInputMatrix();
+	IBoxIO& l_rDynamicBoxContext=this->getDynamicBoxContext();
 
-	if (!PyList_Check(m_boxOutput))
+	IMatrix* l_pMatrix = ( (TStreamedMatrixEncoder <CBoxAlgorithmNewBoxPattern> *) m_vEncoders[output_index] )->getInputMatrix();
+
+	if (!PyList_Check(m_pBoxOutput))
 	{
 		this->getLogManager() << LogLevel_Error << "box.output must be a list.\n";
 		return false;
 	}
 
-	PyObject* pyBuffer = PyList_GetItem(m_boxOutput, Py_ssize_t(index));
-	if (pyBuffer == nullptr)
+	//Borrowed reference
+	PyObject *l_pBuffer = PyList_GetItem(m_pBoxOutput, (Py_ssize_t) output_index);
+	if (l_pBuffer == NULL)
 	{
-		this->getLogManager() << LogLevel_Error << "Failed to get box.output[" << index << "].\n";
+		this->getLogManager() << LogLevel_Error << "Failed to get box.output[" << output_index << "].\n";
 		return false;
 	}
 
-	size_t len;
-	if (!getLenFromPyObject(pyBuffer, len))
+	//New reference
+	PyObject* l_pBufferLen = PyObject_CallMethod(l_pBuffer, (char *) "__len__", NULL);
+	if (l_pBufferLen == NULL)
 	{
-		this->getLogManager() << LogLevel_Error << "Failed to get box.output[" << index << "].__len__().\n";
+		this->getLogManager() << LogLevel_Error << "Failed to get box.output["<< output_index << "].__len__().\n";
 		return false;
 	}
 
-	for (size_t idx = 0; idx < len; ++idx)
+	uint32 l_ui32OutputLen = PyInt_AsUnsignedLongMask(l_pBufferLen);
+	Py_CLEAR(l_pBufferLen);
+	for (uint32 chunk_index=0; chunk_index < l_ui32OutputLen; chunk_index++)
 	{
-		PyObject* pyChunk = PyObject_CallMethod(pyBuffer, "pop", nullptr);
-		if (pyChunk == nullptr)
+		//New reference
+		PyObject* l_pOVChunk = PyObject_CallMethod(l_pBuffer, (char *) "pop", NULL);
+		if (l_pOVChunk == NULL)
 		{
-			this->getLogManager() << LogLevel_Error << "Failed to get item " << idx << " of box.output[" << index << "].\n";
+			this->getLogManager() << LogLevel_Error << "Failed to get item " << chunk_index << " of box.output["<< output_index << "].\n";
 			return false;
 		}
 
-		if (PyObject_IsInstance(pyChunk, m_matrixHeader) == 1)
+		if (PyObject_IsInstance(l_pOVChunk, CBoxAlgorithmPython::m_pOVStreamedMatrixHeader) == 1)
 		{
-			if (!setMatrixInfosFromPyObject(pyChunk, matrix))
+			uint32 l_ui32DimensionCount, l_ui32DimensionSize, l_ui32DimensionIndex, l_ui32DimensionEntryIndex;
+
+			//New reference
+			PyObject *l_pDimensionCount = PyObject_CallMethod(l_pOVChunk, (char *) "getDimensionCount", NULL);
+			if (l_pDimensionCount == NULL)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to call chunk's getDimensionCount method.\n";
-				Py_CLEAR(pyChunk);
+				Py_CLEAR(l_pOVChunk);
 				return false;
 			}
+			l_ui32DimensionCount = PyInt_AsUnsignedLongMask(l_pDimensionCount);
+			l_pMatrix->setDimensionCount(l_ui32DimensionCount);
+			Py_CLEAR(l_pDimensionCount);
 
-			m_encoders[index]->encodeHeader();
+			//New reference
+			PyObject *l_pDimensionSize = PyObject_GetAttrString(l_pOVChunk, "dimensionSizes");
 
-			uint64_t startTime, endTime;
-			getTimesFromPyObject(pyChunk, startTime, endTime);
+			//New reference
+			PyObject *l_pDimensionLabel = PyObject_GetAttrString(l_pOVChunk, "dimensionLabels");
 
-			boxCtx.markOutputAsReadyToSend(index, startTime, endTime);
+			uint32 offset = 0;
+			for (l_ui32DimensionIndex=0; l_ui32DimensionIndex < l_ui32DimensionCount; l_ui32DimensionIndex++)
+			{
+				l_ui32DimensionSize = PyInt_AsUnsignedLongMask(PyList_GetItem(l_pDimensionSize, (Py_ssize_t) l_ui32DimensionIndex));
+				l_pMatrix->setDimensionSize(l_ui32DimensionIndex, l_ui32DimensionSize);
+				for (l_ui32DimensionEntryIndex=0; l_ui32DimensionEntryIndex < l_ui32DimensionSize; l_ui32DimensionEntryIndex++)
+				{
+					l_pMatrix->setDimensionLabel(l_ui32DimensionIndex, l_ui32DimensionEntryIndex, PyString_AsString(PyList_GetItem(l_pDimensionLabel, offset + l_ui32DimensionEntryIndex)));
+				}
+				offset = offset + l_ui32DimensionSize;
+			}
+			Py_CLEAR(l_pDimensionSize);
+			Py_CLEAR(l_pDimensionLabel);
+
+			m_vEncoders[output_index]->encodeHeader();
+
+			//New reference
+			PyObject *l_pStartTime = PyObject_GetAttrString(l_pOVChunk, "startTime");
+			uint64 l_ui64StartTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pStartTime));
+			Py_CLEAR(l_pStartTime);
+
+			//New reference
+			PyObject *l_pEndTime = PyObject_GetAttrString(l_pOVChunk, "endTime");
+			uint64 l_ui64EndTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pEndTime));
+			Py_CLEAR(l_pEndTime);
+
+			l_rDynamicBoxContext.markOutputAsReadyToSend(output_index, l_ui64StartTime, l_ui64EndTime);
 		}
 
-		else if (PyObject_IsInstance(pyChunk, m_matrixBuffer) == 1)
+		else if (PyObject_IsInstance(l_pOVChunk, CBoxAlgorithmPython::m_pOVStreamedMatrixBuffer) == 1)
 		{
-			double* bufferBase = matrix->getBuffer();
-			for (size_t i = 0; i < matrix->getBufferElementCount(); ++i) { bufferBase[i] = PyFloat_AsDouble(PyList_GetItem(pyChunk, i)); }
+			float64* l_pBufferBase = l_pMatrix->getBuffer();
+			for (uint32 i=0; i < l_pMatrix->getBufferElementCount(); i++)
+			{
+				l_pBufferBase[i] = PyFloat_AsDouble(PyList_GetItem(l_pOVChunk, i));
+			}
 
-			uint64_t startTime, endTime;
-			getTimesFromPyObject(pyChunk, startTime, endTime);
+			//New reference
+			PyObject *l_pStartTime = PyObject_GetAttrString(l_pOVChunk, "startTime");
+			uint64 l_ui64StartTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pStartTime));
+			Py_CLEAR(l_pStartTime);
 
-			m_encoders[index]->encodeBuffer();
-			boxCtx.markOutputAsReadyToSend(index, startTime, endTime);
+			//New reference
+			PyObject *l_pEndTime = PyObject_GetAttrString(l_pOVChunk, "endTime");
+			uint64 l_ui64EndTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pEndTime));
+			Py_CLEAR(l_pEndTime);
+
+			m_vEncoders[output_index]->encodeBuffer();
+			l_rDynamicBoxContext.markOutputAsReadyToSend(output_index, l_ui64StartTime, l_ui64EndTime);
 		}
 
-		else if (PyObject_IsInstance(pyChunk, m_matrixEnd) == 1)
+		else if (PyObject_IsInstance(l_pOVChunk, CBoxAlgorithmPython::m_pOVStreamedMatrixEnd) == 1)
 		{
-			uint64_t startTime, endTime;
-			getTimesFromPyObject(pyChunk, startTime, endTime);
+			//New reference
+			PyObject *l_pStartTime = PyObject_GetAttrString(l_pOVChunk, "startTime");
+			uint64 l_ui64StartTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pStartTime));
+			Py_CLEAR(l_pStartTime);
 
-			m_encoders[index]->encodeEnd();
-			boxCtx.markOutputAsReadyToSend(index, startTime, endTime);
+			//New reference
+			PyObject *l_pEndTime = PyObject_GetAttrString(l_pOVChunk, "endTime");
+			uint64 l_ui64EndTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pEndTime));
+			Py_CLEAR(l_pEndTime);
+
+			m_vEncoders[output_index]->encodeEnd();
+			l_rDynamicBoxContext.markOutputAsReadyToSend(output_index, l_ui64StartTime, l_ui64EndTime);
 		}
 
 		else
 		{
-			this->getLogManager() << LogLevel_Error << "Unexpected object type for item " << idx << " in box.output[" << index << "].\n";
-			Py_CLEAR(pyChunk);
+			this->getLogManager() << LogLevel_Error << "Unexpected object type for item " << chunk_index << " in box.output["<< output_index << "].\n";
+			Py_CLEAR(l_pOVChunk);
 			return false;
 		}
 
-		Py_CLEAR(pyChunk);
+		Py_CLEAR(l_pOVChunk);
 	}
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::transferSignalInputChunksToPython(const size_t index)
+OpenViBE::boolean CBoxAlgorithmNewBoxPattern::transferSignalInputChunksToPython(const uint32 input_index)
 {
-	IBoxIO& boxCtx = this->getDynamicBoxContext();
+	IBoxIO& l_rDynamicBoxContext=this->getDynamicBoxContext();
 
-	if (!PyList_Check(m_boxInput))
+	if (!PyList_Check(m_pBoxInput))
 	{
 		this->getLogManager() << LogLevel_Error << "box.input must be a list.\n";
 		return false;
 	}
 
-	PyObject* pyBuffer = PyList_GetItem(m_boxInput, Py_ssize_t(index));
-	if (pyBuffer == nullptr)
+	//Borrowed reference
+	PyObject *l_pBuffer = PyList_GetItem(m_pBoxInput, (Py_ssize_t) input_index);
+	if (l_pBuffer == NULL)
 	{
-		this->getLogManager() << LogLevel_Error << "Failed to get box.input[" << index << "].\n";
+		this->getLogManager() << LogLevel_Error << "Failed to get box.input[" << input_index << "].\n";
 		return false;
 	}
 	//Expose input signal chunks to python
-	for (size_t idx = 0; idx < boxCtx.getInputChunkCount(index); ++idx)
+	for(uint32 chunk_index=0; chunk_index < l_rDynamicBoxContext.getInputChunkCount(input_index); chunk_index++)
 	{
-		m_decoders[index]->decode(idx);
+		m_vDecoders[input_index]->decode(chunk_index);
 
-		if (m_decoders[index]->isHeaderReceived())
+		if (m_vDecoders[input_index]->isHeaderReceived())
 		{
-			IMatrix* matrix = dynamic_cast<TSignalDecoder<CBoxAlgorithmNewBoxPattern> *>(m_decoders[index])->getOutputMatrix();
-			size_t nDim     = matrix->getDimensionCount();
+			uint32 l_ui32DimensionCount, l_ui32DimensionSize;
+			IMatrix* l_pMatrix = ( (TSignalDecoder <CBoxAlgorithmNewBoxPattern> *) m_vDecoders[input_index] )->getOutputMatrix();
+			l_ui32DimensionCount = l_pMatrix->getDimensionCount();
 
-			PyObject* pySizeDim = PyList_New(nDim);
-			if (pySizeDim == nullptr)
+			//New reference
+			PyObject *l_pDimensionSize = PyList_New(l_ui32DimensionCount);
+			if (l_pDimensionSize == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new list pySizeDim.\n";
+				this->getLogManager() << LogLevel_Error << "Failed to create a new list l_pDimensionSize.\n";
 				return false;
 			}
 
-			PyObject* pyLabelDim = PyList_New(0);
-			if (pyLabelDim == nullptr)
+			//New reference
+			PyObject *l_pDimensionLabel = PyList_New(0);
+			if (l_pDimensionLabel == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new list pyLabelDim.\n";
-				Py_CLEAR(pySizeDim);
+				this->getLogManager() << LogLevel_Error << "Failed to create a new list l_pDimensionLabel.\n";
+				Py_CLEAR(l_pDimensionSize);
 				return false;
 			}
 
-			for (size_t i = 0; i < nDim; ++i)
+			for (uint32 i=0; i<l_ui32DimensionCount; i++)
 			{
-				size_t dimSize = matrix->getDimensionSize(i);
-				if (PyList_SetItem(pySizeDim, i, PyLong_FromLong(dimSize)) == -1)
+				l_ui32DimensionSize = l_pMatrix->getDimensionSize(i);
+				if (PyList_SetItem(l_pDimensionSize, i, PyInt_FromLong(l_ui32DimensionSize)) == -1)
 				{
 					this->getLogManager() << LogLevel_Error << "Failed to set item " << i << " in dimension size list.\n";
-					Py_CLEAR(pySizeDim);
-					Py_CLEAR(pyLabelDim);
+					Py_CLEAR(l_pDimensionSize);
+					Py_CLEAR(l_pDimensionLabel);
 					return false;
 				}
-				for (size_t j = 0; j < dimSize; ++j)
+				for (uint32 j=0; j<l_ui32DimensionSize; j++)
 				{
-					if (PyList_Append(pyLabelDim, PyUnicode_FromString(matrix->getDimensionLabel(i, j))) == -1)
+					if (PyList_Append(l_pDimensionLabel, PyString_FromString(l_pMatrix->getDimensionLabel(i, j))) == -1)
 					{
-						this->getLogManager() << LogLevel_Error << "Failed to append \"" << matrix->getDimensionLabel(i, j) << "\" in dimension label list.\n";
-						Py_CLEAR(pySizeDim);
-						Py_CLEAR(pyLabelDim);
+						this->getLogManager() << LogLevel_Error << "Failed to append \"" << l_pMatrix->getDimensionLabel(i, j) << "\" in dimension label list.\n";
+						Py_CLEAR(l_pDimensionSize);
+						Py_CLEAR(l_pDimensionLabel);
 						return false;
 					}
 				}
 			}
 
-			PyObject* pyArg = PyTuple_New(5);
-			if (pyArg == nullptr)
+			//New reference
+			PyObject *l_pArg = PyTuple_New(5);
+			if (l_pArg == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
-				Py_CLEAR(pySizeDim);
-				Py_CLEAR(pyLabelDim);
+				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple l_pArg.\n";
+				Py_CLEAR(l_pDimensionSize);
+				Py_CLEAR(l_pDimensionLabel);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 0, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkStartTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
-				Py_CLEAR(pySizeDim);
-				Py_CLEAR(pyLabelDim);
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pDimensionSize);
+				Py_CLEAR(l_pDimensionLabel);
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 1, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkEndTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
-				Py_CLEAR(pySizeDim);
-				Py_CLEAR(pyLabelDim);
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pDimensionSize);
+				Py_CLEAR(l_pDimensionLabel);
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 2, pySizeDim) != 0)
+			if (PyTuple_SetItem(l_pArg, 2, l_pDimensionSize) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 2 (dimension size) in tuple pyArg.\n";
-				Py_CLEAR(pySizeDim);
-				Py_CLEAR(pyLabelDim);
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 2 (dimension size) in tuple l_pArg.\n";
+				Py_CLEAR(l_pDimensionSize);
+				Py_CLEAR(l_pDimensionLabel);
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 3, pyLabelDim) != 0)
+			if (PyTuple_SetItem(l_pArg, 3, l_pDimensionLabel) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 3 (dimension label) in tuple pyArg.\n";
-				Py_CLEAR(pySizeDim);
-				Py_CLEAR(pyLabelDim);
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 3 (dimension label) in tuple l_pArg.\n";
+				Py_CLEAR(l_pDimensionSize);
+				Py_CLEAR(l_pDimensionLabel);
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(
-					pyArg, 4, PyLong_FromLong(long(dynamic_cast<TSignalDecoder<CBoxAlgorithmNewBoxPattern>*>(m_decoders[index])->getOutputSamplingRate())))
-				!= 0)
+			if (PyTuple_SetItem(l_pArg, 4, PyInt_FromLong((long) ( (TSignalDecoder <CBoxAlgorithmNewBoxPattern> *) m_vDecoders[input_index] )->getOutputSamplingRate())) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 4 (samplingRate) in tuple pyArg.\n";
-				Py_CLEAR(pySizeDim);
-				Py_CLEAR(pyLabelDim);
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 4 (samplingRate) in tuple l_pArg.\n";
+				Py_CLEAR(l_pDimensionSize);
+				Py_CLEAR(l_pDimensionLabel);
+				Py_CLEAR(l_pArg);
 				return false;
 			}
+			//New reference
+			PyObject *l_pOVSignalHeader = PyObject_Call(CBoxAlgorithmPython::m_pOVSignalHeader, l_pArg, NULL);
+			if (l_pOVSignalHeader == NULL)
+			{
+				this->getLogManager() << LogLevel_Error << "Failed to create a new OVSignalHeader l_pOVSignalHeader.\n";
+				Py_CLEAR(l_pDimensionSize);
+				Py_CLEAR(l_pDimensionLabel);
+				Py_CLEAR(l_pArg);
+				return false;
+			}
+			Py_CLEAR(l_pDimensionSize);
+			Py_CLEAR(l_pDimensionLabel);
+			Py_CLEAR(l_pArg);
 
-			PyObject* pySignalHeader = PyObject_Call(m_signalHeader, pyArg, nullptr);
-			if (pySignalHeader == nullptr)
+			//New reference
+			PyObject* l_pMethodToCall = PyString_FromString("append");
+			//New reference
+			PyObject *l_pResult = PyObject_CallMethodObjArgs(l_pBuffer, l_pMethodToCall, l_pOVSignalHeader, NULL);
+			Py_CLEAR(l_pMethodToCall);
+			if (l_pResult == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new OVSignalHeader pySignalHeader.\n";
-				Py_CLEAR(pySizeDim);
-				Py_CLEAR(pyLabelDim);
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to append chunk to box.input[" << input_index << "].\n";
+				Py_CLEAR(l_pOVSignalHeader);
 				return false;
 			}
-			Py_CLEAR(pySizeDim);
-			Py_CLEAR(pyLabelDim);
-			Py_CLEAR(pyArg);
-
-			if (!appendToPyObject(pySignalHeader, pyBuffer))
-			{
-				this->getLogManager() << LogLevel_Error << "Failed to append an OVSignalHeader to box.input[" << index << "].\n";
-				Py_CLEAR(pySignalHeader);
-				return false;
-			}
-			Py_CLEAR(pySignalHeader);
+			Py_CLEAR(l_pResult);
+			Py_CLEAR(l_pOVSignalHeader);
 		}
 
-		if (m_decoders[index]->isBufferReceived())
+		if (m_vDecoders[input_index]->isBufferReceived())
 		{
-			PyObject* pyArg = PyTuple_New(3);
-			if (pyArg == nullptr)
+			//New reference
+			PyObject *l_pArg = PyTuple_New(3);
+			if (l_pArg == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
+				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple l_pArg.\n";
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 0, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkStartTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (startTime) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (startTime) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 1, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkEndTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (endTime) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (endTime) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 2, PyList_New(0)) != 0)
+			if (PyTuple_SetItem(l_pArg, 2, PyList_New(0)) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 2 (bufferElements) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 2 (bufferElements) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
 
-			PyObject* pySignalBuffer = PyObject_Call(m_signalBuffer, pyArg, nullptr);
-			if (pySignalBuffer == nullptr)
+			//New reference
+			PyObject *l_pOVSignalBuffer = PyObject_Call(CBoxAlgorithmPython::m_pOVSignalBuffer, l_pArg, NULL);
+			if (l_pOVSignalBuffer == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new OVSignalBuffer pySignalBuffer.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to create a new OVSignalBuffer l_pOVSignalBuffer.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			Py_CLEAR(pyArg);
+			Py_CLEAR(l_pArg);
 
-			IMatrix* matrix    = dynamic_cast<TSignalDecoder<CBoxAlgorithmNewBoxPattern> *>(m_decoders[index])->getOutputMatrix();
-			double* bufferBase = matrix->getBuffer();
-			for (size_t i = 0; i < matrix->getBufferElementCount(); ++i)
+			IMatrix* l_pMatrix = ( (TSignalDecoder <CBoxAlgorithmNewBoxPattern> *) m_vDecoders[input_index] )->getOutputMatrix();
+			float64* l_pBufferBase = l_pMatrix->getBuffer();
+			for (uint32 element_index = 0; element_index < l_pMatrix->getBufferElementCount(); element_index++)
 			{
-				if (PyList_Append(pySignalBuffer, PyFloat_FromDouble(bufferBase[i])) == -1)
+				if (PyList_Append(l_pOVSignalBuffer, PyFloat_FromDouble(l_pBufferBase[element_index])) == -1)
 				{
-					this->getLogManager() << LogLevel_Error << "Failed to append element " << i << " to pySignalBuffer.\n";
-					Py_CLEAR(pySignalBuffer);
+					this->getLogManager() << LogLevel_Error << "Failed to append element " << element_index << " to l_pOVSignalBuffer.\n";
+					Py_CLEAR(l_pOVSignalBuffer);
 					return false;
 				}
 			}
 
-			if (!appendToPyObject(pySignalBuffer, pyBuffer))
+			//New reference
+			PyObject* l_pMethodToCall = PyString_FromString("append");
+			//New reference
+			PyObject *l_pResult = PyObject_CallMethodObjArgs(l_pBuffer, l_pMethodToCall, l_pOVSignalBuffer, NULL);
+			Py_CLEAR(l_pMethodToCall);
+			if (l_pResult == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to append an OVSignalBuffer to box.input[" << index << "].\n";
-				Py_CLEAR(pySignalBuffer);
+				this->getLogManager() << LogLevel_Error << "Failed to append an OVSignalBuffer to box.input[" << input_index << "].\n";
+				Py_CLEAR(l_pOVSignalBuffer);
 				return false;
 			}
-			Py_CLEAR(pySignalBuffer);
+			Py_CLEAR(l_pResult);
+			Py_CLEAR(l_pOVSignalBuffer);
 		}
 
-		if (m_decoders[index]->isEndReceived())
+		if (m_vDecoders[input_index]->isEndReceived())
 		{
-			PyObject* pyArg = PyTuple_New(2);
-			if (pyArg == nullptr)
+			//New reference
+			PyObject *l_pArg = PyTuple_New(2);
+			if (l_pArg == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
+				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple l_pArg.\n";
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 0, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkStartTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 1, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkEndTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
 
-			PyObject* pySignalEnd = PyObject_Call(m_signalEnd, pyArg, nullptr);
-			if (pySignalEnd == nullptr)
+			//New reference
+			PyObject *l_pOVSignalEnd = PyObject_Call(CBoxAlgorithmPython::m_pOVSignalEnd, l_pArg, NULL);
+			if (l_pOVSignalEnd == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new m_signalEnd pySignalEnd.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to create a new CBoxAlgorithmPython::m_pOVSignalEnd l_pOVSignalEnd.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			Py_CLEAR(pyArg);
+			Py_CLEAR(l_pArg);
 
-			if (!appendToPyObject(pySignalEnd, pyBuffer))
+			//New reference
+			PyObject* l_pMethodToCall = PyString_FromString("append");
+			//New reference
+			PyObject *l_pResult = PyObject_CallMethodObjArgs(l_pBuffer, l_pMethodToCall, l_pOVSignalEnd, NULL);
+			Py_CLEAR(l_pMethodToCall);
+			if (l_pResult == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to append an OVSignalEnd to box.input[" << index << "].\n";
-				Py_CLEAR(pySignalEnd);
+				this->getLogManager() << LogLevel_Error << "Failed to append an OVSignalEnd to box.input[" << input_index << "].\n";
+				Py_CLEAR(l_pOVSignalEnd);
 				return false;
 			}
-			Py_CLEAR(pySignalEnd);
+			Py_CLEAR(l_pResult);
+			Py_CLEAR(l_pOVSignalEnd);
 		}
 	}
+
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::transferSignalOutputChunksFromPython(const size_t index)
+OpenViBE::boolean CBoxAlgorithmNewBoxPattern::transferSignalOutputChunksFromPython(const uint32 output_index)
 {
-	IBoxIO& boxCtx  = this->getDynamicBoxContext();
-	IMatrix* matrix = dynamic_cast<TSignalEncoder<CBoxAlgorithmNewBoxPattern>*>(m_encoders[index])->getInputMatrix();
+	IBoxIO& l_rDynamicBoxContext=this->getDynamicBoxContext();
 
-	if (!PyList_Check(m_boxOutput))
+	IMatrix* l_pMatrix = ( (TSignalEncoder <CBoxAlgorithmNewBoxPattern> *) m_vEncoders[output_index] )->getInputMatrix();
+
+	if (!PyList_Check(m_pBoxOutput))
 	{
 		this->getLogManager() << LogLevel_Error << "box.output must be a list.\n";
 		return false;
 	}
 
-	PyObject* pyBuffer = PyList_GetItem(m_boxOutput, Py_ssize_t(index));
-	if (pyBuffer == nullptr)
+	//Borrowed reference
+	PyObject *l_pBuffer = PyList_GetItem(m_pBoxOutput, (Py_ssize_t) output_index);
+	if (l_pBuffer == NULL)
 	{
-		this->getLogManager() << LogLevel_Error << "Failed to get box.output[" << index << "].\n";
+		this->getLogManager() << LogLevel_Error << "Failed to get box.output[" << output_index << "].\n";
 		return false;
 	}
 
-	size_t len;
-	if (!getLenFromPyObject(pyBuffer, len))
+	//New reference
+	PyObject* l_pBufferLen = PyObject_CallMethod(l_pBuffer, (char *) "__len__", NULL);
+	if (l_pBufferLen == NULL)
 	{
-		this->getLogManager() << LogLevel_Error << "Failed to get box.output[" << index << "].__len__().\n";
+		this->getLogManager() << LogLevel_Error << "Failed to get box.output["<< output_index << "].__len__().\n";
 		return false;
 	}
 
-	for (size_t idx = 0; idx < len; ++idx)
+	uint32 l_ui32OutputLen = PyInt_AsUnsignedLongMask(l_pBufferLen);
+	Py_CLEAR(l_pBufferLen);
+	for (uint32 chunk_index=0; chunk_index < l_ui32OutputLen; chunk_index++)
 	{
-		PyObject* pyChunk = PyObject_CallMethod(pyBuffer, "pop", nullptr);
-		if (pyChunk == nullptr)
+		//New reference
+		PyObject* l_pOVChunk = PyObject_CallMethod(l_pBuffer, (char *) "pop", NULL);
+		if (l_pOVChunk == NULL)
 		{
-			this->getLogManager() << LogLevel_Error << "Failed to get item " << idx << " of box.output[" << index << "].\n";
+			this->getLogManager() << LogLevel_Error << "Failed to get item " << chunk_index << " of box.output["<< output_index << "].\n";
 			return false;
 		}
 
-		if (PyObject_IsInstance(pyChunk, m_signalHeader) == 1)
+		if (PyObject_IsInstance(l_pOVChunk, CBoxAlgorithmPython::m_pOVSignalHeader) == 1)
 		{
-			if (!setMatrixInfosFromPyObject(pyChunk, matrix))
+			uint32 l_ui32DimensionCount, l_ui32DimensionSize, l_ui32DimensionIndex, l_ui32DimensionEntryIndex;
+
+			//New reference
+			PyObject *l_pDimensionCount = PyObject_CallMethod(l_pOVChunk, (char *) "getDimensionCount", NULL);
+			if (l_pDimensionCount == NULL)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to call chunk's getDimensionCount method.\n";
-				Py_CLEAR(pyChunk);
+				Py_CLEAR(l_pOVChunk);
 				return false;
 			}
+			l_ui32DimensionCount = PyInt_AsUnsignedLongMask(l_pDimensionCount);
+			l_pMatrix->setDimensionCount(l_ui32DimensionCount);
+			Py_CLEAR(l_pDimensionCount);
 
-			PyObject* pySampling = PyObject_GetAttrString(pyChunk, "samplingRate");
-			if (pySampling == nullptr)
+			//New reference
+			PyObject *l_pDimensionSize = PyObject_GetAttrString(l_pOVChunk, "dimensionSizes");
+
+			//New reference
+			PyObject *l_pDimensionLabel = PyObject_GetAttrString(l_pOVChunk, "dimensionLabels");
+
+			uint32 offset = 0;
+			for (l_ui32DimensionIndex=0; l_ui32DimensionIndex < l_ui32DimensionCount; l_ui32DimensionIndex++)
+			{
+				l_ui32DimensionSize = PyInt_AsUnsignedLongMask(PyList_GetItem(l_pDimensionSize, (Py_ssize_t) l_ui32DimensionIndex));
+				l_pMatrix->setDimensionSize(l_ui32DimensionIndex, l_ui32DimensionSize);
+				for (l_ui32DimensionEntryIndex=0; l_ui32DimensionEntryIndex < l_ui32DimensionSize; l_ui32DimensionEntryIndex++)
+				{
+					l_pMatrix->setDimensionLabel(l_ui32DimensionIndex, l_ui32DimensionEntryIndex, PyString_AsString(PyList_GetItem(l_pDimensionLabel, offset + l_ui32DimensionEntryIndex)));
+				}
+				offset = offset + l_ui32DimensionSize;
+			}
+			Py_CLEAR(l_pDimensionSize);
+			Py_CLEAR(l_pDimensionLabel);
+
+			//New reference
+			PyObject *l_pChunkSamplingRate = PyObject_GetAttrString(l_pOVChunk, "samplingRate");
+			if (l_pChunkSamplingRate == NULL)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to load signal header sampling rate.\n";
 				return false;
 			}
-			TParameterHandler<uint64_t>& sampling = dynamic_cast<TSignalEncoder<CBoxAlgorithmNewBoxPattern>*>(m_encoders[index])->getInputSamplingRate();
-			sampling                              = uint64_t(PyLong_AsLong(pySampling));
-			m_encoders[index]->encodeHeader();
-			Py_CLEAR(pySampling);
+			OpenViBE::Kernel::TParameterHandler < OpenViBE::uint64 >& l_pSamplingRate = ( (TSignalEncoder <CBoxAlgorithmNewBoxPattern> *) m_vEncoders[output_index] )->getInputSamplingRate();
+			l_pSamplingRate = (OpenViBE::uint64) PyInt_AsLong(l_pChunkSamplingRate);
+			m_vEncoders[output_index]->encodeHeader();
+			Py_CLEAR(l_pChunkSamplingRate);
 
-			uint64_t startTime, endTime;
-			getTimesFromPyObject(pyChunk, startTime, endTime);
+			//New reference
+			PyObject *l_pStartTime = PyObject_GetAttrString(l_pOVChunk, "startTime");
+			uint64 l_ui64StartTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pStartTime));
+			Py_CLEAR(l_pStartTime);
 
-			boxCtx.markOutputAsReadyToSend(index, startTime, endTime);
+			//New reference
+			PyObject *l_pEndTime = PyObject_GetAttrString(l_pOVChunk, "endTime");
+			uint64 l_ui64EndTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pEndTime));
+			Py_CLEAR(l_pEndTime);
+
+			l_rDynamicBoxContext.markOutputAsReadyToSend(output_index, l_ui64StartTime, l_ui64EndTime);
 		}
 
-		else if (PyObject_IsInstance(pyChunk, m_signalBuffer) == 1)
+		else if (PyObject_IsInstance(l_pOVChunk, CBoxAlgorithmPython::m_pOVSignalBuffer) == 1)
 		{
-			double* bufferBase = matrix->getBuffer();
-			for (size_t i = 0; i < matrix->getBufferElementCount(); ++i) { bufferBase[i] = PyFloat_AsDouble(PyList_GetItem(pyChunk, i)); }
+			float64* l_pBufferBase = l_pMatrix->getBuffer();
+			for (uint32 i=0; i < l_pMatrix->getBufferElementCount(); i++)
+			{
+				l_pBufferBase[i] = PyFloat_AsDouble(PyList_GetItem(l_pOVChunk, i));
+			}
 
-			uint64_t startTime, endTime;
-			getTimesFromPyObject(pyChunk, startTime, endTime);
+			//New reference
+			PyObject *l_pStartTime = PyObject_GetAttrString(l_pOVChunk, "startTime");
+			uint64 l_ui64StartTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pStartTime));
+			Py_CLEAR(l_pStartTime);
 
-			m_encoders[index]->encodeBuffer();
-			boxCtx.markOutputAsReadyToSend(index, startTime, endTime);
+			//New reference
+			PyObject *l_pEndTime = PyObject_GetAttrString(l_pOVChunk, "endTime");
+			uint64 l_ui64EndTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pEndTime));
+			Py_CLEAR(l_pEndTime);
+
+			m_vEncoders[output_index]->encodeBuffer();
+			l_rDynamicBoxContext.markOutputAsReadyToSend(output_index, l_ui64StartTime, l_ui64EndTime);
 		}
 
-		else if (PyObject_IsInstance(pyChunk, m_signalEnd) == 1)
+		else if (PyObject_IsInstance(l_pOVChunk, CBoxAlgorithmPython::m_pOVSignalEnd) == 1)
 		{
-			uint64_t startTime, endTime;
-			getTimesFromPyObject(pyChunk, startTime, endTime);
+			//New reference
+			PyObject *l_pStartTime = PyObject_GetAttrString(l_pOVChunk, "startTime");
+			uint64 l_ui64StartTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pStartTime));
+			Py_CLEAR(l_pStartTime);
 
-			m_encoders[index]->encodeEnd();
-			boxCtx.markOutputAsReadyToSend(index, startTime, endTime);
+			//New reference
+			PyObject *l_pEndTime = PyObject_GetAttrString(l_pOVChunk, "endTime");
+			uint64 l_ui64EndTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pEndTime));
+			Py_CLEAR(l_pEndTime);
+
+			m_vEncoders[output_index]->encodeEnd();
+			l_rDynamicBoxContext.markOutputAsReadyToSend(output_index, l_ui64StartTime, l_ui64EndTime);
 		}
 
 		else
 		{
-			this->getLogManager() << LogLevel_Error << "Unexpected object type for item " << idx << " in box.output[" << index << "].\n";
-			Py_CLEAR(pyChunk);
+			this->getLogManager() << LogLevel_Error << "Unexpected object type for item " << chunk_index << " in box.output["<< output_index << "].\n";
+			Py_CLEAR(l_pOVChunk);
 			return false;
 		}
 
-		Py_CLEAR(pyChunk);
+		Py_CLEAR(l_pOVChunk);
 	}
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::transferStimulationInputChunksToPython(const size_t index)
+OpenViBE::boolean CBoxAlgorithmNewBoxPattern::transferStimulationInputChunksToPython(const uint32 input_index)
 {
-	IBoxIO& boxCtx     = this->getDynamicBoxContext();
-	PyObject* pyBuffer = PyList_GetItem(m_boxInput, Py_ssize_t(index));
-	if (pyBuffer == nullptr)
+	IBoxIO& l_rDynamicBoxContext=this->getDynamicBoxContext();
+	//Borrowed reference
+	PyObject *l_pBuffer = PyList_GetItem(m_pBoxInput, (Py_ssize_t) input_index);
+	if (l_pBuffer == NULL)
 	{
-		this->getLogManager() << LogLevel_Error << "Failed to get box.input[" << index << "].\n";
+		this->getLogManager() << LogLevel_Error << "Failed to get box.input[" << input_index << "].\n";
 		return false;
 	}
-	for (size_t idx = 0; idx < boxCtx.getInputChunkCount(index); ++idx)
+	for(uint32 chunk_index = 0; chunk_index < l_rDynamicBoxContext.getInputChunkCount(input_index); chunk_index++)
 	{
-		m_decoders[index]->decode(idx);
+		m_vDecoders[input_index]->decode(chunk_index);
 
-		if (m_decoders[index]->isHeaderReceived())
+		if (m_vDecoders[input_index]->isHeaderReceived())
 		{
-			PyObject* pyArg = PyTuple_New(2);
-			if (pyArg == nullptr)
+			//New reference
+			PyObject *l_pArg = PyTuple_New(2);
+			if (l_pArg == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
+				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple l_pArg.\n";
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 0, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkStartTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 1, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkEndTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-
-			PyObject* pyStimHeader = PyObject_Call(m_stimulationHeader, pyArg, nullptr);
-			if (pyStimHeader == nullptr)
+			PyObject *l_pOVStimulationHeader = PyObject_Call(CBoxAlgorithmPython::m_pOVStimulationHeader, l_pArg, NULL);
+			if (l_pOVStimulationHeader == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new OVStimulationHeader pyStimHeader.\n";
+				this->getLogManager() << LogLevel_Error << "Failed to create a new OVStimulationHeader l_pOVStimulationHeader.\n";
 				PyErr_Print();
-				Py_CLEAR(pyArg);
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			Py_CLEAR(pyArg);
+			Py_CLEAR(l_pArg);
 
-			if (!appendToPyObject(pyStimHeader, pyBuffer))
+			//New reference
+			PyObject* l_pMethodToCall = PyString_FromString("append");
+			//New reference
+			PyObject* l_pResult = PyObject_CallMethodObjArgs(l_pBuffer, l_pMethodToCall, l_pOVStimulationHeader, NULL);
+			Py_CLEAR(l_pMethodToCall);
+			if (l_pResult == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to append an OVStimulationHeader to box.input[" << index << "].\n";
-				Py_CLEAR(pyStimHeader);
+				this->getLogManager() << LogLevel_Error << "Failed to append an OVStimulationHeader to box.input[" << input_index << "].\n";
+				Py_CLEAR(l_pOVStimulationHeader);
 				return false;
 			}
-			Py_CLEAR(pyStimHeader);
+			Py_CLEAR(l_pResult);
+			Py_CLEAR(l_pOVStimulationHeader);
 		}
 
-		if (m_decoders[index]->isBufferReceived())
+		if (m_vDecoders[input_index]->isBufferReceived())
 		{
-			IStimulationSet* stimSet = dynamic_cast<TStimulationDecoder<CBoxAlgorithmNewBoxPattern>*>(m_decoders[index])->getOutputStimulationSet();
+			IStimulationSet* l_pStimulationSet = ( (TStimulationDecoder <CBoxAlgorithmNewBoxPattern> *) m_vDecoders[input_index] )->getOutputStimulationSet();
 
-			PyObject* pyArg = PyTuple_New(2);
-			if (pyArg == nullptr)
+			//New reference
+			PyObject *l_pArg = PyTuple_New(2);
+			if (l_pArg == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
+				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple l_pArg.\n";
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 0, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkStartTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 1, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkEndTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-
-			PyObject* pyStimSet = PyObject_Call(m_stimulationSet, pyArg, nullptr);
-			if (pyStimSet == nullptr)
+			//New reference
+			PyObject *l_pOVStimulationSet = PyObject_Call(CBoxAlgorithmPython::m_pOVStimulationSet, l_pArg, NULL);
+			if (l_pOVStimulationSet == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new OVStimulationSet pyStimSet.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to create a new OVStimulationSet l_pOVStimulationSet.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			Py_CLEAR(pyArg);
+			Py_CLEAR(l_pArg);
 
-			for (size_t i = 0; i < stimSet->getStimulationCount(); ++i)
+			for(uint32 stimulation_index = 0; stimulation_index < l_pStimulationSet->getStimulationCount(); stimulation_index++)
 			{
-				const uint64_t id       = stimSet->getStimulationIdentifier(i);
-				const uint64_t date     = stimSet->getStimulationDate(i);
-				const uint64_t duration = stimSet->getStimulationDuration(i);
+				uint64 l_ui64StimulationIdentifier = l_pStimulationSet->getStimulationIdentifier(stimulation_index);
+				uint64 l_ui64StimulationDate = l_pStimulationSet->getStimulationDate(stimulation_index);
+				uint64 l_ui64StimulationDuration = l_pStimulationSet->getStimulationDuration(stimulation_index);
 
-				pyArg = PyTuple_New(3);
-				if (pyArg == nullptr)
+				//New reference
+				PyObject *l_pArg = PyTuple_New(3);
+				if (l_pArg == NULL)
 				{
-					this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
+					this->getLogManager() << LogLevel_Error << "Failed to create a new tuple l_pArg.\n";
 					return false;
 				}
-				if (PyTuple_SetItem(pyArg, 0, PyLong_FromLong(long(id))) != 0)
+				if (PyTuple_SetItem(l_pArg, 0, PyInt_FromLong((long) l_ui64StimulationIdentifier)) != 0)
 				{
-					this->getLogManager() << LogLevel_Error << "Failed to set item 0 (identifier) in tuple pyArg.\n";
-					Py_CLEAR(pyArg);
+					this->getLogManager() << LogLevel_Error << "Failed to set item 0 (identifier) in tuple l_pArg.\n";
+					Py_CLEAR(l_pArg);
 					return false;
 				}
-				if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(date))) != 0)
+				if (PyTuple_SetItem(l_pArg, 1, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_ui64StimulationDate))) != 0)
 				{
-					this->getLogManager() << LogLevel_Error << "Failed to set item 1 (date) in tuple pyArg.\n";
-					Py_CLEAR(pyArg);
+					this->getLogManager() << LogLevel_Error << "Failed to set item 1 (date) in tuple l_pArg.\n";
+					Py_CLEAR(l_pArg);
 					return false;
 				}
-				if (PyTuple_SetItem(pyArg, 2, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(duration))) != 0)
+				if (PyTuple_SetItem(l_pArg, 2, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_ui64StimulationDuration))) != 0)
 				{
-					this->getLogManager() << LogLevel_Error << "Failed to set item 2 (duration) in tuple pyArg.\n";
-					Py_CLEAR(pyArg);
+					this->getLogManager() << LogLevel_Error << "Failed to set item 2 (duration) in tuple l_pArg.\n";
+					Py_CLEAR(l_pArg);
 					return false;
 				}
+				//New reference
+				PyObject *l_pOVStimulation = PyObject_Call(CBoxAlgorithmPython::m_pOVStimulation, l_pArg, NULL);
+				if (l_pOVStimulation == NULL)
+				{
+					this->getLogManager() << LogLevel_Error << "Failed to create a new OVStimulation l_pOVStimulation.\n";
+					Py_CLEAR(l_pArg);
+					return false;
+				}
+				Py_CLEAR(l_pArg);
 
-				PyObject* pyStim = PyObject_Call(m_stimulation, pyArg, nullptr);
-				if (pyStim == nullptr)
+				//New reference
+				PyObject *l_pMethodToCall = PyString_FromString("append");
+				//New reference
+				PyObject *l_pResult = PyObject_CallMethodObjArgs(l_pOVStimulationSet, l_pMethodToCall, l_pOVStimulation, NULL);
+				Py_CLEAR(l_pMethodToCall);
+				if (l_pResult == NULL)
 				{
-					this->getLogManager() << LogLevel_Error << "Failed to create a new OVStimulation pyStim.\n";
-					Py_CLEAR(pyArg);
+					this->getLogManager() << LogLevel_Error << "Failed to append stimulation to box.input[" << input_index << "].\n";
+					Py_CLEAR(l_pOVStimulation);
 					return false;
 				}
-				Py_CLEAR(pyArg);
-
-				if (!appendToPyObject(pyStim, pyStimSet))
-				{
-					this->getLogManager() << LogLevel_Error << "Failed to append stimulation to box.input[" << index << "].\n";
-					Py_CLEAR(pyStim);
-					return false;
-				}
-				Py_CLEAR(pyStim);
+				Py_CLEAR(l_pResult);
+				Py_CLEAR(l_pOVStimulation);
 			}
 
-			if (!appendToPyObject(pyStimSet, pyBuffer))
+			//New reference
+			PyObject *l_pMethodToCall = PyString_FromString("append");
+			//New reference
+			PyObject *l_pResult = PyObject_CallMethodObjArgs(l_pBuffer, l_pMethodToCall, l_pOVStimulationSet, NULL);
+			Py_CLEAR(l_pMethodToCall);
+			if (l_pResult == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to append stimulation to box.input[" << index << "].\n";
-				Py_CLEAR(pyStimSet);
+				this->getLogManager() << LogLevel_Error << "Failed to append stimulation set to box.input[" << input_index << "].\n";
+				Py_CLEAR(l_pOVStimulationSet);
 				return false;
 			}
-			Py_CLEAR(pyStimSet);
+			Py_CLEAR(l_pResult);
+			Py_CLEAR(l_pOVStimulationSet);
 		}
 
-		if (m_decoders[index]->isEndReceived())
+		if (m_vDecoders[input_index]->isEndReceived())
 		{
-			PyObject* pyArg = PyTuple_New(2);
-			if (pyArg == nullptr)
+			//New reference
+			PyObject *l_pArg = PyTuple_New(2);
+			if (l_pArg == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
+				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple l_pArg.\n";
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 0, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkStartTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(l_pArg, 1, PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(l_rDynamicBoxContext.getInputChunkEndTime(input_index, chunk_index)))) != 0)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple l_pArg.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
 
-			PyObject* pyStimEnd = PyObject_Call(m_stimulationEnd, pyArg, nullptr);
-			if (pyStimEnd == nullptr)
+			//New reference
+			PyObject *l_pOVStimulationEnd = PyObject_Call(CBoxAlgorithmPython::m_pOVStimulationEnd, l_pArg, NULL);
+			if (l_pOVStimulationEnd == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to create a new OVStimulationEnd pyStimEnd.\n";
-				Py_CLEAR(pyArg);
+				this->getLogManager() << LogLevel_Error << "Failed to create a new OVStimulationEnd l_pOVStimulationEnd.\n";
+				Py_CLEAR(l_pArg);
 				return false;
 			}
-			Py_CLEAR(pyArg);
+			Py_CLEAR(l_pArg);
 
-			if (!appendToPyObject(pyStimEnd, pyBuffer))
+			//New reference
+			PyObject* l_pMethodToCall = PyString_FromString("append");
+			//New reference
+			PyObject *l_pResult = PyObject_CallMethodObjArgs(l_pBuffer, l_pMethodToCall, l_pOVStimulationEnd, NULL);
+			Py_CLEAR(l_pMethodToCall);
+			if (l_pResult == NULL)
 			{
-				this->getLogManager() << LogLevel_Error << "Failed to append an OVStimulationEnd to box.input[" << index << "].\n";
-				Py_CLEAR(pyStimEnd);
+				this->getLogManager() << LogLevel_Error << "Failed to append an OVStimulationEnd to box.input[" << input_index << "].\n";
+				Py_CLEAR(l_pOVStimulationEnd);
 				return false;
 			}
-			Py_CLEAR(pyStimEnd);
+			Py_CLEAR(l_pResult);
+			Py_CLEAR(l_pOVStimulationEnd);
 		}
 	}
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::transferStimulationOutputChunksFromPython(const size_t index)
+OpenViBE::boolean CBoxAlgorithmNewBoxPattern::transferStimulationOutputChunksFromPython(const uint32 output_index)
 {
-	IBoxIO& boxCtx           = this->getDynamicBoxContext();
-	IStimulationSet* stimSet = dynamic_cast<TStimulationEncoder<CBoxAlgorithmNewBoxPattern>*>(m_encoders[index])->getInputStimulationSet();
+	IBoxIO& l_rDynamicBoxContext=this->getDynamicBoxContext();
 
-	if (!PyList_Check(m_boxOutput))
+	IStimulationSet* l_pStimulationSet = ( (TStimulationEncoder <CBoxAlgorithmNewBoxPattern> *) m_vEncoders[output_index] )->getInputStimulationSet();
+
+	if (!PyList_Check(m_pBoxOutput))
 	{
 		this->getLogManager() << LogLevel_Error << "box.output must be a list.\n";
 		return false;
 	}
-
-	PyObject* pyBuffer = PyList_GetItem(m_boxOutput, Py_ssize_t(index));
-	if (pyBuffer == nullptr)
+	//Borrowed reference
+	PyObject *l_pBuffer = PyList_GetItem(m_pBoxOutput, (Py_ssize_t) output_index);
+	if (l_pBuffer == NULL)
 	{
-		this->getLogManager() << LogLevel_Error << "Failed to get box.output[" << index << "].\n";
+		this->getLogManager() << LogLevel_Error << "Failed to get box.output[" << output_index << "].\n";
 		return false;
 	}
 
-	size_t len;
-	if (!getLenFromPyObject(pyBuffer, len))
+	//New reference
+	PyObject* l_pBufferLen = PyObject_CallMethod(l_pBuffer, (char *) "__len__", NULL);
+	if (l_pBufferLen == NULL)
 	{
-		this->getLogManager() << LogLevel_Error << "Failed to get box.output[" << index << "].__len__().\n";
+		this->getLogManager() << LogLevel_Error << "Failed to get box.output["<< output_index << "].__len__().\n";
 		return false;
 	}
-
-	for (size_t idx = 0; idx < len; ++idx)
+	uint32 l_ui32OutputLen = PyInt_AsUnsignedLongMask(l_pBufferLen);
+	Py_CLEAR(l_pBufferLen);
+	for (uint32 chunk_index=0; chunk_index < l_ui32OutputLen; chunk_index++)
 	{
-		PyObject* pyChunk = PyObject_CallMethod(pyBuffer, "pop", nullptr);
-		if (pyChunk == nullptr)
+		//New reference
+		PyObject* l_pOVChunk = PyObject_CallMethod(l_pBuffer, (char *) "pop", NULL);
+		if (l_pOVChunk == NULL)
 		{
-			this->getLogManager() << LogLevel_Error << "Failed to get item " << idx << " of box.output[" << index << "].\n";
+			this->getLogManager() << LogLevel_Error << "Failed to get item " << chunk_index << " of box.output["<< output_index << "].\n";
 			return false;
 		}
 
-		if (PyObject_IsInstance(pyChunk, m_stimulationHeader) == 1)
+		if (PyObject_IsInstance(l_pOVChunk, CBoxAlgorithmPython::m_pOVStimulationHeader) == 1)
 		{
-			uint64_t startTime, endTime;
-			getTimesFromPyObject(pyChunk, startTime, endTime);
+			//New reference
+			PyObject *l_pStartTime = PyObject_GetAttrString(l_pOVChunk, "startTime");
+			uint64 l_ui64StartTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pStartTime));
+			Py_CLEAR(l_pStartTime);
 
-			stimSet->setStimulationCount(0);
-			m_encoders[index]->encodeHeader();
-			boxCtx.markOutputAsReadyToSend(index, startTime, endTime);
+			//New reference
+			PyObject *l_pEndTime = PyObject_GetAttrString(l_pOVChunk, "endTime");
+			uint64 l_ui64EndTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pEndTime));
+			Py_CLEAR(l_pEndTime);
+
+			l_pStimulationSet->setStimulationCount(0);
+			m_vEncoders[output_index]->encodeHeader();
+			l_rDynamicBoxContext.markOutputAsReadyToSend(output_index, l_ui64StartTime, l_ui64EndTime);
 		}
 
-		else if (PyObject_IsInstance(pyChunk, m_stimulationSet) == 1)
+		else if (PyObject_IsInstance(l_pOVChunk, CBoxAlgorithmPython::m_pOVStimulationSet) == 1)
 		{
-			size_t chunkLen;
-			if (!getLenFromPyObject(pyChunk, chunkLen))
+			//New reference
+			PyObject* l_pOVChunkLen = PyObject_CallMethod(l_pOVChunk, (char *) "__len__", NULL);
+			if (l_pOVChunkLen == NULL)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to get stimulations set length.\n";
 				return false;
 			}
+			uint32 l_ui32OVChunkLen = PyInt_AsUnsignedLongMask(l_pOVChunkLen);
+			Py_CLEAR(l_pOVChunkLen);
 
-			stimSet->setStimulationCount(0);
-			for (size_t i = 0; i < chunkLen; ++i)
+			l_pStimulationSet->setStimulationCount(0);
+			for (uint32 stim_index=0; stim_index < l_ui32OVChunkLen; stim_index++)
 			{
-				PyObject* pyStim = PyList_GetItem(pyChunk, Py_ssize_t(i));
-				if (pyStim == nullptr)
+				//Borrowed reference
+				PyObject* l_pOVStimulation = PyList_GetItem(l_pOVChunk, (Py_ssize_t) stim_index);
+				if (l_pOVStimulation == NULL)
 				{
-					this->getLogManager() << LogLevel_Error << "Failed to get item " << i << " of chunk " << idx << ".\n";
+					this->getLogManager() << LogLevel_Error << "Failed to get item " << stim_index << " of chunk "<< chunk_index << ".\n";
 					return false;
 				}
-				if (PyObject_IsInstance(pyStim, m_stimulation) < 1)
+				if (PyObject_IsInstance(l_pOVStimulation, CBoxAlgorithmPython::m_pOVStimulation) < 1)
 				{
-					this->getLogManager() << LogLevel_Error << "Item " << i << " is not an OVStimulation.\n";
+					this->getLogManager() << LogLevel_Error << "Item " << stim_index << " is not an OVStimulation.\n";
 					return false;
 				}
+				//New reference
+				PyObject *l_pIdentifier = PyObject_GetAttrString(l_pOVStimulation, "identifier");
+				uint64 l_ui64Identifier = (uint64) PyFloat_AsDouble(l_pIdentifier);
+				Py_CLEAR(l_pIdentifier);
 
-				PyObject* pyID    = PyObject_GetAttrString(pyStim, "identifier");
-				const uint64_t id = uint64_t(PyFloat_AsDouble(pyID));
-				Py_CLEAR(pyID);
+				//New reference
+				PyObject *l_pDate = PyObject_GetAttrString(l_pOVStimulation, "date");
+				uint64 l_ui64Date = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pDate));
+				Py_CLEAR(l_pDate);
 
-				uint64_t date, duration;
-				getTimeFromPyObject(pyStim, "date", date);
-				getTimeFromPyObject(pyStim, "duration", duration);
+				//New reference
+				PyObject *l_pDuration = PyObject_GetAttrString(l_pOVStimulation, "duration");
+				uint64 l_ui64Duration = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pDuration));
+				Py_CLEAR(l_pDuration);
 
-				stimSet->appendStimulation(id, date, duration);
+				l_pStimulationSet->appendStimulation(l_ui64Identifier, l_ui64Date, l_ui64Duration);
 			}
 
-			uint64_t startTime, endTime;
-			getTimesFromPyObject(pyChunk, startTime, endTime);
+			//New reference
+			PyObject *l_pStartTime = PyObject_GetAttrString(l_pOVChunk, "startTime");
+			uint64 l_ui64StartTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pStartTime));
+			Py_CLEAR(l_pStartTime);
 
-			m_encoders[index]->encodeBuffer();
-			boxCtx.markOutputAsReadyToSend(index, startTime, endTime);
+			//New reference
+			PyObject *l_pEndTime = PyObject_GetAttrString(l_pOVChunk, "endTime");
+			uint64 l_ui64EndTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pEndTime));
+			Py_CLEAR(l_pEndTime);
+
+			m_vEncoders[output_index]->encodeBuffer();
+			l_rDynamicBoxContext.markOutputAsReadyToSend(output_index, l_ui64StartTime, l_ui64EndTime);
 		}
 
-		else if (PyObject_IsInstance(pyChunk, m_stimulationEnd) == 1)
+		else if (PyObject_IsInstance(l_pOVChunk, CBoxAlgorithmPython::m_pOVStimulationEnd) == 1)
 		{
-			uint64_t startTime, endTime;
-			getTimesFromPyObject(pyChunk, startTime, endTime);
+			//New reference
+			PyObject *l_pStartTime = PyObject_GetAttrString(l_pOVChunk, "startTime");
+			uint64 l_ui64StartTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pStartTime));
+			Py_CLEAR(l_pStartTime);
 
-			m_encoders[index]->encodeEnd();
-			boxCtx.markOutputAsReadyToSend(index, startTime, endTime);
+			//New reference
+			PyObject *l_pEndTime = PyObject_GetAttrString(l_pOVChunk, "endTime");
+			uint64 l_ui64EndTime = ITimeArithmetics::secondsToTime(PyFloat_AsDouble(l_pEndTime));
+			Py_CLEAR(l_pEndTime);
+
+			m_vEncoders[output_index]->encodeEnd();
+			l_rDynamicBoxContext.markOutputAsReadyToSend(output_index, l_ui64StartTime, l_ui64EndTime);
 		}
 
 		else
 		{
-			this->getLogManager() << LogLevel_Error << "Unexpected object type for item " << idx << " in box.output[" << index << "].\n";
-			Py_CLEAR(pyChunk);
+			this->getLogManager() << LogLevel_Error << "Unexpected object type for item " << chunk_index << " in box.output["<< output_index << "].\n";
+			Py_CLEAR(l_pOVChunk);
 			return false;
 		}
 
-		Py_CLEAR(pyChunk);
+		Py_CLEAR(l_pOVChunk);
 	}
+
 	return true;
 }
 
-bool CBoxAlgorithmNewBoxPattern::process()
-{
-	const IBox& boxCtx = this->getStaticBoxContext();
-	CIdentifier typeID;
+OpenViBE::boolean CBoxAlgorithmNewBoxPattern::process(void)
+{	
+    const IBox& l_rStaticBoxContext = this->getStaticBoxContext();
+	OpenViBE::CIdentifier l_oTypeIdentifier;
 
-	for (size_t i = 0; i < boxCtx.getInputCount(); ++i)
+	for(uint32 input=0; input<l_rStaticBoxContext.getInputCount(); input++)
 	{
-		boxCtx.getInputType(i, typeID);
-		if (typeID == OV_TypeId_StreamedMatrix) { if (!transferStreamedMatrixInputChunksToPython(i)) { return false; } }
-		else if (typeID == OV_TypeId_Signal) { if (!transferSignalInputChunksToPython(i)) { return false; } }
-		else if (typeID == OV_TypeId_Stimulations) { if (!transferStimulationInputChunksToPython(i)) { return false; } }
-			// else if (typeID == OV_TypeId_FeatureVector) { }
-			// else if (typeID == OV_TypeId_Spectrum) { }
-			// else if (typeID == OV_TypeId_ChannelLocalisation) { }
-			// else if (typeID == OV_TypeId_ExperimentInfo) { }
+		l_rStaticBoxContext.getInputType(input, l_oTypeIdentifier);
+		if (l_oTypeIdentifier == OV_TypeId_StreamedMatrix)
+		{
+			if (!transferStreamedMatrixInputChunksToPython(input))
+			{
+				return false;
+			}
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Signal)
+		{
+			if (!transferSignalInputChunksToPython(input))
+			{
+				return false;
+			}
+		}
+		/*
+		else if (l_oTypeIdentifier == OV_TypeId_FeatureVector)
+		{
+
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Spectrum)
+		{
+
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_ChannelLocalisation)
+		{
+
+		}
+		*/
+		else if (l_oTypeIdentifier == OV_TypeId_Stimulations)
+		{
+			if (!transferStimulationInputChunksToPython(input))
+			{
+				return false;
+			}
+		}
+		/*
+		else if (l_oTypeIdentifier == OV_TypeId_ExperimentInformation)
+		{
+
+		}
+		*/
 		else
 		{
-			this->getLogManager() << LogLevel_Error << "Codec to decode " << typeID.str() << " is not implemented.\n";
+			this->getLogManager() << LogLevel_Error << "Codec to decode " << l_oTypeIdentifier.toString() << " is not implemented.\n";
 			return false;
 		}
 	}
 
 	//update the python current time
-	m_boxCurrentTime = PyFloat_FromDouble(TimeArithmetics::timeToSeconds(this->getPlayerContext().getCurrentTime()));
-	if (m_boxCurrentTime == nullptr)
+	m_pBoxCurrentTime = PyFloat_FromDouble(ITimeArithmetics::timeToSeconds(this->getPlayerContext().getCurrentTime()));
+	if (m_pBoxCurrentTime == NULL)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to convert the current time into a PyFloat during update.\n";
 		return false;
 	}
-	if (PyObject_SetAttrString(m_box, "_currentTime", m_boxCurrentTime) == -1)
+	if (PyObject_SetAttrString(m_pBox, "_currentTime", m_pBoxCurrentTime) == -1)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to update \"box._currentTime\" attribute.\n";
 		return false;
 	}
 
 	//call the python process function
-	if (m_boxProcess && PyCallable_Check(m_boxProcess))
+	if (m_pBoxProcess && PyCallable_Check(m_pBoxProcess))
 	{
-		PyObject* result       = PyObject_CallObject(m_boxProcess, nullptr);
-		const bool stdoutError = logSysStdout();
-		const bool stderrError = logSysStderr();
-		if ((result == nullptr) || (!stdoutError) || (!stderrError))
+		//New reference
+		PyObject *l_pResult = PyObject_CallObject(m_pBoxProcess, NULL);
+		OpenViBE::boolean l_bLogSysStdoutError = logSysStdout();
+		OpenViBE::boolean l_bLogSysStderrError = logSysStderr();
+		if ((l_pResult == NULL) || (!l_bLogSysStdoutError) || (!l_bLogSysStderrError))
 		{
-			if (result == nullptr) { this->getLogManager() << LogLevel_Error << "Failed to call \"box.__process\" function.\n"; }
-			if (!stdoutError) { this->getLogManager() << LogLevel_Error << "logSysStdout() failed during box.__process.\n"; }
-			if (!stderrError) { this->getLogManager() << LogLevel_Error << "logSysStderr() failed during box.__process.\n"; }
-			Py_CLEAR(result);
+			if(l_pResult == NULL)
+			{
+				this->getLogManager() << LogLevel_Error << "Failed to call \"box.__process\" function.\n";
+			}
+			if(!l_bLogSysStdoutError)
+			{
+				this->getLogManager() << LogLevel_Error << "logSysStdout() failed during box.__process.\n";
+			}
+			if(!l_bLogSysStderrError)
+			{
+				this->getLogManager() << LogLevel_Error << "logSysStderr() failed during box.__process.\n";
+			}
+			Py_CLEAR(l_pResult);
 			return false;
 		}
-		Py_CLEAR(result);
+		Py_CLEAR(l_pResult);
 	}
 
-	for (size_t i = 0; i < boxCtx.getOutputCount(); ++i)
+	for(uint32 output=0; output<l_rStaticBoxContext.getOutputCount(); output++)
 	{
-		boxCtx.getOutputType(i, typeID);
-		if (typeID == OV_TypeId_StreamedMatrix) { if (!transferStreamedMatrixOutputChunksFromPython(i)) { return false; } }
-		else if (typeID == OV_TypeId_Signal) { if (!transferSignalOutputChunksFromPython(i)) { return false; } }
-		else if (typeID == OV_TypeId_Stimulations) { if (!transferStimulationOutputChunksFromPython(i)) { return false; } }
-			// else if (typeID == OV_TypeId_FeatureVector) { }
-			// else if (typeID == OV_TypeId_Spectrum) { }
-			// else if (typeID == OV_TypeId_ChannelLocalisation) { }
-			// else if (typeID == OV_TypeId_ExperimentInfo) { }
+		l_rStaticBoxContext.getOutputType(output, l_oTypeIdentifier);
+		if (l_oTypeIdentifier == OV_TypeId_StreamedMatrix)
+		{
+			if (!transferStreamedMatrixOutputChunksFromPython(output))
+			{
+				return false;
+			}
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Signal)
+		{
+			if (!transferSignalOutputChunksFromPython(output))
+			{
+				return false;
+			}
+		}
+		/*
+		else if (l_oTypeIdentifier == OV_TypeId_FeatureVector)
+		{
+
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_Spectrum)
+		{
+
+		}
+		else if (l_oTypeIdentifier == OV_TypeId_ChannelLocalisation)
+		{
+
+		}
+		*/
+		else if (l_oTypeIdentifier == OV_TypeId_Stimulations)
+		{
+			if (!transferStimulationOutputChunksFromPython(output))
+			{
+				return false;
+			}
+		}
+		/*
+		else if (l_oTypeIdentifier == OV_TypeId_ExperimentInformation)
+		{
+
+		}
+		*/
 		else
 		{
-			this->getLogManager() << LogLevel_Error << "Codec to encode " << typeID.str() << " is not implemented.\n";
+			this->getLogManager() << LogLevel_Error << "Codec to encode " << l_oTypeIdentifier.toString() << " is not implemented.\n";
 			return false;
 		}
 	}
+
 	return true;
 }
 
-#endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
-#endif // TARGET_HAS_ThirdPartyPython3
+#endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
+#endif // TARGET_HAS_ThirdPartyPython
 #endif

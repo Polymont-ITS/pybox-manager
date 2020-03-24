@@ -7,6 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 import platform
+import shutil
 import re
 import sys
 import copy
@@ -772,7 +773,11 @@ the manager with the argument : \"mode=developer\".""")
     def load_python_script(self) :
 
         def get_boxname(dico, uri) :
-            name = uri.split("/")[-1].split(".")[0]
+            symbol = '/'
+            if system == 'Windows' :
+                symbol = '\\'
+
+            name = uri.split(symbol)[-1].split(".")[0]
             current_name = name
             i = 0
             while True :
@@ -1120,19 +1125,18 @@ the manager with the argument : \"mode=developer\".""")
         old_boxes = mu.find_all_boxes(mu.openvibe_folder, mu.io_type, mu.all_settings_type)
 
         # rollback prep
-        boxes_path = "{}/extras/contrib/plugins/processing/python3/src/".format(mu.openvibe_folder)
+        boxes_path = "{}/extras/contrib/plugins/processing/python/src/".format(mu.openvibe_folder)
         copy_path = mu.manager_folder + 'boxes_copy/'
+        log_path = mu.openvibe_folder + 'compilation.log'
 
         try:
-            # copy backup files for rollback
-            subprocess.call(['mkdir {}'.format(copy_path)])
-            subprocess.call(['cp -r {}* {}'.format(boxes_path, copy_path)])
+            shutil.copytree(boxes_path, copy_path)
+
         except Exception as e:
             print(e)
-            pass
 
             
-        if self.current_box.name in old_boxes.keys() :
+        if self.current_box.name in old_boxes.keys() and self.current_box.to_be_updated:
             
             # Modification of an existing box
             mu.delete_box(mu.openvibe_folder, self.current_box.name)
@@ -1158,27 +1162,32 @@ the manager with the argument : \"mode=developer\".""")
                         mu.boxes[box].modify_outputs)
 
             
-
+        print('Compilation in progress...')
         mu.compile(mu.manager_folder, mu.openvibe_folder)
 
         # catch error when building
         regex = '(recipe .*? failed)|(Error while building) '
 
-        with open('compilation.log', 'r') as log_file:
+        with open(log_path, 'r') as log_file:
             f = log_file.read()
             res = re.search(regex, f)
 
-        try:
-            matches = res.groups()
-
+        if res is not None :
             # There was an error during compilation so we have to rollback the boxes
-            subprocess.call(['rm -rf {}*'.format(boxes_path)])
-            subprocess.call(['cp -r {}* {}'.format(copy_path, boxes_path)])
-            subprocess.call(['rm -rf {}*'.format(copy_path)])
-            subprocess.call(['rmdir {}'.format(copy_path)])
+            print('An error occured during the compilation. A rollback has been applied. For more information, please refer to the logs in {}.'.format(log_path))
 
-        except Exception as e:
-            pass
+            shutil.rmtree(boxes_path)
+            shutil.copytree(copy_path, boxes_path)
+
+        else :
+            print('Compilation successfull !\n')
+
+        bns = list(mu.boxes.keys())
+        path_bns = [boxes_path + bns[i] + '/' for i in range(len(bns))]
+        path_bns = [pbns.replace('\\', '/').replace('//', '/') for pbns in path_bns]
+        print('List of Python Box existing :\n{}'.format('\n'.join(['{} - {}'.format(bns[i], path_bns[i]) for i in range(len(bns))])))
+        shutil.rmtree(copy_path)
+
 
     def compile_delete_box(self) :
         # Make the modification to delete a box, compile openvibe
