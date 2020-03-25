@@ -1137,7 +1137,6 @@ the manager with the argument : \"mode=developer\".""")
 
             
         if self.current_box.name in old_boxes.keys() and self.current_box.to_be_updated:
-            
             # Modification of an existing box
             mu.delete_box(mu.openvibe_folder, self.current_box.name)
 

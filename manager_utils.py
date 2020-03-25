@@ -240,25 +240,10 @@ def remove_line_from_file(filename, tag):
 
 def verify_initialization(manager_folder, openvibe_folder):
     """Return true if the initialization has been done, false otherwise."""
-    
-    # openvibe.py
-    filename_to_copy = manager_folder + '/Assets/BoxManager/openvibe.py'
-    filename_dist = openvibe_folder + \
-        '/extras/contrib/plugins/processing/python/share/openvibe.py'
-    res = compare_file(filename_to_copy, filename_dist)
-    if not res :
-        return False
 
     # ovpCBoxAlgorithmPython.h
     filename_to_copy = manager_folder + '/Assets/BoxManager/ovpCBoxAlgorithmPython.h'
     filename_dist = openvibe_folder + '/extras/contrib/plugins/processing/python/src/box-algorithms/ovpCBoxAlgorithmPython.h'
-    res = compare_file(filename_to_copy, filename_dist)
-    if not res :
-        return False
-
-    # StimulationsCodes.py
-    filename_to_copy = manager_folder + '/Assets/BoxManager/StimulationsCodes.py'
-    filename_dist = openvibe_folder + '/extras/contrib/plugins/processing/python/share/StimulationsCodes.py'
     res = compare_file(filename_to_copy, filename_dist)
     if not res :
         return False
@@ -282,22 +267,11 @@ def verify_initialization(manager_folder, openvibe_folder):
 
 def initialize_files(manager_folder, openvibe_folder):
 
-    # openvibe.py
-    filename_to_copy = manager_folder + '/Assets/BoxManager/openvibe.py'
-    filename_dist = openvibe_folder + \
-        '/extras/contrib/plugins/processing/python/share/openvibe.py'
-    copyfile(filename_to_copy, filename_dist)
-
     # ovpCBoxAlgorithmPython.h
     filename_to_copy = manager_folder + \
         '/Assets/BoxManager/ovpCBoxAlgorithmPython.h'
     filename_dist = openvibe_folder + \
         '/extras/contrib/plugins/processing/python/src/box-algorithms/ovpCBoxAlgorithmPython.h'
-    copyfile(filename_to_copy, filename_dist)
-
-    # StimulationsCodes.py
-    filename_to_copy = manager_folder + '/Assets/BoxManager/StimulationsCodes.py'
-    filename_dist = openvibe_folder + '/extras/contrib/plugins/processing/python/share/StimulationsCodes.py'
     copyfile(filename_to_copy, filename_dist)
 
     # ovtk_defines.h
@@ -354,9 +328,11 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
     """Créer et modifie les fichiers pour la création d'une nouvelle box."""
     global system
 
-    #preventing the use of spaces which would cause problems for c++ filenames
+    # preventing the use of spaces which would cause problems for c++ filenames
     box_name = box_name.replace(' ','_')
 
+    # force category to be in scripting
+    category = 'Scripting/' + category
 
     # 1/ We place ourselves at the root of the python boxe
     old_location = os.getcwd()
@@ -509,7 +485,7 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
 
     os.chdir(old_location)
 
-def delete_box(openvibe_folder, box_name, update=False):
+def delete_box(openvibe_folder, box_name):
     """Delete and modify files when deleting an existing box."""
     global system
 
@@ -524,22 +500,20 @@ def delete_box(openvibe_folder, box_name, update=False):
     shutil.rmtree(path_box)
 
     # 3/ Remove lines from ovp_defines.h
-    if not update:
+    path = 'ovp_defines.h'
+    tag = 'OVP_ClassId_BoxAlgorithm_{}Desc'.format(box_name)
+    remove_line_from_file(path, tag)
+    tag = 'OVP_ClassId_BoxAlgorithm_{}'.format(box_name)
+    remove_line_from_file(path, tag)
 
-        path = 'ovp_defines.h'
-        tag = 'OVP_ClassId_BoxAlgorithm_{}Desc'.format(box_name)
-        remove_line_from_file(path, tag)
-        tag = 'OVP_ClassId_BoxAlgorithm_{}'.format(box_name)
-        remove_line_from_file(path, tag)
-
-        # 4/ Remove lines from ovp_main.cpp
-        path = 'ovp_main.cpp'
-        tag = 'OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithm{}Desc);'.format(
-            box_name)
-        remove_line_from_file(path, tag)
-        tag = '#include "box-algorithms/{}/ovp{}.h"'.format(
-            box_name, box_name)
-        remove_line_from_file(path, tag)
+    # 4/ Remove lines from ovp_main.cpp
+    path = 'ovp_main.cpp'
+    tag = 'OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithm{}Desc);'.format(
+        box_name)
+    remove_line_from_file(path, tag)
+    tag = '#include "box-algorithms/{}/ovp{}.h"'.format(
+        box_name, box_name)
+    remove_line_from_file(path, tag)
 
     os.chdir(old_location)
 
@@ -609,7 +583,7 @@ def compile(manager_folder, openvibe_folder):
 def add_stimulation(manager_folder, label, file_sound) :
 
     def find_next_id(path_file_stim) :
-        # We open the StimulationCodes.py to find the next id
+        # We open the PolyStimulations.py to find the next id
         with open(path_file_stim, 'r') as f :
             text = f.read()
             # On charge de dictionnaire de stimulation
@@ -644,7 +618,7 @@ def add_stimulation(manager_folder, label, file_sound) :
         return line
 
 
-    path_file_stim = '{}/Assets/BoxManager/StimulationsCodes.py'.format(manager_folder)
+    path_file_stim = '{}/share/PolyStimulations.py'.format(manager_folder)
     tag = '# <Flag> New Stims'
 
     line = get_line_to_add(label, path_file_stim)
@@ -808,7 +782,6 @@ category = ['Acquisition and network IO',
             'Examples',
             'Feature extraction',
             'File reading and writing',
-            'Scripting',
             'Signal processing',
             'Stimulation',
             'Streaming',
