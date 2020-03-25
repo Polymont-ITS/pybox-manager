@@ -6,8 +6,8 @@
 
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
-#include "defines.hpp"
-#include "CPolyBox.hpp"
+#include "../../ovp_defines.h"
+#include "../CPolyBox.h"
 #include <openvibe/ov_all.h>
 #include <toolkit/ovtk_all.h>
 

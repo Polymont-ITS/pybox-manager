@@ -1,7 +1,7 @@
-#include "CPolyBox.hpp"
 #if defined TARGET_HAS_ThirdPartyPython
 //#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
+#include "CPolyBox.h"
 #include <openvibe/ovITimeArithmetics.h>
 #include <iostream>
 

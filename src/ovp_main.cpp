@@ -4,7 +4,7 @@
 
 #if defined TARGET_HAS_ThirdPartyPython
 
-#include "box-algorithms/ovpCBoxAlgorithmPython.h"
+#include "box-algorithms/CPolyBox.h"
 #include "box-algorithms/TrainerML/ovpTrainerML.h"
 #include "box-algorithms/SVM/ovpSVM.h"
 #include "box-algorithms/SGD/ovpSGD.h"

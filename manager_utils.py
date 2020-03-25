@@ -241,13 +241,6 @@ def remove_line_from_file(filename, tag):
 def verify_initialization(manager_folder, openvibe_folder):
     """Return true if the initialization has been done, false otherwise."""
 
-    # ovpCBoxAlgorithmPython.h
-    filename_to_copy = manager_folder + '/Assets/BoxManager/ovpCBoxAlgorithmPython.h'
-    filename_dist = openvibe_folder + '/extras/contrib/plugins/processing/python/src/box-algorithms/ovpCBoxAlgorithmPython.h'
-    res = compare_file(filename_to_copy, filename_dist)
-    if not res :
-        return False
-
     # ovtk_defines.h
     filename_to_copy = manager_folder + '/Assets/BoxManager/ovtk_defines.h'
     filename_dist = openvibe_folder + '/sdk/toolkit/include/toolkit/ovtk_defines.h'
@@ -266,13 +259,6 @@ def verify_initialization(manager_folder, openvibe_folder):
     return True
 
 def initialize_files(manager_folder, openvibe_folder):
-
-    # ovpCBoxAlgorithmPython.h
-    filename_to_copy = manager_folder + \
-        '/Assets/BoxManager/ovpCBoxAlgorithmPython.h'
-    filename_dist = openvibe_folder + \
-        '/extras/contrib/plugins/processing/python/src/box-algorithms/ovpCBoxAlgorithmPython.h'
-    copyfile(filename_to_copy, filename_dist)
 
     # ovtk_defines.h
     filename_to_copy = manager_folder + '/Assets/BoxManager/ovtk_defines.h'
@@ -372,7 +358,7 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
 
     # 4/ We add our lines in ovp_main.cpp
     filename = 'ovp_main.cpp'
-    tag = '#include "box-algorithms/ovpCBoxAlgorithmPython.h"'
+    tag = '#include "box-algorithms/CPolyBox.h"'
     new_line = '#include "{}"'.format(path_file_header)
     insert_line_in_file(filename, new_line, tag)
 
