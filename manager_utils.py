@@ -136,7 +136,7 @@ def find_all_boxes(openvibe_folder, io_dic_type, settings_dic_type):
                 box.category = category
 
                 # Settings
-                setts = re.findall(r"(?<!//)rBoxAlgorithmPrototype.addSetting\(\"(.*)\", "
+                setts = re.findall(r"(?<!//)prototype.addSetting\(\"(.*)\", "
                                    r"((OV_TypeId|OVPoly)_[a-z_A-Z]*), \"(.*)\"\);", file_h)
                                 #    r"(OV_TypeId_[a-z_A-Z]*), \"(.*)\"\);", file_h)
                 
@@ -154,7 +154,7 @@ def find_all_boxes(openvibe_folder, io_dic_type, settings_dic_type):
 
                 # inputs
                 inputs = re.findall(
-                    r"(?<!//)rBoxAlgorithmPrototype.addInput  \(\"(.*)\", (OV_TypeId_[a-zA-Z]*)\);", file_h)
+                    r"(?<!//)prototype.addInput  \(\"(.*)\", (OV_TypeId_[a-zA-Z]*)\);", file_h)
             
                 # Same value as the one in counters in the display part
                 inputs_compt = 2
@@ -167,7 +167,7 @@ def find_all_boxes(openvibe_folder, io_dic_type, settings_dic_type):
 
                 # outputs
                 outputs = re.findall(
-                    r"(?<!//)rBoxAlgorithmPrototype.addOutput \(\"(.*)\", (OV_TypeId_[a-zA-Z]*)\);", file_h)
+                    r"(?<!//)prototype.addOutput \(\"(.*)\", (OV_TypeId_[a-zA-Z]*)\);", file_h)
                 # Same value as the one in counters in the display part
                 outputs_compt = 2
                 for out in outputs:
@@ -176,9 +176,9 @@ def find_all_boxes(openvibe_folder, io_dic_type, settings_dic_type):
                     outputs_compt += 1
 
                 # modify permission
-                permission_input = re.search(r"(\/\/)?rBoxAlgorithmPrototype\.addFlag\(OpenViBE::Kernel::BoxFlag_CanModifyInput\);", file_h)
-                permission_output = re.search(r"(\/\/)?rBoxAlgorithmPrototype\.addFlag\(OpenViBE::Kernel::BoxFlag_CanModifyOutput\);", file_h)
-                permission_setting = re.search(r"(\/\/)?rBoxAlgorithmPrototype\.addFlag\(OpenViBE::Kernel::BoxFlag_CanModifySetting\);", file_h)
+                permission_input = re.search(r"(\/\/)?prototype\.addFlag\(OpenViBE::Kernel::BoxFlag_CanModifyInput\);", file_h)
+                permission_output = re.search(r"(\/\/)?prototype\.addFlag\(OpenViBE::Kernel::BoxFlag_CanModifyOutput\);", file_h)
+                permission_setting = re.search(r"(\/\/)?prototype\.addFlag\(OpenViBE::Kernel::BoxFlag_CanModifySetting\);", file_h)
 
                 if permission_input.group()[:2] == '//' :
                     box.modify_inputs = False
@@ -460,15 +460,15 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
 
     # 9/ We prevent the path from being modified 
     replace_in_file(path_file_header,
-                    'rBoxAlgorithmPrototype.addSetting("Script", OV_TypeId_Script, "");',
-                    '//rBoxAlgorithmPrototype.addSetting("Script", OV_TypeId_Script, "");')
+                    'prototype.addSetting("Script", OV_TypeId_Script, "");',
+                    '//prototype.addSetting("Script", OV_TypeId_Script, "");')
 
     # 10/ We can then add our params
     # TODO Ajouter la gestion correcte des tabs au début des lignes.
-    tag = 'rBoxAlgorithmPrototype.addSetting("Script", OV_TypeId_Script, "");'
+    tag = 'prototype.addSetting("Script", OV_TypeId_Script, "");'
     for number, (key, kind, value) in reversed(list(settings.items())):
         if key:
-            new_line = '                rBoxAlgorithmPrototype.addSetting("{}", {}, "{}");'.format(
+            new_line = '                prototype.addSetting("{}", {}, "{}");'.format(
                 key, all_settings_type[kind], value)
             insert_line_in_file(path_file_header, new_line, tag)
 
@@ -479,31 +479,31 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
 
     # 12/ We can then addd our inputs our outputs
     # TODO Ajouter la gestion correcte des tabs au début des lignes.
-    tag_input = '//rBoxAlgorithmPrototype.addInput  ("Input stimulations", OV_TypeId_Stimulations);'
+    tag_input = '//prototype.addInput  ("Input stimulations", OV_TypeId_Stimulations);'
     for number, (name, kind) in reversed(list(inputs.items())):
         if name:
-            new_line = '                rBoxAlgorithmPrototype.addInput  ("{}", {});'.format(
+            new_line = '                prototype.addInput  ("{}", {});'.format(
                 name, io_type[kind])
             insert_line_in_file(path_file_header, new_line, tag_input)
 
     # 13/ Permissions to modify boxes in OV
     if not modify_settings :
         replace_in_file(path_file_header,
-                        "rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifySetting);",
-                        "//rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifySetting);")
+                        "prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifySetting);",
+                        "//prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifySetting);")
     if not modify_inputs :
         replace_in_file(path_file_header,
-                        "rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);",
-                        "//rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);")
+                        "prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);",
+                        "//prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);")
     if not modify_outputs :
         replace_in_file(path_file_header,
-                        "rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyOutput);",
-                        "//rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyOutput);")
+                        "prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyOutput);",
+                        "//prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyOutput);")
 
     # TODO Ajouter la gestion correcte des tabs au début des lignes.
-    tag_output = '//rBoxAlgorithmPrototype.addOutput ("Output stimulations", OV_TypeId_Stimulations);'
+    tag_output = '//prototype.addOutput ("Output stimulations", OV_TypeId_Stimulations);'
     for number, (name, kind) in reversed(list(outputs.items())):
-        new_line = '                rBoxAlgorithmPrototype.addOutput ("{}", {});'.format(
+        new_line = '                prototype.addOutput ("{}", {});'.format(
             name, io_type[kind])
         insert_line_in_file(path_file_header, new_line, tag_output)
 
