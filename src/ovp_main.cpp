@@ -1,29 +1,6 @@
-#if defined(WIN32) && defined(TARGET_BUILDTYPE_Debug)
-// Windows debug build doesn't typically link as most people don't have the python debug library.
-#else
-
 #if defined TARGET_HAS_ThirdPartyPython
 
 #include "box-algorithms/CPolyBox.h"
-#include "box-algorithms/TrainerML/ovpTrainerML.h"
-#include "box-algorithms/SVM/ovpSVM.h"
-#include "box-algorithms/SGD/ovpSGD.h"
-#include "box-algorithms/RMDM/ovpRMDM.h"
-#include "box-algorithms/Riemann_Tangent_Space/ovpRiemann_Tangent_Space.h"
-#include "box-algorithms/Random_Forest/ovpRandom_Forest.h"
-#include "box-algorithms/ProcessML/ovpProcessML.h"
-#include "box-algorithms/NearestCentroid/ovpNearestCentroid.h"
-#include "box-algorithms/MLP/ovpMLP.h"
-#include "box-algorithms/Logistic_Regression/ovpLogistic_Regression.h"
-#include "box-algorithms/LDA/ovpLDA.h"
-#include "box-algorithms/KNearestNeighbors/ovpKNearestNeighbors.h"
-#include "box-algorithms/GaussianNB/ovpGaussianNB.h"
-#include "box-algorithms/Extra_Trees/ovpExtra_Trees.h"
-#include "box-algorithms/Decision_Tree_Classifier/ovpDecision_Tree_Classifier.h"
-#include "box-algorithms/DataViz/ovpDataViz.h"
-#include "box-algorithms/DatasetCreator/ovpDatasetCreator.h"
-#include "box-algorithms/ADA/ovpADA.h"
-#include "box-algorithms/Bagging/ovpBagging.h"
 
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
@@ -145,50 +122,7 @@ OVP_Declare_Begin();
 	static CPythonInitializer l_oPythonInitializer;
 	if (l_oPythonInitializer.IsPythonAvailable())
 	{
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmPythonDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmTrainerMLDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmSVMDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmSGDDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmRMDMDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmRiemann_Tangent_SpaceDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmRandom_ForestDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmProcessMLDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmNearestCentroidDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmMLPDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmLogistic_RegressionDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmLDADesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmKNearestNeighborsDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmGaussianNBDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmExtra_TreesDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDecision_Tree_ClassifierDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDataVizDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDatasetCreatorDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmBaggingDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmADADesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmExtra_TreesDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmGaussianNBDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmADADesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmADADesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmADADesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmADADesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmADADesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmADADesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmProcessMLDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmTrainerMLDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmSVMDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmSGDDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmRiemann_Tangent_SpaceDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmRandom_ForestDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmRMDMDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmNearestCentroidDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmMLPDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmLogistic_RegressionDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmLDADesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmKNearestNeighborsDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmBaggingDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDecision_Tree_ClassifierDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDatasetCreatorDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDataVizDesc);
+
 	}
 
 OVP_Declare_End();
@@ -199,4 +133,3 @@ OVP_Declare_End();
 
 #endif // TARGET_HAS_ThirdPartyPython
 
-#endif
