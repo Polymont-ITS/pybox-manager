@@ -6,8 +6,8 @@
 
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
-#include "../../ovp_defines.h"
-#include "../CPolyBox.h"
+#include "../ovp_defines.h"
+#include "CPolyBox.h"
 #include <openvibe/ov_all.h>
 #include <toolkit/ovtk_all.h>
 
@@ -49,11 +49,11 @@ namespace OpenViBEPlugins
 			virtual void release(void) { }
 
 			virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString("NewBoxPattern"); }
-			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString(""); }
-			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString(""); }
+			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("NewAuthor"); }
+			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("NewCompany"); }
 			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Default Python Description"); }
-			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString(""); }
-			virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("Scripting/Pybox"); }
+			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString("NewDescription"); }
+			virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("Scripting/Pybox/"); }
 			virtual OpenViBE::CString getVersion(void) const             { return OpenViBE::CString("0.1"); }
 			virtual OpenViBE::CString getStockItemName(void) const       { return OpenViBE::CString("gtk-missing-image"); }
 

@@ -318,7 +318,7 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
     box_name = box_name.replace(' ','_')
 
     # force category to be in scripting
-    category = 'Scripting/' + category
+    category = 'Scripting/PyBox/' + category
 
     # 1/ We place ourselves at the root of the python boxe
     old_location = os.getcwd()
