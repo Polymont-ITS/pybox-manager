@@ -1,5 +1,4 @@
-#ifndef __OpenViBEPlugins_BoxAlgorithm_Python_H__
-#define __OpenViBEPlugins_BoxAlgorithm_Python_H__
+#pragma once
 
 #if defined TARGET_HAS_ThirdPartyPython
 
@@ -118,30 +117,30 @@ namespace OpenViBEPlugins
 			virtual OpenViBE::Plugins::IBoxListener* createBoxListener(void) const               { return new CBoxAlgorithmPythonListener; }
 			virtual void releaseBoxListener(OpenViBE::Plugins::IBoxListener* pBoxListener) const { delete pBoxListener; }
 
-			virtual bool getBoxPrototype(OpenViBE::Kernel::IBoxProto& rBoxAlgorithmPrototype) const
+			virtual bool getBoxPrototype(OpenViBE::Kernel::IBoxProto& prototype) const
 			{
-				//rBoxAlgorithmPrototype.addInput  ("Input",  OV_TypeId_StreamedMatrix);
-				//rBoxAlgorithmPrototype.addInput  ("Input stimulations", OV_TypeId_Stimulations);
-				//rBoxAlgorithmPrototype.addOutput ("Output", OV_TypeId_StreamedMatrix);
-				//rBoxAlgorithmPrototype.addOutput ("Output stimulations", OV_TypeId_Stimulations);
-				rBoxAlgorithmPrototype.addSetting("Clock frequency (Hz)", OV_TypeId_Integer, "64");
-				rBoxAlgorithmPrototype.addSetting("Script", OV_TypeId_Script, "");
-				//rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_IsUnstable);
+				//prototype.addInput  ("Input",  OV_TypeId_StreamedMatrix);
+				//prototype.addInput  ("Input stimulations", OV_TypeId_Stimulations);
+				//prototype.addOutput ("Output", OV_TypeId_StreamedMatrix);
+				//prototype.addOutput ("Output stimulations", OV_TypeId_Stimulations);
+				prototype.addSetting("Clock frequency (Hz)", OV_TypeId_Integer, "64");
+				prototype.addSetting("Script", OV_TypeId_Script, "");
+				//prototype.addFlag(OpenViBE::Kernel::BoxFlag_IsUnstable);
 				
-				rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddInput);
-				rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);
-				rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddOutput);
-				rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyOutput);
-				rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddSetting);
-				rBoxAlgorithmPrototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifySetting);
+				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddInput);
+				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);
+				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddOutput);
+				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyOutput);
+				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddSetting);
+				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifySetting);
 
-				rBoxAlgorithmPrototype.addInputSupport(OV_TypeId_Signal);
-				rBoxAlgorithmPrototype.addInputSupport(OV_TypeId_Stimulations);
-				rBoxAlgorithmPrototype.addInputSupport(OV_TypeId_StreamedMatrix);
+				prototype.addInputSupport(OV_TypeId_Signal);
+				prototype.addInputSupport(OV_TypeId_Stimulations);
+				prototype.addInputSupport(OV_TypeId_StreamedMatrix);
 
-				rBoxAlgorithmPrototype.addOutputSupport(OV_TypeId_Signal);
-				rBoxAlgorithmPrototype.addOutputSupport(OV_TypeId_Stimulations);
-				rBoxAlgorithmPrototype.addOutputSupport(OV_TypeId_StreamedMatrix);
+				prototype.addOutputSupport(OV_TypeId_Signal);
+				prototype.addOutputSupport(OV_TypeId_Stimulations);
+				prototype.addOutputSupport(OV_TypeId_StreamedMatrix);
 				
 				return true;
 			}
@@ -154,6 +153,3 @@ namespace OpenViBEPlugins
 #endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
 #endif // TARGET_HAS_ThirdPartyPython
-
-#endif // __OpenViBEPlugins_BoxAlgorithm_Python_H__
-
