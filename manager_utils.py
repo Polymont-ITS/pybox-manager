@@ -24,6 +24,8 @@ if system != 'Linux' and system != 'Windows':
     raise Exception("OS {} is not handled with that script.".format(system))
 
 def find_folders() :
+    """Find openvibe and the manager folders."""
+
     current_file = inspect.getfile(lambda : None)
     current_file = Path(current_file)
     manager_folder = str(current_file.parent) + '/'
@@ -31,6 +33,8 @@ def find_folders() :
     return manager_folder, openvibe_folder
 
 def find_all_stims():
+    """Retrieve all stimulation from Poly_Stimulation"""
+
     prefixe_stim = 'OVPoly_'
     stims = [k for k in Poly_stimulation.keys() if prefixe_stim in k]
     stims = [k[len(prefixe_stim):] for k in stims]
@@ -86,7 +90,8 @@ def find_all_custom_settings(manager_folder) :
     return custom_values
 
 def find_all_boxes(manager_folder, io_dic_type, settings_dic_type):
-    """Génère une liste contenant toutes les box existantes pour OpenVibe"""
+    """Generate a list containing all the existing box inside"""
+
     path_all_boxes = "{}/src/box-algorithms/".format(manager_folder)
     list_all_files = os.listdir(path_all_boxes)
 
@@ -182,6 +187,7 @@ def find_all_boxes(manager_folder, io_dic_type, settings_dic_type):
     return directories
 
 def warning_msg(msg) :
+    """Show a warning message : msg in the manager to the user."""
     box = QMessageBox()
     box.setIcon(QMessageBox.Warning)
     box.setText(msg)
@@ -189,6 +195,7 @@ def warning_msg(msg) :
     box.exec_()
 
 def info_msg(msg) :
+    """Show an information msg in the manager to the user."""
     box = QMessageBox()
     box.setIcon(QMessageBox.Information)
     box.setText(msg)
@@ -196,6 +203,8 @@ def info_msg(msg) :
     box.exec_()
 
 def insert_line_in_file(filename, string, tag):
+    """Insert the line string in the file filename just after the first
+    line containing tag."""
     with open(filename, 'r+') as f:
         text = f.read()
         i = text.index(tag) + len(tag)
@@ -204,6 +213,7 @@ def insert_line_in_file(filename, string, tag):
 
 
 def replace_in_file(filename, old, new):
+    """Replace in filename old by new."""
     with open(filename, 'r') as f:
         text = f.read()
     text = text.replace(old, new)
@@ -212,7 +222,7 @@ def replace_in_file(filename, old, new):
 
 
 def remove_line_from_file(filename, tag):
-    # Delete the first line in the file with the tag inside
+    """Delete the first line in the file with the tag inside."""
     flag = False
     with open(filename, 'r') as f:
         text = f.read()
@@ -230,7 +240,7 @@ def remove_line_from_file(filename, tag):
 
 
 def generate_new_id(openvibe_folder):
-    """Génère un ensemble de 4 IDs aléatoires pour la création d'une nouvelle box openvibe"""
+    """Generate a set of 4 different random ids for openvibe"""
 
     def get_folder_sdk_releae(openvibe_folder) :
         path = '{}/build/'.format(openvibe_folder)
@@ -266,7 +276,8 @@ def generate_new_id(openvibe_folder):
     return val1, val2, val3, val4
 
 def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name, desc, path_script, category, author, settings, inputs, outputs, modify_settings, modify_inputs, modify_outputs):
-    """Créer et modifie les fichiers pour la création d'une nouvelle box."""
+    """Create and modify the files to create/modify a new box in openvibe."""
+
     global system
 
     # preventing the use of spaces which would cause problems for c++ filenames
@@ -396,7 +407,8 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
 
 
 def delete_box(manager_folder, box_name):
-    """Delete and modify files when deleting an existing box."""
+    """Delete and modify files to delete an existing box."""
+
     global system
 
     box_name = box_name.replace(' ', '_')
@@ -432,6 +444,7 @@ def delete_box(manager_folder, box_name):
 
 
 def create_custom_setting(manager_folder, openvibe_folder, cs) :
+    """ Make all modification to openvibe to create a custom setting."""
 
     prefixe = 'OVPoly_ClassId_'
     path_cpp = '{}/src/ovp_main.cpp'.format(manager_folder)
@@ -454,6 +467,7 @@ def create_custom_setting(manager_folder, openvibe_folder, cs) :
     insert_line_in_file(path_cpp, line_type, tag)
 
 def delete_custom_setting(manager_folder, cs) :
+    """Make all the modification to openvibe to delete a custom setting."""
 
     def remove_lines_with_tag_in_file(file, tag) :
         with open(file, 'r') as f :
@@ -475,7 +489,7 @@ def delete_custom_setting(manager_folder, cs) :
     remove_lines_with_tag_in_file(path_cpp, tag)
 
 def compile(manager_folder, openvibe_folder):
-    """Recompile OpenVibe to take into account the changes."""
+    """Compile OpenVibe."""
 
     # Go to openvibe folder directory
     old_location = os.getcwd()
@@ -494,6 +508,7 @@ def compile(manager_folder, openvibe_folder):
 
 
 def add_stimulation(manager_folder, label, file_sound) :
+    """Make all the modifications to add a stimulation to openvibe."""
 
     def find_next_id(path_file_stim) :
         # We open the PolyStimulations.py to find the next id
@@ -541,6 +556,7 @@ def add_stimulation(manager_folder, label, file_sound) :
 
 
 def get_name_duplicate(dict, name) :
+    """Find the name for a duplicated box."""
 
     def regex_handling(regex, name):
         res = re.search(regex, name)
@@ -599,6 +615,8 @@ def get_name_duplicate(dict, name) :
 
 
 def delete_stimulation(manager_folder, label) :
+    """Make the modification to remove a stimulation from openvibe."""
+
     path_file_stim = '{}/share/StimulationsCodes.py'.format(manager_folder)
     remove_line_from_file(path_file_stim, label)
     path_sound = '{}/Assets/Sounds/{}.mp3'.format(manager_folder, label.lower())
@@ -606,8 +624,9 @@ def delete_stimulation(manager_folder, label) :
 
 
 def retrieve_settings_type(custom_settings, all_settings=False) :
-    # If 'mode=developer' in args : load all default and custom settings, 
-    # else load only default settings
+    """If 'mode=developer' in args : load all default and custom settings, 
+    else load only default settings"""
+
     settings = {
             'Integer': 'OV_TypeId_Integer',
             'Float': 'OV_TypeId_Float',
@@ -638,6 +657,7 @@ Value = namedtuple("Value", ["text", "id"])
 
 
 class BoxPython:
+    """This class aim to contain all the data needed to create a box in openvibe."""
 
     def __init__(self, name='Default Box',  filename='Default filename', desc='Default Python Description', path_script='/home/', old_name=None,):
         self.name = name
@@ -675,6 +695,8 @@ class BoxPython:
     def __ne__(self, obj):
         return not self == obj
 
+
+# Load all the data necessary to make the manager work.
 
 manager_folder, openvibe_folder = find_folders()
 
