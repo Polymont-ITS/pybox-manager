@@ -30,6 +30,7 @@ import numpy as np
 import pandas as pd
 from natsort import natsorted
 from pygame import mixer
+from PolyStimulations import Poly_stimulation
 import os
 import pickle
 import random
@@ -60,8 +61,8 @@ PREFIXE_STIM = 'OVPoly_'
 
 def get_path_sounds() :
     path_current_file = inspect.getfile(lambda: None)
-    indice = path_current_file.find('openvibe-python')
-    return path_current_file[:indice] + 'openvibe-python/Assets/Sounds/'
+    indice = path_current_file.find('pybox-manager')
+    return path_current_file[:indice] + 'pybox-manager/Assets/Sounds/'
 
 
 def ovdf(df, rewrite_stim=True) :
@@ -96,7 +97,7 @@ def get_stim_code_from_label(label) :
     key = label.split('_')
     key = "_".join([w[0].upper() + w[1:] for w in key])
     key = PREFIXE_STIM + key
-    return OpenViBE_stimulation[key]
+    return Poly_stimulation[key]
 
 
 class DatasetCreator(OVBox) :
@@ -128,7 +129,7 @@ class DatasetCreator(OVBox) :
                 try :
                     get_stim_code_from_label(label)         
                 except KeyError :
-                    raise Exception('Label {} not defined in StimulationsCodes. You may want to add it with the manager.'.format(label))
+                    raise Exception('Label {} not defined in PolyStimulations. You may want to add it with the manager.'.format(label))
 
         def get_labels(self) :
             param_names = self.setting.keys()
@@ -151,16 +152,18 @@ class DatasetCreator(OVBox) :
             self.dic_dicount = {'fold_{}'.format(i) : None for i in range(1, self.nb_fold+1)}
 
         def retrieve_settings(self) :
-            # On récupère le path du directory où l'on créé les fold
-            self.dir_name = self.setting['Path directory']
-            if self.dir_name[-1] != '/' :
-                self.dir_name += '/'
+
             # On récupère la booleen indiquant si l'on souhaite plusieurs ou un seul csv par fold
             self.several_csv = self.setting['Several CSV']  
             if self.several_csv == 'true' :
                 self.several_csv = True
             elif self.several_csv == 'false' :
                 self.several_csv = False
+            # On récupère le path du directory où l'on créé les fold
+            self.dir_name = self.setting['Path directory']
+            if self.dir_name[-1] != '/' :
+                self.dir_name += '/'
+
             # On récupère le nombre de fold
             self.nb_fold = int(self.setting['Number of folds'])
             # On récupère le nombre d'action à record par session
@@ -341,7 +344,7 @@ class DatasetCreator(OVBox) :
 
             def add_to_fold(self, data, label) :
                 # Ajoute les éléments dans la liste data au dic_fold label et mets à jour dic_dicount
-                print(self.dic_dicount)
+                print('hello', self.dic_dicount)
                 tmp = [(key, value[label]) for key, value in self.dic_dicount.items()]
                 fold = min(tmp, key=lambda x : x[1])[0]
                 self.dic_fold[fold][label] += [data]

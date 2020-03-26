@@ -1,6 +1,8 @@
 #if defined TARGET_HAS_ThirdPartyPython
 
 #include "box-algorithms/CPolyBox.h"
+#include "box-algorithms/ovpDatasetCreator.h"
+#include "box-algorithms/ovpDataViz.h"
 #include "box-algorithms/ovpDataViz.h"
 
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
@@ -126,6 +128,8 @@ OVP_Declare_Begin();
 	if (l_oPythonInitializer.IsPythonAvailable())
 	{
 		// <tag> OVP_Declare_New
+		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDatasetCreatorDesc);
+		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDataVizDesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDataVizDesc);
 
 

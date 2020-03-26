@@ -97,15 +97,14 @@ def find_all_boxes(manager_folder, io_dic_type, settings_dic_type):
 
     directories = {}
     for elem in list_all_files:
-        if os.path.isdir(path_all_boxes + elem):
+        if elem[:3] == 'ovp' :
 
-            with open(path_all_boxes + elem + "/ovp{}.h".format(elem), 'r') as f:
+            with open(path_all_boxes + elem, 'r') as f:
                 file_h = f.read()
 
                 # Path Script
                 script = re.findall(
                     r"m_sScriptFilename = \"(.*.py)\";", file_h)[0]
-
 
                 # Description
                 desc = re.findall(r"virtual OpenViBE::CString getShortDescription\(void\) const    "
@@ -117,16 +116,17 @@ def find_all_boxes(manager_folder, io_dic_type, settings_dic_type):
                 author = author[89:-5]
 
                 category = re.search(r'virtual OpenViBE::CString getCategory\(void\) const            '
-                    '{ return OpenViBE::CString\(\"[a-zA-Z ]+\"\); }', file_h).group()
+                    '{ return OpenViBE::CString\(\"[/a-zA-Z ]+\"\); }', file_h).group()
                 category = category[89:-5]
                 category = category[16:]
 
                 # Creation of the object
 
                 # workaround to allow creation of box with spaces
-                name = elem.replace('_',' ')
+                boxname = elem[3:-2]
+                name = boxname.replace('_',' ')
 
-                box = BoxPython(name=name, filename= elem, desc=desc, path_script=script)
+                box = BoxPython(name=name, filename= boxname, desc=desc, path_script=script)
                 box.author = author
                 box.category = category
 
@@ -585,7 +585,6 @@ def get_name_duplicate(dict, name) :
 
         except AttributeError:
             # current_name = 'rr'
-            print(name)
             
             for bn in dict.keys() :
                 if bn == name :

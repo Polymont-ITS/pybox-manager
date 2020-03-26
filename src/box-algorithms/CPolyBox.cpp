@@ -103,7 +103,7 @@ bool CPolyBox::logSysStderr()
 void CPolyBox::buildPythonSettings()
 {
 	const IBox* boxCtx = getBoxAlgorithmContext()->getStaticBoxContext();
-	for (uint32_t i = 2; i < boxCtx->getSettingCount(); i++)
+	for (uint32_t i = 1; i < boxCtx->getSettingCount(); i++)
 	{
 		CString name;
 		boxCtx->getSettingName(i, name);

@@ -2,8 +2,12 @@
 
 
 // <tag> Tag Box Declaration
-#define OVP_ClassId_BoxAlgorithm_DataVizDesc                 OpenViBE::CIdentifier(0x12D25FFB, 0x53771B90)
-#define OVP_ClassId_BoxAlgorithm_DataViz                 OpenViBE::CIdentifier(0x1F1F132D, 0x7A4C0B84)
+#define OVP_ClassId_BoxAlgorithm_DatasetCreatorDesc                 OpenViBE::CIdentifier(0x30CD06E1, 0x495A32C5)
+#define OVP_ClassId_BoxAlgorithm_DatasetCreator                 OpenViBE::CIdentifier(0x57C918D3, 0x4D960B9B)
+#define OVP_ClassId_BoxAlgorithm_DataVizDesc                 OpenViBE::CIdentifier(0x0883778A, 0x3D323E34)
+#define OVP_ClassId_BoxAlgorithm_DataViz                 OpenViBE::CIdentifier(0x57C66ED6, 0x07CE2D9C)
+#define OVP_ClassId_BoxAlgorithm_DataVizDesc                 OpenViBE::CIdentifier(0x18A67572, 0x0084651E)
+#define OVP_ClassId_BoxAlgorithm_DataViz                 OpenViBE::CIdentifier(0x52E0743A, 0x5B8C2EA4)
 
 
 //___________________________________________________________________//
