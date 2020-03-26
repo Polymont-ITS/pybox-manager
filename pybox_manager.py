@@ -1,18 +1,11 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'manager-ov.ui'
-#
-# Created by: PyQt5 UI code generator 5.5.1
-#
-# WARNING! All changes made in this file will be lost!
-
 import platform
 import shutil
 import re
 import sys
 import copy
 import os
-import subprocess
 import manager_utils as mu
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
@@ -22,6 +15,9 @@ if system != 'Linux' and system != 'Windows':
     raise Exception("OS {} is not handled with that script.".format(system))
 
 class Ui_MainWindow(object):
+    """ This class aim to define the manager's ui, 
+    It calls function from the file manager_utils.py to 
+    create box, stimulations or settings in openvibe."""
 
     def __init__(self) :
         self.current_box = None
@@ -489,6 +485,8 @@ class Ui_MainWindow(object):
             self.load_custom_setting()
 
     def retranslateUi(self, MainWindow):
+        """Defines values and bind ui's button to function"""
+
         MainWindow.setWindowTitle(self._translate("Pybox-Manager", "Pybox-Manager"))
 
         # labels
@@ -744,6 +742,7 @@ the manager with the argument : \"mode=developer\".""")
     # Behaviour BoxManager
 
     def clear_boxmanager(self, clear_name=True) :
+        """ Clear all fields in the manager """
 
         self.current_box = None
         if clear_name :
@@ -771,6 +770,7 @@ the manager with the argument : \"mode=developer\".""")
         self.current_outputs = []
 
     def load_python_script(self) :
+        """Help the user to select the python script that will be used by the current box"""
 
         def get_boxname(dico, uri) :
             symbol = '/'
@@ -810,6 +810,8 @@ the manager with the argument : \"mode=developer\".""")
         self.text_script.setText(self._translate("Pybox-Manager", uri))
 
     def load_box(self, reset=False) :
+        """Load a box and all of its settings."""
+
         self.clear_boxmanager(clear_name=False)
 
         boxname = self.dropdown_boxname.currentText()
@@ -885,6 +887,7 @@ the manager with the argument : \"mode=developer\".""")
         self.update_box()
 
     def reset_box(self) :
+        """Remove all changes since the last compilation.""" 
         if self.current_box is None  :
             return
 
@@ -900,7 +903,8 @@ the manager with the argument : \"mode=developer\".""")
             self.current_box = mu.BoxPython(name=current_name, desc='', path_script='')
 
     def new_box(self) :
-        # Clear everything and prepare new box
+        """Clear every field and prepare new box"""
+
         self.clear_boxmanager()
 
         self.current_box = mu.BoxPython(name='', desc='', path_script='')
@@ -911,6 +915,7 @@ the manager with the argument : \"mode=developer\".""")
         self.dropdown_boxname.setCurrentIndex(index)
 
     def duplicate_box(self) :
+        """ Duplicate the current box"""
 
         if self.current_box is None :
             mu.warning_msg('Cannot duplicate the box, no box has been selected.')
@@ -929,7 +934,7 @@ the manager with the argument : \"mode=developer\".""")
         self.dropdown_boxname.setCurrentIndex(index-1)
 
     def create_line_setting(self) :
-        # Create a new line of setting and update the box
+        """Create a new line of setting and update the box"""
 
         def config_dropdown_settings_type(self, dropdown) :
             types = sorted(list(mu.settings_type.keys()))
@@ -974,7 +979,7 @@ the manager with the argument : \"mode=developer\".""")
         self.update_box()
 
     def create_line_input(self) :
-        # Create a new line of input and update the box
+        """Create a new line of input and update the box"""
 
         def config_dropdown_input_type(self, dropdown) :
             types = list(mu.io_type.keys())
@@ -1008,7 +1013,7 @@ the manager with the argument : \"mode=developer\".""")
         self.update_box()
 
     def create_line_output(self) :
-        # Create a new line of output and update the box
+        """Create a new line of output and update the box"""
 
         def config_dropdown_output_type(self, dropdown) :
             types = list(mu.io_type.keys())
@@ -1042,6 +1047,8 @@ the manager with the argument : \"mode=developer\".""")
         self.update_box()
 
     def apply_mode(self) :
+        """ Reset the inputs and add one steamed matrix and one stimulation input"""
+
         mode = self.dropdown_mode.currentText()
         # delete old inputs
         for line in self.current_inputs :
@@ -1078,6 +1085,8 @@ the manager with the argument : \"mode=developer\".""")
             raise Exception("Mode {} not known.".format(mode))
 
     def extract_infos_box(self) :
+        """Read all the fields and retrieve all information from the current box."""
+
         boxname = self.dropdown_boxname.currentText()
         boxdesc = self.text_description.toPlainText().replace('\n', '\\n')
         boxscript = self.text_script.text()
@@ -1110,7 +1119,9 @@ the manager with the argument : \"mode=developer\".""")
         return box
 
     def compile_create_box(self) :
-        # Make modification to create or modify the box, Compile openvibe
+        """Modify the files for all the box that have been opened by the manager and compile openvibe.
+        If the compilation failed, set all the files back to before all modifications."""
+
         if self.current_box is None :
             return
 
@@ -1189,7 +1200,7 @@ the manager with the argument : \"mode=developer\".""")
 
 
     def compile_delete_box(self) :
-        # Make the modification to delete a box, compile openvibe
+        """Delete a box from the manager, to apply the deletion, openvibe needs to compile."""
 
         if self.current_box is None :
             return
@@ -1205,6 +1216,8 @@ the manager with the argument : \"mode=developer\".""")
             self.new_box()
     
     def update_box(self) :
+        """Retrieve all the settings the user as set to a local session memory."""
+
         if self.current_box is not None and not self.is_loaded : 
 
             old_name = self.current_box.name
@@ -1227,12 +1240,18 @@ the manager with the argument : \"mode=developer\".""")
     # Behaviour Stim manager
 
     def load_sound_file(self) :
+        """Help the user to select a .mp3 file in his computer system.
+        This will be the sound played by the box DatasetCreator when it comes to record
+        the associated action."""
+
         uri = QFileDialog().getOpenFileName(caption="Select the .mp3 file.",
                                             directory=mu.manager_folder,
                                             filter="*.mp3")[0]
         self.text_sound_stim_add.setText(self._translate("Pybox-Manager", uri))
 
     def create_label(self) :
+        """Add a stimlulation to openvibe, and compile openvibe."""
+
         label = self.text_name_stim_add.text()
         label = label.lower().replace(' ', '_')
         path_sound = self.text_sound_stim_add.text()
@@ -1245,6 +1264,8 @@ the manager with the argument : \"mode=developer\".""")
             print('The stimulation name must have a size above 2, and the path to the sound has to be defined.')
 
     def delete_label(self) :
+        """Remove a stimulation from openvibe and compile openvibe."""
+
         label = self.dropdown_stim_del.currentText()
         mu.delete_stimulation(mu.manager_folder, label)
         self.dropdown_stim_del.removeItem(self.dropdown_stim_del.currentIndex())
@@ -1253,6 +1274,7 @@ the manager with the argument : \"mode=developer\".""")
     # Behaviour custom types
 
     def create_line_add_value(self) :
+        """Create a line in the ui to set a value to a custom setting"""
     
         y = len(self.current_custom_settings_lines)
 
@@ -1281,6 +1303,7 @@ the manager with the argument : \"mode=developer\".""")
         self.update_custom_settings()
 
     def clear_custom_settings_manager(self, clear_name=True) :
+        """Clear every field in the custom setting window."""
 
         self.current_custom_setting = None
         if clear_name :
@@ -1294,6 +1317,9 @@ the manager with the argument : \"mode=developer\".""")
         self.current_custom_settings_lines = []
 
     def extract_infos_custom_setting(self) :
+        """Retireve all information of the current custom setting, and 
+        add it to a local session memory."""
+
         cs_name = self.dropdown_custom_setting_name.currentText()
 
         values = []
@@ -1303,6 +1329,9 @@ the manager with the argument : \"mode=developer\".""")
         return mu.Custom_Setting(cs_name, values)
 
     def load_custom_setting(self, reset=False) :
+        """Load all information from a custom setting and
+        fill the fields with it."""
+
         self.clear_custom_settings_manager(clear_name=False)
 
         cs_name = self.dropdown_custom_setting_name.currentText()
@@ -1331,7 +1360,8 @@ the manager with the argument : \"mode=developer\".""")
         self.update_custom_settings()
 
     def new_custom_setting(self) :
-        # Clear everything and prepare a new box
+        """Clear every fields and prepare a new custom setting."""
+
         self.clear_custom_settings_manager()
 
         self.current_custom_setting = mu.Custom_Setting(name='', values=[])
@@ -1342,6 +1372,8 @@ the manager with the argument : \"mode=developer\".""")
         self.dropdown_custom_setting_name.setCurrentIndex(index)
 
     def reset_custom_setting(self) :
+        """Reset all fields from the current custom setting."""
+
         if self.current_custom_setting is None :
             return
 
@@ -1356,6 +1388,8 @@ the manager with the argument : \"mode=developer\".""")
             self.current_custom_setting = mu.Custom_Setting(name=current_name, values=[])
 
     def duplicate_custom_setting(self) :
+        """Duplicate the current custom setting."""
+
         if self.current_custom_setting is None :
             mu.warning_msg('Cannot duplicate the custom setting, no custom setting have been selected.')
             return
@@ -1373,6 +1407,9 @@ the manager with the argument : \"mode=developer\".""")
         self.dropdown_custom_setting_name.setCurrentIndex(index-1)
 
     def update_custom_settings(self) :
+        """Verify if a modification has been made. If so,
+        retireve all information from the current custom settings, 
+        and save it to the local session memory """
         if self.current_custom_setting is not None and not self.is_loaded :
 
             old_name = self.current_custom_setting.name
@@ -1391,8 +1428,8 @@ the manager with the argument : \"mode=developer\".""")
                 mu.custom_settings[self.current_custom_setting.name] = self.current_custom_setting
 
     def compile_create_custom_setting(self) :
-        # Make all the modification to create/modify the current custom setting
-        # Then compile OpenViBE
+        """Make all the modification to create/modify the current custom setting
+        Then compile OpenViBE"""
         if self.current_custom_setting is None :
             return
 
@@ -1405,8 +1442,8 @@ the manager with the argument : \"mode=developer\".""")
         mu.compile(mu.manager_folder, mu.openvibe_folder)
 
     def compile_delete_custom_setting(self) :
-        # Make all the modification to delete the current custom setting
-        # Then compile OpenViBE
+        """Make all the modification to delete the current custom setting
+        Then compile OpenViBE"""
         if self.current_custom_setting is None :
             return 
 
