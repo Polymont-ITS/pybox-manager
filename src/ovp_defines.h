@@ -2,6 +2,8 @@
 
 
 // <tag> Tag Box Declaration
+#define OVP_ClassId_BoxAlgorithm_DataVizDesc                 OpenViBE::CIdentifier(0x12D25FFB, 0x53771B90)
+#define OVP_ClassId_BoxAlgorithm_DataViz                 OpenViBE::CIdentifier(0x1F1F132D, 0x7A4C0B84)
 
 
 //___________________________________________________________________//

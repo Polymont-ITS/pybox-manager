@@ -1,6 +1,7 @@
 #if defined TARGET_HAS_ThirdPartyPython
 
 #include "box-algorithms/CPolyBox.h"
+#include "box-algorithms/ovpDataViz.h"
 
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
@@ -10,6 +11,8 @@
 
 #include <string>
 #include <iostream>
+
+using namespace OpenViBE::Kernel;
 
 class CPythonInitializer
 {
@@ -123,139 +126,140 @@ OVP_Declare_Begin();
 	if (l_oPythonInitializer.IsPythonAvailable())
 	{
 		// <tag> OVP_Declare_New
+		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDataVizDesc);
 
 
 		// <tag> Custom Type Settings
 
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Classifier_Algorithm, "Classifier_Algorithm");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Nearest Centroid", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Nearest Neighbors Classifier", 1);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Gaussian Naive Bayes", 2);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Stochastic Gradient Descent", 3);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Logistic Regression", 4);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Decision Tree Classifier", 5);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Extra Trees", 6);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Bagging", 7);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Random Forest", 8);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Support Vector Machine", 9);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Linear Discriminant Analysis", 10);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "AdaBoost", 11);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Multi Layer Perceptron", 12);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Riemann Minimum Distance to Mean", 13);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Riemann Tangent Space", 14);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "None", 15);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Classifier_Algorithm, "Classifier_Algorithm");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Nearest Centroid", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Nearest Neighbors Classifier", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Gaussian Naive Bayes", 2);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Stochastic Gradient Descent", 3);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Logistic Regression", 4);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Decision Tree Classifier", 5);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Extra Trees", 6);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Bagging", 7);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Random Forest", 8);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Support Vector Machine", 9);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Linear Discriminant Analysis", 10);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "AdaBoost", 11);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Multi Layer Perceptron", 12);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Riemann Minimum Distance to Mean", 13);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "Riemann Tangent Space", 14);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Classifier_Algorithm, "None", 15);
 
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Knn_Algorithm, "Knn_Algorithm");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Knn_Algorithm, "auto", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Knn_Algorithm, "ball_tree", 1);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Knn_Algorithm, "kd_tree", 2);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Knn_Algorithm, "brute", 3);
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Knn_Weights, "Knn_Weights");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Knn_Weights, "uniform", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Knn_Weights, "distance", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Knn_Algorithm, "Knn_Algorithm");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Knn_Algorithm, "auto", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Knn_Algorithm, "ball_tree", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Knn_Algorithm, "kd_tree", 2);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Knn_Algorithm, "brute", 3);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Knn_Weights, "Knn_Weights");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Knn_Weights, "uniform", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Knn_Weights, "distance", 1);
 
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Metric, "Metric");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "cityblock", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "cosine", 1);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "euclidean", 2);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "l1", 3);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "l2", 4);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "manhattan", 5);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "braycurtis", 6);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "canberra", 7);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "chebyshev", 8);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "correlation", 9);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "dice", 10);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "hamming", 11);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "jaccard", 12);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "kulsinski", 13);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "minkowski", 14);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "mahalanobis", 15);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "rogerstanimoto", 16);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "russellrao", 17);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "seuclidean", 18);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "sokalmichener", 19);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "sokalsneath", 20);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "sqeuclidean", 21);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "yule", 22);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Metric, "Metric");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "cityblock", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "cosine", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "euclidean", 2);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "l1", 3);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "l2", 4);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "manhattan", 5);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "braycurtis", 6);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "canberra", 7);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "chebyshev", 8);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "correlation", 9);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "dice", 10);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "hamming", 11);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "jaccard", 12);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "kulsinski", 13);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "minkowski", 14);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "mahalanobis", 15);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "rogerstanimoto", 16);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "russellrao", 17);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "seuclidean", 18);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "sokalmichener", 19);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "sokalsneath", 20);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "sqeuclidean", 21);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Metric, "yule", 22);
 
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Penalty, "Penalty");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Penalty, "l1", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Penalty, "l2", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Penalty, "Penalty");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Penalty, "l1", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Penalty, "l2", 1);
 
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_SVM_Loss, "SVM_Loss");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SVM_Loss, "hinge", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SVM_Loss, "squared_hinge", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_SVM_Loss, "SVM_Loss");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SVM_Loss, "hinge", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SVM_Loss, "squared_hinge", 1);
 
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_SVM_MultiClass, "SVM_MultiClass");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SVM_MultiClass, "ovr", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SVM_MultiClass, "crammer_singer", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_SVM_MultiClass, "SVM_MultiClass");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SVM_MultiClass, "ovr", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SVM_MultiClass, "crammer_singer", 1);
 
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Criterion, "Criterion");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Criterion, "gini", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Criterion, "entropy", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Criterion, "Criterion");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Criterion, "gini", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Criterion, "entropy", 1);
 
 
 		// Logistic regression
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Log_reg_solver, "Solver");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_solver, "newton-cg", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_solver, "lbfgs", 1);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_solver, "liblinear", 2);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_solver, "sag", 3);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_solver, "saga", 4);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Log_reg_solver, "Solver");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_solver, "newton-cg", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_solver, "lbfgs", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_solver, "liblinear", 2);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_solver, "sag", 3);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_solver, "saga", 4);
 
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Log_reg_multi_class, "Multi_class");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_multi_class, "auto", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_multi_class, "ovr", 1);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_multi_class, "multinominal", 2);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_Log_reg_multi_class, "Multi_class");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_multi_class, "auto", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_multi_class, "ovr", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_Log_reg_multi_class, "multinominal", 2);
 
 
 		// Decision Tree Classifier
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_DecisionTree_splitter, "Splitter");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_DecisionTree_splitter, "best", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_DecisionTree_splitter, "random", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_DecisionTree_splitter, "Splitter");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_DecisionTree_splitter, "best", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_DecisionTree_splitter, "random", 1);
 
 		// MLP 
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_MLP_activation, "Activation");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_activation, "identity", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_activation, "logistic", 1);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_activation, "tanh", 2);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_activation, "relu", 3);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_MLP_activation, "Activation");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_activation, "identity", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_activation, "logistic", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_activation, "tanh", 2);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_activation, "relu", 3);
 
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_MLP_solver, "Solver");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_solver, "lbfgs", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_solver, "sgd", 1);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_solver, "adam", 2);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_MLP_solver, "Solver");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_solver, "lbfgs", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_solver, "sgd", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_solver, "adam", 2);
 
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_MLP_learning_rate, "Learning rate");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_learning_rate, "constant", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_learning_rate, "invscaling", 1);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_learning_rate, "adaptive", 2);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_MLP_learning_rate, "Learning rate");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_learning_rate, "constant", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_learning_rate, "invscaling", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_MLP_learning_rate, "adaptive", 2);
 
 		// SGD
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_SGD_loss, "Loss");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_loss, "hinge", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_loss, "log", 1);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_loss, "modified_huber", 2);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_loss, "squared_hinge", 3);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_loss, "perceptron", 4);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_SGD_loss, "Loss");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_loss, "hinge", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_loss, "log", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_loss, "modified_huber", 2);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_loss, "squared_hinge", 3);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_loss, "perceptron", 4);
 
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_SGD_learning_rate, "Learning rate");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_learning_rate, "optimal", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_learning_rate, "constant", 1);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_learning_rate, "invscaling", 2);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_learning_rate, "adaptive", 3);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_SGD_learning_rate, "Learning rate");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_learning_rate, "optimal", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_learning_rate, "constant", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_learning_rate, "invscaling", 2);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_SGD_learning_rate, "adaptive", 3);
 
 		// LDA
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_LDA_solver, "Loss");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_LDA_solver, "svd", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_LDA_solver, "lsqr", 1);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_LDA_solver, "eigen", 2);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_LDA_solver, "Loss");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_LDA_solver, "svd", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_LDA_solver, "lsqr", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_LDA_solver, "eigen", 2);
 
 		// ADA
-		rKernelContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_ADA_algorithm, "Algorithm");
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_ADA_algorithm, "SAMME", 0);
-		rKernelContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_ADA_algorithm, "SAMME.R", 1);
+		rPluginModuleContext.getTypeManager().registerEnumerationType(OVPoly_ClassId_ADA_algorithm, "Algorithm");
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_ADA_algorithm, "SAMME", 0);
+		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_ADA_algorithm, "SAMME.R", 1);
 
 	}
 
