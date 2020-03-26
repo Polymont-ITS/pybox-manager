@@ -1125,9 +1125,9 @@ the manager with the argument : \"mode=developer\".""")
         old_boxes = mu.find_all_boxes(mu.manager_folder, mu.io_type, mu.all_settings_type)
 
         # rollback prep
-        boxes_path = "{}/extras/contrib/plugins/processing/python/src/".format(mu.openvibe_folder)
+        boxes_path = "{}/src/".format(mu.manager_folder)
         copy_path = mu.manager_folder + 'boxes_copy/'
-        log_path = mu.openvibe_folder + 'compilation.log'
+        log_path = mu.manager_folder + 'compilation.log'
 
         try:
             shutil.copytree(boxes_path, copy_path)

@@ -32,7 +32,7 @@ def find_folders() :
 
 def find_all_stims():
     prefixe_stim = 'OVPoly_'
-    stims = [k for k in OpenViBE_stimulation.keys() if prefixe_stim in k]
+    stims = [k for k in Poly_stimulation.keys() if prefixe_stim in k]
     stims = [k[len(prefixe_stim):] for k in stims]
     return stims
 
@@ -353,7 +353,7 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
     # On set le script python a executer
     replace_in_file(path_file_header,
                     'm_sScriptFilename = "NewScript.py";',
-                    'm_sScriptFilename = "{}";'.format(path_script))
+                    'm_sScriptFilename = "{}";'.format(path_script.replace('\\', '/')))
 
 
     # 10/ We can then add our params
@@ -481,10 +481,12 @@ def compile(manager_folder, openvibe_folder):
     old_location = os.getcwd()
     os.chdir(openvibe_folder)
 
+    path_log = manager_folder + 'compilation.log'
+
     if system == 'Linux':
-        os.system('./build.sh | tee compilation.log')
+        os.system('./build.sh | tee {}'.format(path_log))
     elif system == 'Windows':
-        os.system('build.cmd > compilation.log')
+        os.system('build.cmd > {}'.format(path_log))
 
     # Set back to normal
     os.chdir(old_location)
@@ -511,7 +513,7 @@ def add_stimulation(manager_folder, label, file_sound) :
                     dico_string += c
             dico = ast.literal_eval(dico_string)
 
-            ids = [int(value) for key, value in OpenViBE_stimulation.items() if 'OVPoly' in key]
+            ids = [int(value) for key, value in Poly_stimulation.items() if 'OVPoly' in key]
             ids.sort()
             try :
                 current_id = ids[0]
@@ -703,7 +705,7 @@ category = ['Acquisition and network IO',
 
 
 sys.path.append('{}/share/'.format(manager_folder))
-from StimulationsCodes import OpenViBE_stimulation
+from PolyStimulations import Poly_stimulation
 
 custom_settings = find_all_custom_settings(manager_folder)
 all_settings_type = retrieve_settings_type(custom_settings, all_settings=True)
