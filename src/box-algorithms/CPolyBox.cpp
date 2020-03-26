@@ -299,7 +299,6 @@ bool CPolyBox::initialize()
 
 	//Initialize the clock frequency of the box depending on the first setting of the box
 	m_clockFrequency  = FSettingValueAutoCast(*this->getBoxAlgorithmContext(), 0);
-	m_sScriptFilename = FSettingValueAutoCast(*this->getBoxAlgorithmContext(), 1);
 
 	if (strlen(m_sScriptFilename.toASCIIString()) == 0)
 	{

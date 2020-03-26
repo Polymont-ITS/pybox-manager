@@ -51,7 +51,7 @@ def find_all_custom_settings(manager_folder) :
             custom_settings_confirmed = []
 
             for ct in custom_settings :
-                match = re.search(r"l_rTypeManager\.registerEnumerationType\({}, \"[a-zA-Z0-9_ \.]+\"\);".format(ct), text)
+                match = re.search(r"rKernelContext\.getTypeManager()\.registerEnumerationType\({}, \"[a-zA-Z0-9_ \.]+\"\);".format(ct), text)
                 if match is not None :
                     custom_settings_confirmed += [ct]
         return custom_settings_confirmed
@@ -63,7 +63,7 @@ def find_all_custom_settings(manager_folder) :
             text = f.read()
 
             for ct in custom_settings :
-                matchs = re.findall(r'l_rTypeManager\.registerEnumerationEntry\({}, "[0-9a-zA-Z_ \.]+", [0-9]+\);'.format(ct), text)
+                matchs = re.findall(r'rKernelContext\.getTypeManager()\.registerEnumerationEntry\({}, "[0-9a-zA-Z_ \.]+", [0-9]+\);'.format(ct), text)
                 values = []
 
                 for match in matchs :
@@ -77,43 +77,32 @@ def find_all_custom_settings(manager_folder) :
         return custom_values
 
     prefixe = 'OVPoly_ClassId_'
-    path_header = "{}/Assets/BoxManager/ovtk_defines.h".format(manager_folder)
-    path_cpp = "{}/Assets/BoxManager/ovtk_main.cpp".format(manager_folder)
+    path_header = "{}/src/ovp_defines.h".format(manager_folder)
+    path_cpp = "{}/src/ovp_main.cpp".format(manager_folder)
 
     custom_settings = get_custom_settings(path_header, prefixe)
     custom_settings = get_custom_settings_confirmed(path_cpp, custom_settings)
     custom_values = get_custom_values(path_cpp, custom_settings, prefixe)
     return custom_values
 
-def find_all_boxes(openvibe_folder, io_dic_type, settings_dic_type):
+def find_all_boxes(manager_folder, io_dic_type, settings_dic_type):
     """Génère une liste contenant toutes les box existantes pour OpenVibe"""
-    path_all_boxes = "{}/extras/contrib/plugins/processing/python/src/box-algorithms/".format(openvibe_folder)
+    path_all_boxes = "{}/src/box-algorithms/".format(manager_folder)
     list_all_files = os.listdir(path_all_boxes)
 
     directories = {}
     for elem in list_all_files:
         if os.path.isdir(path_all_boxes + elem):
-            # Path Script
 
-            with open(path_all_boxes + elem + "/ovp{}.cpp".format(elem), 'r') as f:
-                file_cpp = f.read()
-                match = re.match('(^.*)(?=(_\d+))', elem)
-
-                # case when the box is not the only one with the same script
-                if match != None:
-                    script_name = match.groups()[0]
-                else:
-                    script_name = elem
-
-                # script = re.findall(r"m_sScriptFilename = \"(.*{}.py)\";".format(script_name), file_cpp)[0]
-                script = re.findall(
-                    r"m_sScriptFilename = \"(.*.py)\";", file_cpp)[0]
-
-            # Description
             with open(path_all_boxes + elem + "/ovp{}.h".format(elem), 'r') as f:
                 file_h = f.read()
 
+                # Path Script
+                script = re.findall(
+                    r"m_sScriptFilename = \"(.*.py)\";", file_h)[0]
 
+
+                # Description
                 desc = re.findall(r"virtual OpenViBE::CString getShortDescription\(void\) const    "
                                   r"{ return OpenViBE::CString\(\"(.*?)\"\); }", file_h, flags=re.DOTALL)[0]
                 desc = desc.replace("\"", "\\\"")
@@ -125,6 +114,7 @@ def find_all_boxes(openvibe_folder, io_dic_type, settings_dic_type):
                 category = re.search(r'virtual OpenViBE::CString getCategory\(void\) const            '
                     '{ return OpenViBE::CString\(\"[a-zA-Z ]+\"\); }', file_h).group()
                 category = category[89:-5]
+                category = category[16:]
 
                 # Creation of the object
 
@@ -238,41 +228,6 @@ def remove_line_from_file(filename, tag):
         with open(filename, 'w') as f:
             f.write(text)
 
-def verify_initialization(manager_folder, openvibe_folder):
-    """Return true if the initialization has been done, false otherwise."""
-
-    # ovtk_defines.h
-    filename_to_copy = manager_folder + '/Assets/BoxManager/ovtk_defines.h'
-    filename_dist = openvibe_folder + '/sdk/toolkit/include/toolkit/ovtk_defines.h'
-    res = compare_file(filename_to_copy, filename_dist)
-    if not res :
-        return False
-
-    # ovtk_main.cpp
-    filename_to_copy = manager_folder + '/Assets/BoxManager/ovtk_main.cpp'
-    filename_dist = openvibe_folder + '/sdk/toolkit/src/ovtk_main.cpp'
-    res = compare_file(filename_to_copy, filename_dist)
-    if not res :
-        return False
-
-
-    return True
-
-def initialize_files(manager_folder, openvibe_folder):
-
-    # ovtk_defines.h
-    filename_to_copy = manager_folder + '/Assets/BoxManager/ovtk_defines.h'
-    filename_dist = openvibe_folder + '/sdk/toolkit/include/toolkit/ovtk_defines.h'
-    copyfile(filename_to_copy, filename_dist)
-
-    # ovtk_main.cpp
-    filename_to_copy = manager_folder + '/Assets/BoxManager/ovtk_main.cpp'
-    filename_dist = openvibe_folder + '/sdk/toolkit/src/ovtk_main.cpp'
-    copyfile(filename_to_copy, filename_dist)
-
-    print('Initialization manager done.')
-    info_msg('The manager just realized his initialization. For more informations, you can refer to the documentation.')
-
 
 def generate_new_id(openvibe_folder):
     """Génère un ensemble de 4 IDs aléatoires pour la création d'une nouvelle box openvibe"""
@@ -322,31 +277,22 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
 
     # 1/ We place ourselves at the root of the python boxe
     old_location = os.getcwd()
-    os.chdir("{}/extras/contrib/plugins/processing/python/src/".format(openvibe_folder))
+    os.chdir("{}/src/".format(manager_folder))
 
     # 2/ We create the corresponding directory
-    path_dir_box = 'box-algorithms/{}/'.format(box_name)
+    path_dir_box = 'box-algorithms/'
     full_path_dir_box = os.getcwd() + '/' + path_dir_box
 
-    if not os.path.isdir(path_dir_box) :
-        os.mkdir(path_dir_box)
-
     # We duplicate files from the original box 
-    path_file_cpp = path_dir_box + 'ovp{}.cpp'.format(box_name)
     path_file_header = path_dir_box + 'ovp{}.h'.format(box_name)
-
-    path_pattern_cpp = '{}Assets/BoxManager/ovpNewBoxPattern.cpp'.format(
+    path_pattern_header = '{}Assets/BoxManager/NewBoxPattern-skeletton.h'.format(
         manager_folder)
-    path_pattern_header = '{}Assets/BoxManager/ovpNewBoxPattern.h'.format(
-        manager_folder)
-
-    copyfile(path_pattern_cpp, path_file_cpp)
     copyfile(path_pattern_header, path_file_header)
+
 
     # 3/ We insert in ovp_defines.h the declaration of CIdentifiers
     filename = 'ovp_defines.h'
-    tag = '#define OVP_ClassId_BoxAlgorithm_PythonDesc                 OpenViBE::CIdentifier(0x404B6FFD, ' \
-          '0x12BDD429)'
+    tag = '// <tag> Tag Box Declaration'
     time.sleep(1)
     new_id1, new_id2, new_id3, new_id4 = generate_new_id(openvibe_folder)
     new_line = "#define OVP_ClassId_BoxAlgorithm_{}                 OpenViBE::CIdentifier({}, {})"\
@@ -362,30 +308,19 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
     new_line = '#include "{}"'.format(path_file_header)
     insert_line_in_file(filename, new_line, tag)
 
-    tag = 'OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmPythonDesc);'
+    tag = '// <tag> OVP_Declare_New'
     new_line = '\t\tOVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithm{}Desc);'.format(
         box_name)
     insert_line_in_file(filename, new_line, tag)
 
     # 5/ We replace in ovpmyBox.h
-    replace_in_file(path_file_header, '#include "../ovp_defines.h"',
-                    '#include "../../ovp_defines.h"')
     replace_in_file(path_file_header, 'CBoxAlgorithmNewBoxPattern',
                     'CBoxAlgorithm{}'.format(box_name))
-    replace_in_file(path_file_header, '__OpenViBEPlugins_BoxAlgorithm_NewBoxPattern_H__',
-                    '__OpenViBEPlugins_BoxAlgorithm_{}_H__'.format(box_name))
     replace_in_file(path_file_header, 'OVP_ClassId_BoxAlgorithm_NewBoxPattern',
                     'OVP_ClassId_BoxAlgorithm_{}'.format(box_name))
     replace_in_file(path_file_header, 'OVP_ClassId_BoxAlgorithm_NewBoxPatternDesc',
                     'OVP_ClassId_BoxAlgorithm_{}Desc'.format(box_name))
 
-    # 6/ We replace in ovpmyBox.cpp
-    replace_in_file(path_file_cpp, 'ovpNewBoxPattern.h',
-                    'ovp{}.h'.format(box_name))
-    replace_in_file(path_file_cpp, 'OVP_ClassId_BoxAlgorithm_NewBoxPatternDesc',
-                    'OVP_ClassId_BoxAlgorithm_{}Desc'.format(box_name))
-    replace_in_file(path_file_cpp, 'CBoxAlgorithmNewBoxPattern',
-                    'CBoxAlgorithm{}'.format(box_name))
 
     # 7/ We change the name, the description, the author name and the category
     desc = desc.replace("\"", "\\\"")
@@ -405,48 +340,43 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
                     + desc + '"); }')
     replace_in_file(path_file_header,
                     'virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("'
-                    'Aurelien Van Langhenhove and Laurent George"); }',
+                    'NewAuthor"); }',
                     'virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("'
                     + author + '"); }')
     replace_in_file(path_file_header,
                     'virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("'
-                    'Scripting"); }',
+                    'Scripting/Pybox/"); }',
                     'virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("'
                     + category + '"); }')
 
     # 8/ We set the python script to execute
     # On set le script python a executer
-    replace_in_file(path_file_cpp,
-                    'm_sScriptFilename = "/home/vegeta/Documents/openvibe-python/ScriptBox/NewBoxPattern.py";',
+    replace_in_file(path_file_header,
+                    'm_sScriptFilename = "NewScript.py";',
                     'm_sScriptFilename = "{}";'.format(path_script))
 
-    # 9/ We prevent the path from being modified 
-    replace_in_file(path_file_header,
-                    'prototype.addSetting("Script", OV_TypeId_Script, "");',
-                    '//prototype.addSetting("Script", OV_TypeId_Script, "");')
 
     # 10/ We can then add our params
-    # TODO Ajouter la gestion correcte des tabs au début des lignes.
-    tag = 'prototype.addSetting("Script", OV_TypeId_Script, "");'
+    tag = '// <tag> settings'
     for number, (key, kind, value) in reversed(list(settings.items())):
         if key:
             new_line = '                prototype.addSetting("{}", {}, "{}");'.format(
                 key, all_settings_type[kind], value)
             insert_line_in_file(path_file_header, new_line, tag)
 
-    # 11/ Essential to be able to read our params
-    replace_in_file(path_file_cpp,
-                    'for (uint32 i=2; i<l_rStaticBoxContext->getSettingCount(); i++)',
-                    'for (uint32 i=0; i<l_rStaticBoxContext->getSettingCount(); i++)')
-
-    # 12/ We can then addd our inputs our outputs
-    # TODO Ajouter la gestion correcte des tabs au début des lignes.
-    tag_input = '//prototype.addInput  ("Input stimulations", OV_TypeId_Stimulations);'
+    # 12/ We can then add our inputs and our outputs
+    tag_inoutset = '// <tag> input & output'
     for number, (name, kind) in reversed(list(inputs.items())):
         if name:
-            new_line = '                prototype.addInput  ("{}", {});'.format(
+            new_line = '                prototype.addInput("{}", {});'.format(
                 name, io_type[kind])
-            insert_line_in_file(path_file_header, new_line, tag_input)
+            insert_line_in_file(path_file_header, new_line, tag_inoutset)
+
+    for number, (name, kind) in reversed(list(outputs.items())):
+        new_line = '                prototype.addOutput("{}", {});'.format(
+            name, io_type[kind])
+        insert_line_in_file(path_file_header, new_line, tag_inoutset)
+
 
     # 13/ Permissions to modify boxes in OV
     if not modify_settings :
@@ -462,16 +392,10 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
                         "prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyOutput);",
                         "//prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyOutput);")
 
-    # TODO Ajouter la gestion correcte des tabs au début des lignes.
-    tag_output = '//prototype.addOutput ("Output stimulations", OV_TypeId_Stimulations);'
-    for number, (name, kind) in reversed(list(outputs.items())):
-        new_line = '                prototype.addOutput ("{}", {});'.format(
-            name, io_type[kind])
-        insert_line_in_file(path_file_header, new_line, tag_output)
-
     os.chdir(old_location)
 
-def delete_box(openvibe_folder, box_name):
+
+def delete_box(manager_folder, box_name):
     """Delete and modify files when deleting an existing box."""
     global system
 
@@ -479,11 +403,11 @@ def delete_box(openvibe_folder, box_name):
 
     # 1/ Change directory to src/
     old_location = os.getcwd()
-    os.chdir("{}/extras/contrib/plugins/processing/python/src/".format(openvibe_folder))
+    os.chdir("{}src/".format(manager_folder))
 
     # 2/ Remove directory with the box algorithms
-    path_box = 'box-algorithms/{}/'.format(box_name)
-    shutil.rmtree(path_box)
+    path_box = 'box-algorithms/ovp{}.h'.format(box_name)
+    os.remove(path_box)
 
     # 3/ Remove lines from ovp_defines.h
     path = 'ovp_defines.h'
@@ -497,19 +421,23 @@ def delete_box(openvibe_folder, box_name):
     tag = 'OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithm{}Desc);'.format(
         box_name)
     remove_line_from_file(path, tag)
-    tag = '#include "box-algorithms/{}/ovp{}.h"'.format(
+    tag = '#include "box-algorithms/ovp{}.h"'.format(
         box_name, box_name)
     remove_line_from_file(path, tag)
 
     os.chdir(old_location)
 
+
+# ------------------------------------------------------------
+
+
 def create_custom_setting(manager_folder, openvibe_folder, cs) :
 
     prefixe = 'OVPoly_ClassId_'
-    path_cpp = '{}/Assets/BoxManager/ovtk_main.cpp'.format(manager_folder)
-    path_header = '{}/Assets/BoxManager/ovtk_defines.h'.format(manager_folder)
+    path_cpp = '{}/src/ovp_main.cpp'.format(manager_folder)
+    path_header = '{}/src/ovp_defines.h'.format(manager_folder)
 
-    tag = '// Custom Type Settings tag'
+    tag = '// <tag> Custom Type Settings'
     cs_define = "{}{}".format(prefixe, cs.name)
 
     # header
@@ -519,10 +447,10 @@ def create_custom_setting(manager_folder, openvibe_folder, cs) :
 
     # cpp
     for value in reversed(cs.values) :
-        line_entry = '\tl_rTypeManager.registerEnumerationEntry({}, "{}", {});'.format(cs_define, value.text, value.id)
+        line_entry = '\trKernelContext.getTypeManager().registerEnumerationEntry({}, "{}", {});'.format(cs_define, value.text, value.id)
         insert_line_in_file(path_cpp, line_entry, tag)
 
-    line_type = '\tl_rTypeManager.registerEnumerationType({}, "{}");'.format(cs_define, cs.name)
+    line_type = '\trKernelContext.getTypeManager().registerEnumerationType({}, "{}");'.format(cs_define, cs.name)
     insert_line_in_file(path_cpp, line_type, tag)
 
 def delete_custom_setting(manager_folder, cs) :
@@ -539,8 +467,8 @@ def delete_custom_setting(manager_folder, cs) :
             f.write(new_text)
 
     prefixe = 'OVPoly_ClassId_'
-    path_cpp = '{}/Assets/BoxManager/ovtk_main.cpp'.format(manager_folder)
-    path_header = '{}/Assets/BoxManager/ovtk_defines.h'.format(manager_folder)
+    path_cpp = '{}/src/ovp_main.cpp'.format(manager_folder)
+    path_header = '{}/src/ovp_defines.h'.format(manager_folder)
 
     tag = '{}{}'.format(prefixe, cs.name)
     remove_lines_with_tag_in_file(path_header, tag)
@@ -548,9 +476,6 @@ def delete_custom_setting(manager_folder, cs) :
 
 def compile(manager_folder, openvibe_folder):
     """Recompile OpenVibe to take into account the changes."""
-
-    if not verify_initialization(manager_folder, openvibe_folder):
-        initialize_files(manager_folder, openvibe_folder)
 
     # Go to openvibe folder directory
     old_location = os.getcwd()
@@ -672,7 +597,7 @@ def get_name_duplicate(dict, name) :
 
 
 def delete_stimulation(manager_folder, label) :
-    path_file_stim = '{}/Assets/BoxManager/StimulationsCodes.py'.format(manager_folder)
+    path_file_stim = '{}/share/StimulationsCodes.py'.format(manager_folder)
     remove_line_from_file(path_file_stim, label)
     path_sound = '{}/Assets/Sounds/{}.mp3'.format(manager_folder, label.lower())
     os.remove(path_sound)
@@ -777,12 +702,12 @@ category = ['Acquisition and network IO',
         ]
 
 
-sys.path.append('{}/Assets/BoxManager/'.format(manager_folder))
+sys.path.append('{}/share/'.format(manager_folder))
 from StimulationsCodes import OpenViBE_stimulation
 
 custom_settings = find_all_custom_settings(manager_folder)
 all_settings_type = retrieve_settings_type(custom_settings, all_settings=True)
 settings_type = retrieve_settings_type(custom_settings)
 
-boxes = find_all_boxes(openvibe_folder, io_type, all_settings_type)
+boxes = find_all_boxes(manager_folder, io_type, all_settings_type)
 stims = find_all_stims()

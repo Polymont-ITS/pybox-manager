@@ -1,3 +1,13 @@
+///-------------------------------------------------------------------------------------------------
+/// 
+/// \file NewBoxPattern.h
+/// \brief Class NewBoxPattern
+/// \author Thibaut Monseigne (Inria) & Jimmy Leblanc (Polymont) & Yannis Bendi-Ouis (Polymont) 
+/// \version 1.0.
+/// \date 12/03/2020.
+/// \copyright <a href="https://choosealicense.com/licenses/agpl-3.0/%22%3EGNU Affero General Public License v3.0</a>.
+/// 
+///-------------------------------------------------------------------------------------------------
 #pragma once
 
 #if defined TARGET_HAS_ThirdPartyPython
@@ -22,6 +32,7 @@ namespace OpenViBEPlugins
 		class CBoxAlgorithmNewBoxPattern final : public CPolyBox
 		{
 		public:
+			CBoxAlgorithmNewBoxPattern() { m_sScriptFilename = "NewScript.py";}
 			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_NewBoxPattern);
 		};
 		
@@ -52,7 +63,7 @@ namespace OpenViBEPlugins
 			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("NewAuthor"); }
 			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("NewCompany"); }
 			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Default Python Description"); }
-			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString("NewDescription"); }
+			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString(""); }
 			virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("Scripting/Pybox/"); }
 			virtual OpenViBE::CString getVersion(void) const             { return OpenViBE::CString("0.1"); }
 			virtual OpenViBE::CString getStockItemName(void) const       { return OpenViBE::CString("gtk-missing-image"); }
@@ -65,6 +76,7 @@ namespace OpenViBEPlugins
 			virtual bool getBoxPrototype(OpenViBE::Kernel::IBoxProto& prototype) const
 			{
 				prototype.addSetting("Clock frequency (Hz)", OV_TypeId_Integer, "64");
+				// <tag> settings
 				
 				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddInput);
 				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);
@@ -80,6 +92,8 @@ namespace OpenViBEPlugins
 				prototype.addOutputSupport(OV_TypeId_Signal);
 				prototype.addOutputSupport(OV_TypeId_Stimulations);
 				prototype.addOutputSupport(OV_TypeId_StreamedMatrix);
+
+				// <tag> input & output
 				
 				return true;
 			}

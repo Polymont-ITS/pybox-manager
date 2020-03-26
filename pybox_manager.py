@@ -822,7 +822,7 @@ the manager with the argument : \"mode=developer\".""")
 
         if reset :
             # We reset the box
-            self.current_box = mu.find_all_boxes(mu.openvibe_folder, mu.io_type, mu.all_settings_type)[boxname]
+            self.current_box = mu.find_all_boxes(mu.manager_folder, mu.io_type, mu.all_settings_type)[boxname]
         else :
             # we load the box
             self.current_box = mu.boxes[boxname]
@@ -888,7 +888,7 @@ the manager with the argument : \"mode=developer\".""")
         if self.current_box is None  :
             return
 
-        boxes = mu.find_all_boxes(mu.openvibe_folder, mu.io_type, mu.all_settings_type)
+        boxes = mu.find_all_boxes(mu.manager_folder, mu.io_type, mu.all_settings_type)
         current_name = self.current_box.name
 
         if current_name in boxes :
@@ -1122,7 +1122,7 @@ the manager with the argument : \"mode=developer\".""")
             mu.warning_msg('The box needs a script.')
             return
 
-        old_boxes = mu.find_all_boxes(mu.openvibe_folder, mu.io_type, mu.all_settings_type)
+        old_boxes = mu.find_all_boxes(mu.manager_folder, mu.io_type, mu.all_settings_type)
 
         # rollback prep
         boxes_path = "{}/extras/contrib/plugins/processing/python/src/".format(mu.openvibe_folder)
@@ -1138,7 +1138,7 @@ the manager with the argument : \"mode=developer\".""")
             
         if self.current_box.name in old_boxes.keys() and self.current_box.to_be_updated:
             # Modification of an existing box
-            mu.delete_box(mu.openvibe_folder, self.current_box.name)
+            mu.delete_box(mu.manager_folder, self.current_box.name)
 
 
         for box in filter(lambda x: mu.boxes[x].to_be_updated, mu.boxes):
@@ -1194,7 +1194,7 @@ the manager with the argument : \"mode=developer\".""")
         if self.current_box is None :
             return
 
-        mu.delete_box(mu.openvibe_folder, self.current_box.name)
+        mu.delete_box(mu.manager_folder, self.current_box.name)
         # mu.compile(mu.manager_folder, mu.openvibe_folder)
 
         self.dropdown_boxname.removeItem(self.dropdown_boxname.currentIndex())
