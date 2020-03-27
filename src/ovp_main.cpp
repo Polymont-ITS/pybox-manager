@@ -2,7 +2,6 @@
 
 #include "box-algorithms/CPolyBox.h"
 #include "box-algorithms/ovpSVM.h"
-#include "box-algorithms/ovpS.h"
 #include "box-algorithms/ovpADA.h"
 #include "box-algorithms/ovpSGD.h"
 #include "box-algorithms/ovpRMDM.h"
@@ -145,7 +144,6 @@ OVP_Declare_Begin();
 	{
 		// <tag> OVP_Declare_New
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmSVMDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmSDesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmADADesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmSGDDesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmRMDMDesc);

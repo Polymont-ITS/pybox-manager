@@ -10,8 +10,6 @@
 // <tag> Tag Box Declaration
 #define OVP_ClassId_BoxAlgorithm_SVMDesc                 OpenViBE::CIdentifier(0x24F02333, 0x4B1266EC)
 #define OVP_ClassId_BoxAlgorithm_SVM                 OpenViBE::CIdentifier(0x701D1330, 0x6F51634D)
-#define OVP_ClassId_BoxAlgorithm_SDesc                 OpenViBE::CIdentifier(0x7CA613DC, 0x3EEA725C)
-#define OVP_ClassId_BoxAlgorithm_S                 OpenViBE::CIdentifier(0x701A6934, 0x2989054D)
 #define OVP_ClassId_BoxAlgorithm_ADADesc                 OpenViBE::CIdentifier(0x545B0486, 0x32C27DCB)
 #define OVP_ClassId_BoxAlgorithm_ADA                 OpenViBE::CIdentifier(0x70163F38, 0x63C1274E)
 #define OVP_ClassId_BoxAlgorithm_SGDDesc                 OpenViBE::CIdentifier(0x510B61A1, 0x1D91441B)
