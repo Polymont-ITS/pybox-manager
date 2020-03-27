@@ -150,7 +150,7 @@ def find_all_boxes(manager_folder, io_dic_type, settings_dic_type):
 
                 # inputs
                 inputs = re.findall(
-                    r"(?<!//)prototype.addInput  \(\"(.*)\", (OV_TypeId_[a-zA-Z]*)\);", file_h)
+                    r"(?<!\/\/)prototype\.addInput\(\"(.*)\", (OV_TypeId_[a-zA-Z]*)\);", file_h)
             
                 # Same value as the one in counters in the display part
                 inputs_compt = 2
@@ -163,7 +163,7 @@ def find_all_boxes(manager_folder, io_dic_type, settings_dic_type):
 
                 # outputs
                 outputs = re.findall(
-                    r"(?<!//)prototype.addOutput \(\"(.*)\", (OV_TypeId_[a-zA-Z]*)\);", file_h)
+                    r"(?<!\/\/)prototype\.addOutput\(\"(.*)\", (OV_TypeId_[a-zA-Z]*)\);", file_h)
                 # Same value as the one in counters in the display part
                 outputs_compt = 2
                 for out in outputs:
