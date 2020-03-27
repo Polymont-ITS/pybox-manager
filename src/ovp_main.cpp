@@ -1,10 +1,13 @@
 #if defined TARGET_HAS_ThirdPartyPython
 
 #include "box-algorithms/CPolyBox.h"
+#include "box-algorithms/ovpRandom_Forest.h"
+#include "box-algorithms/ovpNearestCentroid.h"
+#include "box-algorithms/ovpProcessML.h"
+#include "box-algorithms/ovpADA.h"
 #include "box-algorithms/ovpMLP.h"
 #include "box-algorithms/ovpLogistic_Regression.h"
 #include "box-algorithms/ovpLDA.h"
-#include "box-algorithms/ovpADA.h"
 #include "box-algorithms/ovpKNearestNeighbors.h"
 #include "box-algorithms/ovpGaussianNB.h"
 #include "box-algorithms/ovpExtra_Trees.h"
@@ -136,10 +139,13 @@ OVP_Declare_Begin();
 	if (l_oPythonInitializer.IsPythonAvailable())
 	{
 		// <tag> OVP_Declare_New
+		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmRandom_ForestDesc);
+		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmNearestCentroidDesc);
+		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmProcessMLDesc);
+		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmADADesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmMLPDesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmLogistic_RegressionDesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmLDADesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmADADesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmKNearestNeighborsDesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmGaussianNBDesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmExtra_TreesDesc);

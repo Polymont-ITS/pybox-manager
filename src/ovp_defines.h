@@ -8,14 +8,20 @@
 //                                                                   //
 
 // <tag> Tag Box Declaration
+#define OVP_ClassId_BoxAlgorithm_Random_ForestDesc                 OpenViBE::CIdentifier(0x770F61AE, 0x249C00DE)
+#define OVP_ClassId_BoxAlgorithm_Random_Forest                 OpenViBE::CIdentifier(0x601714D2, 0x113A36AB)
+#define OVP_ClassId_BoxAlgorithm_NearestCentroidDesc                 OpenViBE::CIdentifier(0x4EC45258, 0x18740C4D)
+#define OVP_ClassId_BoxAlgorithm_NearestCentroid                 OpenViBE::CIdentifier(0x60146AD6, 0x4B7258AB)
+#define OVP_ClassId_BoxAlgorithm_ProcessMLDesc                 OpenViBE::CIdentifier(0x176058B5, 0x590C72B3)
+#define OVP_ClassId_BoxAlgorithm_ProcessML                 OpenViBE::CIdentifier(0x5C40370C, 0x04DE3179)
+#define OVP_ClassId_BoxAlgorithm_ADADesc                 OpenViBE::CIdentifier(0x46CB3A07, 0x40BB0992)
+#define OVP_ClassId_BoxAlgorithm_ADA                 OpenViBE::CIdentifier(0x5C3A6313, 0x794E757B)
 #define OVP_ClassId_BoxAlgorithm_MLPDesc                 OpenViBE::CIdentifier(0x732040F3, 0x54E62C37)
 #define OVP_ClassId_BoxAlgorithm_MLP                 OpenViBE::CIdentifier(0x51E8346E, 0x73BB69A6)
 #define OVP_ClassId_BoxAlgorithm_Logistic_RegressionDesc                 OpenViBE::CIdentifier(0x37E11D02, 0x215F05FD)
 #define OVP_ClassId_BoxAlgorithm_Logistic_Regression                 OpenViBE::CIdentifier(0x4BCF4F24, 0x27F966EE)
 #define OVP_ClassId_BoxAlgorithm_LDADesc                 OpenViBE::CIdentifier(0x0F970DAB, 0x1536116C)
 #define OVP_ClassId_BoxAlgorithm_LDA                 OpenViBE::CIdentifier(0x4BCC2527, 0x623108EF)
-#define OVP_ClassId_BoxAlgorithm_ADADesc                 OpenViBE::CIdentifier(0x674C7E54, 0x090E1CDB)
-#define OVP_ClassId_BoxAlgorithm_ADA                 OpenViBE::CIdentifier(0x4BC87B2B, 0x1C692AEF)
 #define OVP_ClassId_BoxAlgorithm_KNearestNeighborsDesc                 OpenViBE::CIdentifier(0x370856AD, 0x252D258F)
 #define OVP_ClassId_BoxAlgorithm_KNearestNeighbors                 OpenViBE::CIdentifier(0x47EB496C, 0x047D69BF)
 #define OVP_ClassId_BoxAlgorithm_GaussianNBDesc                 OpenViBE::CIdentifier(0x0EBE4757, 0x190530FF)

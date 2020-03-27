@@ -1149,6 +1149,9 @@ the manager with the argument : \"mode=developer\".""")
         except Exception as e:
             print(e)
 
+
+        print('Generation of the files in progress...')
+
         
         for box in filter(lambda x: mu.boxes[x].to_be_updated, mu.boxes):
 
