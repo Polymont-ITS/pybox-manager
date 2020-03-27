@@ -79,7 +79,7 @@ namespace OpenViBEPlugins
 				// <tag> settings
                 prototype.addSetting("Filename to save model to", OV_TypeId_Filename, "");
                 prototype.addSetting("Filename to load model from", OV_TypeId_Filename, "");
-                prototype.addSetting("Classifier", OVPoly_ClassId_Classifier_Algorithm, "AdaBoost");
+                prototype.addSetting("Classifier", OVPoly_ClassId_Classifier_Algorithm, "Logistic Regression");
                 prototype.addSetting("Test set share", OV_TypeId_Float, "0.2");
                 prototype.addSetting("Labels", OV_TypeId_String, "");
                 prototype.addSetting("penalty", OVPoly_ClassId_Penalty, "l2");

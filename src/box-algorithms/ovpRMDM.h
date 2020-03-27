@@ -29,14 +29,14 @@ namespace OpenViBEPlugins
 {
 	namespace Python
 	{
-		class CBoxAlgorithmNearestCentroid final : public CPolyBox
+		class CBoxAlgorithmRMDM final : public CPolyBox
 		{
 		public:
-			CBoxAlgorithmNearestCentroid() { m_sScriptFilename = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/TrainerML.py";}
-			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_NearestCentroid);
+			CBoxAlgorithmRMDM() { m_sScriptFilename = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/TrainerML.py";}
+			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_RMDM);
 		};
 		
-		class CBoxAlgorithmNearestCentroidListener final : public OpenViBEToolkit::TBoxListener<OpenViBE::Plugins::IBoxListener>
+		class CBoxAlgorithmRMDMListener final : public OpenViBEToolkit::TBoxListener<OpenViBE::Plugins::IBoxListener>
 		{
 		public:
 			bool onInputAdded(OpenViBE::Kernel::IBox& box, const uint32_t index) override
@@ -53,24 +53,24 @@ namespace OpenViBEPlugins
 			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier);
 		};
 		
-		class CBoxAlgorithmNearestCentroidDesc final : virtual public OpenViBE::Plugins::IBoxAlgorithmDesc
+		class CBoxAlgorithmRMDMDesc final : virtual public OpenViBE::Plugins::IBoxAlgorithmDesc
 		{
 		public:
 
 			virtual void release(void) { }
 
-			virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString("NearestCentroid"); }
+			virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString("RMDM"); }
 			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("Jimmy Leblanc & Yannis Bendi-Ouis"); }
 			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("NewCompany"); }
-			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Train a Nearest Centroid Classifier from Sklearn."); }
+			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Riemann minimum distance to mean classifier.\nYou can add another classifier at the end to perform classification by passing a discriminator even though it is purely optionnal."); }
 			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString(""); }
 			virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("Scripting/PyBox/Classification"); }
 			virtual OpenViBE::CString getVersion(void) const             { return OpenViBE::CString("0.1"); }
 			virtual OpenViBE::CString getStockItemName(void) const       { return OpenViBE::CString("gtk-missing-image"); }
 
-			virtual OpenViBE::CIdentifier getCreatedClass(void) const    { return OVP_ClassId_BoxAlgorithm_NearestCentroid; }
-			virtual OpenViBE::Plugins::IPluginObject* create(void)       { return new CBoxAlgorithmNearestCentroid; }
-			virtual OpenViBE::Plugins::IBoxListener* createBoxListener(void) const               { return new CBoxAlgorithmNearestCentroidListener; }
+			virtual OpenViBE::CIdentifier getCreatedClass(void) const    { return OVP_ClassId_BoxAlgorithm_RMDM; }
+			virtual OpenViBE::Plugins::IPluginObject* create(void)       { return new CBoxAlgorithmRMDM; }
+			virtual OpenViBE::Plugins::IBoxListener* createBoxListener(void) const               { return new CBoxAlgorithmRMDMListener; }
 			virtual void releaseBoxListener(OpenViBE::Plugins::IBoxListener* pBoxListener) const { delete pBoxListener; }
 
 			virtual bool getBoxPrototype(OpenViBE::Kernel::IBoxProto& prototype) const
@@ -79,11 +79,10 @@ namespace OpenViBEPlugins
 				// <tag> settings
                 prototype.addSetting("Filename to save model to", OV_TypeId_Filename, "");
                 prototype.addSetting("Filename to load model from", OV_TypeId_Filename, "");
-                prototype.addSetting("Classifier", OVPoly_ClassId_Classifier_Algorithm, "Nearest Centroid");
+                prototype.addSetting("Classifier", OVPoly_ClassId_Classifier_Algorithm, "Riemann Minimum Distance to Mean");
                 prototype.addSetting("Test set share", OV_TypeId_Float, "0.2");
                 prototype.addSetting("Labels", OV_TypeId_String, "");
-                prototype.addSetting("metric", OVPoly_ClassId_Metric, "euclidean");
-                prototype.addSetting("shrink_threshold", OV_TypeId_String, "");
+                prototype.addSetting("Discriminator", OVPoly_ClassId_Classifier_Algorithm, "None");
 				
 				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddInput);
 				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);
@@ -108,7 +107,7 @@ namespace OpenViBEPlugins
 				return true;
 			}
 
-			_IsDerivedFromClass_Final_(OpenViBE::Plugins::IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_NearestCentroidDesc);
+			_IsDerivedFromClass_Final_(OpenViBE::Plugins::IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_RMDMDesc);
 		};
 	};
 };
