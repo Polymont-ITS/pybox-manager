@@ -795,6 +795,9 @@ the manager with the argument : \"mode=developer\".""")
         uri = QFileDialog().getOpenFileName(caption="Select the python script to insert.",
                                             directory=mu.manager_folder,
                                             filter="*.py")[0]
+        if uri == "" :
+            # The user close the dialog without pick any file.
+            return 
 
         uri = os.path.relpath(uri, mu.openvibe_folder + 'dist/extras-Release/')
 
