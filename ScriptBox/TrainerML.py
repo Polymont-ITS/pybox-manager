@@ -2,6 +2,8 @@
 import warnings
 warnings.filterwarnings("ignore")
 
+from PolyBox import PolyBox
+
 from collections import defaultdict
 import numpy as np
 import pickle

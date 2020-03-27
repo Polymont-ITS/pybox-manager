@@ -2,6 +2,8 @@
 import warnings
 warnings.filterwarnings("ignore")
 
+from PolyBox import PolyBox
+
 import pickle
 import pandas as pd
 import numpy as np
@@ -9,6 +11,7 @@ from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import importlib
 
 
 class DataViz(PolyBox) :

@@ -3,6 +3,7 @@
 #Created By : Yannis Bendi-Ouis & 
 
 from StimulationsCodes import *
+from openvibe import *
 import sys, traceback, collections
 from StringIO import StringIO
 from pathlib import Path
