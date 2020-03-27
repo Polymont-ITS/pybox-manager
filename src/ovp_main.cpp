@@ -1,8 +1,10 @@
 #if defined TARGET_HAS_ThirdPartyPython
 
 #include "box-algorithms/CPolyBox.h"
-#include "box-algorithms/ovpSVM.h"
+#include "box-algorithms/ovpDataViz.h"
 #include "box-algorithms/ovpADA.h"
+#include "box-algorithms/ovpDatasetCreator.h"
+#include "box-algorithms/ovpSVM.h"
 #include "box-algorithms/ovpSGD.h"
 #include "box-algorithms/ovpRMDM.h"
 #include "box-algorithms/ovpRiemann_Tangent_Space.h"
@@ -16,8 +18,6 @@
 #include "box-algorithms/ovpGaussianNB.h"
 #include "box-algorithms/ovpExtra_Trees.h"
 #include "box-algorithms/ovpDecision_Tree_Classifier.h"
-#include "box-algorithms/ovpDataViz.h"
-#include "box-algorithms/ovpDatasetCreator.h"
 #include "box-algorithms/ovpBagging.h"
 
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
@@ -143,8 +143,10 @@ OVP_Declare_Begin();
 	if (l_oPythonInitializer.IsPythonAvailable())
 	{
 		// <tag> OVP_Declare_New
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmSVMDesc);
+		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDataVizDesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmADADesc);
+		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDatasetCreatorDesc);
+		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmSVMDesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmSGDDesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmRMDMDesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmRiemann_Tangent_SpaceDesc);
@@ -158,8 +160,6 @@ OVP_Declare_Begin();
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmGaussianNBDesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmExtra_TreesDesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDecision_Tree_ClassifierDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDataVizDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDatasetCreatorDesc);
 		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmBaggingDesc);
 
 

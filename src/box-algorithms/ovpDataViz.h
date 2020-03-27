@@ -80,7 +80,7 @@ namespace OpenViBEPlugins
                 prototype.addSetting("Path to save the model", OV_TypeId_Filename, "");
                 prototype.addSetting("Path to load the model", OV_TypeId_Filename, "");
                 prototype.addSetting("Algorithm (PCA or LDA)", OV_TypeId_String, "PCA");
-                prototype.addSetting("Dimension reduction", OV_TypeId_Integer, "");
+                prototype.addSetting("Dimension reduction", OV_TypeId_Integer, "2");
                 prototype.addSetting("Labels", OV_TypeId_String, "");
 				
 				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddInput);
