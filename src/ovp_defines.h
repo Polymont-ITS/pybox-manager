@@ -8,8 +8,14 @@
 //                                                                   //
 
 // <tag> Tag Box Declaration
-#define OVP_ClassId_BoxAlgorithm_LDADesc                 OpenViBE::CIdentifier(0x5F536604, 0x31561A20)
-#define OVP_ClassId_BoxAlgorithm_LDA                 OpenViBE::CIdentifier(0x47EE7368, 0x4A4547BE)
+#define OVP_ClassId_BoxAlgorithm_MLPDesc                 OpenViBE::CIdentifier(0x732040F3, 0x54E62C37)
+#define OVP_ClassId_BoxAlgorithm_MLP                 OpenViBE::CIdentifier(0x51E8346E, 0x73BB69A6)
+#define OVP_ClassId_BoxAlgorithm_Logistic_RegressionDesc                 OpenViBE::CIdentifier(0x37E11D02, 0x215F05FD)
+#define OVP_ClassId_BoxAlgorithm_Logistic_Regression                 OpenViBE::CIdentifier(0x4BCF4F24, 0x27F966EE)
+#define OVP_ClassId_BoxAlgorithm_LDADesc                 OpenViBE::CIdentifier(0x0F970DAB, 0x1536116C)
+#define OVP_ClassId_BoxAlgorithm_LDA                 OpenViBE::CIdentifier(0x4BCC2527, 0x623108EF)
+#define OVP_ClassId_BoxAlgorithm_ADADesc                 OpenViBE::CIdentifier(0x674C7E54, 0x090E1CDB)
+#define OVP_ClassId_BoxAlgorithm_ADA                 OpenViBE::CIdentifier(0x4BC87B2B, 0x1C692AEF)
 #define OVP_ClassId_BoxAlgorithm_KNearestNeighborsDesc                 OpenViBE::CIdentifier(0x370856AD, 0x252D258F)
 #define OVP_ClassId_BoxAlgorithm_KNearestNeighbors                 OpenViBE::CIdentifier(0x47EB496C, 0x047D69BF)
 #define OVP_ClassId_BoxAlgorithm_GaussianNBDesc                 OpenViBE::CIdentifier(0x0EBE4757, 0x190530FF)
@@ -24,8 +30,6 @@
 #define OVP_ClassId_BoxAlgorithm_DatasetCreator                 OpenViBE::CIdentifier(0x47D74D81, 0x61CC35C3)
 #define OVP_ClassId_BoxAlgorithm_BaggingDesc                 OpenViBE::CIdentifier(0x1CFE6B4E, 0x5012759A)
 #define OVP_ClassId_BoxAlgorithm_Bagging                 OpenViBE::CIdentifier(0x47D42385, 0x1C0457C4)
-#define OVP_ClassId_BoxAlgorithm_ADADesc                 OpenViBE::CIdentifier(0x74B45BF7, 0x43EA010A)
-#define OVP_ClassId_BoxAlgorithm_ADA                 OpenViBE::CIdentifier(0x47D17989, 0x563C79C5)
 
 
 
