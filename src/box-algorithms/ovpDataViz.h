@@ -60,9 +60,9 @@ namespace OpenViBEPlugins
 			virtual void release(void) { }
 
 			virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString("DataViz"); }
-			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("YB"); }
+			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("Yannis Bendi-Ouis & Jimmy Leblanc"); }
 			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("NewCompany"); }
-			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("This box plots the data."); }
+			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Transform the data with a LDA or a PCA and plot the data in 2D or 3D."); }
 			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString(""); }
 			virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("Scripting/PyBox/Visualization"); }
 			virtual OpenViBE::CString getVersion(void) const             { return OpenViBE::CString("0.1"); }
@@ -77,7 +77,11 @@ namespace OpenViBEPlugins
 			{
 				prototype.addSetting("Clock frequency (Hz)", OV_TypeId_Integer, "64");
 				// <tag> settings
-                prototype.addSetting("set", OV_TypeId_Boolean, "");
+                prototype.addSetting("Path to save the model", OV_TypeId_Filename, "");
+                prototype.addSetting("Path to load the model", OV_TypeId_Filename, "");
+                prototype.addSetting("Algorithm (PCA or LDA)", OV_TypeId_String, "PCA");
+                prototype.addSetting("Dimension reduction", OV_TypeId_Integer, "");
+                prototype.addSetting("Labels", OV_TypeId_String, "");
 				
 				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddInput);
 				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);
@@ -95,6 +99,9 @@ namespace OpenViBEPlugins
 				prototype.addOutputSupport(OV_TypeId_StreamedMatrix);
 
 				// <tag> input & output
+                prototype.addOutput("stim_out", OV_TypeId_Signal);
+                prototype.addInput("input_StreamMatrix", OV_TypeId_StreamedMatrix);
+                prototype.addInput("input_Stimulations", OV_TypeId_Stimulations);
 				
 				return true;
 			}

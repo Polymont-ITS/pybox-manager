@@ -55,7 +55,7 @@ def find_all_custom_settings(manager_folder) :
             custom_settings_confirmed = []
 
             for ct in custom_settings :
-                match = re.search(r"rKernelContext\.getTypeManager()\.registerEnumerationType\({}, \"[a-zA-Z0-9_ \.]+\"\);".format(ct), text)
+                match = re.search(r"rPluginModuleContext\.getTypeManager\(\)\.registerEnumerationType\({}, \"[a-zA-Z0-9_ \.]+\"\);".format(ct), text)
                 if match is not None :
                     custom_settings_confirmed += [ct]
         return custom_settings_confirmed
@@ -67,7 +67,7 @@ def find_all_custom_settings(manager_folder) :
             text = f.read()
 
             for ct in custom_settings :
-                matchs = re.findall(r'rKernelContext\.getTypeManager()\.registerEnumerationEntry\({}, "[0-9a-zA-Z_ \.]+", [0-9]+\);'.format(ct), text)
+                matchs = re.findall(r'rPluginModuleContext\.getTypeManager\(\)\.registerEnumerationEntry\({}, "[0-9a-zA-Z_ \.]+", [0-9]+\);'.format(ct), text)
                 values = []
 
                 for match in matchs :
@@ -87,6 +87,7 @@ def find_all_custom_settings(manager_folder) :
     custom_settings = get_custom_settings(path_header, prefixe)
     custom_settings = get_custom_settings_confirmed(path_cpp, custom_settings)
     custom_values = get_custom_values(path_cpp, custom_settings, prefixe)
+
     return custom_values
 
 def find_all_boxes(manager_folder, io_dic_type, settings_dic_type):
