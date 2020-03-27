@@ -103,9 +103,6 @@ namespace OpenViBEPlugins
 				prototype.addOutputSupport(OV_TypeId_StreamedMatrix);
 
 				// <tag> input & output
-                prototype.addOutput("stim_out", OV_TypeId_Signal);
-                prototype.addInput("input_StreamMatrix", OV_TypeId_StreamedMatrix);
-                prototype.addInput("input_Stimulations", OV_TypeId_Stimulations);
 				
 				return true;
 			}

@@ -1195,10 +1195,11 @@ the manager with the argument : \"mode=developer\".""")
         else :
             print('Compilation successfull !\n')
 
-        bns = list(mu.boxes.keys())
-        path_bns = [boxes_path + bns[i] + '/' for i in range(len(bns))]
-        path_bns = [pbns.replace('\\', '/').replace('//', '/') for pbns in path_bns]
-        print('List of Python Box existing :\n{}'.format('\n'.join(['{} - {}'.format(bns[i], path_bns[i]) for i in range(len(bns))])))
+            bns = list(mu.boxes.keys())
+            path_bns = [boxes_path + 'box-algorithms/' + bns[i] + '.h' for i in range(len(bns))]
+            path_bns = [pbns.replace('\\', '/').replace('//', '/') for pbns in path_bns]
+            print('List of Python Box existing :\n{}'.format('\n'.join(['{} - {}'.format(bns[i], path_bns[i]) for i in range(len(bns))])))
+            
         shutil.rmtree(copy_path)
 
 
