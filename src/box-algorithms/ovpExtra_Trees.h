@@ -92,11 +92,11 @@ namespace OpenViBEPlugins
                 prototype.addSetting("max_leaf_nodes", OV_TypeId_String, "None");
                 prototype.addSetting("min_impurity_decrease", OV_TypeId_Float, "0");
                 prototype.addSetting("min_impurity_split", OV_TypeId_Float, "1e-7");
-                prototype.addSetting("bootstrap", OVPoly_ClassId_ADA_algorithm, "false");
-                prototype.addSetting("oob_score", OVPoly_ClassId_ADA_algorithm, "false");
-                prototype.addSetting("verbose", OVPoly_ClassId_ADA_algorithm, "0");
-                prototype.addSetting("warm_start", OVPoly_ClassId_ADA_algorithm, "false");
-                prototype.addSetting("max_samples", OVPoly_ClassId_ADA_algorithm, "None");
+                prototype.addSetting("bootstrap", OV_TypeId_Boolean, "false");
+                prototype.addSetting("oob_score", OV_TypeId_Boolean, "false");
+                prototype.addSetting("verbose", OV_TypeId_Integer, "0");
+                prototype.addSetting("warm_start", OV_TypeId_Boolean, "false");
+                prototype.addSetting("max_samples", OV_TypeId_String, "None");
 				
 				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddInput);
 				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);
@@ -114,9 +114,6 @@ namespace OpenViBEPlugins
 				prototype.addOutputSupport(OV_TypeId_StreamedMatrix);
 
 				// <tag> input & output
-                prototype.addOutput("stim_out", OV_TypeId_Signal);
-                prototype.addInput("input_StreamMatrix", OV_TypeId_StreamedMatrix);
-                prototype.addInput("input_Stimulations", OV_TypeId_Stimulations);
 				
 				return true;
 			}

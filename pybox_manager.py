@@ -1149,30 +1149,32 @@ the manager with the argument : \"mode=developer\".""")
         except Exception as e:
             print(e)
 
-            
-        if self.current_box.name in old_boxes.keys() and self.current_box.to_be_updated:
-            # Modification of an existing box
-            mu.delete_box(mu.manager_folder, self.current_box.name)
-
-
+        
         for box in filter(lambda x: mu.boxes[x].to_be_updated, mu.boxes):
-            mu.boxes[box].to_be_updated = False
+
+            cb = mu.boxes[box]
+
+            if cb.name in old_boxes.keys() and cb.to_be_updated :
+                # Modification of an existing box
+                mu.delete_box(mu.manager_folder, cb.name)
+
+            cb.to_be_updated = False
             
             mu.create_box(mu.openvibe_folder,
                         mu.manager_folder,
                         mu.settings_type,
                         mu.io_type,
-                        mu.boxes[box].name,
-                        mu.boxes[box].description,
-                        mu.boxes[box].py_script,
-                        mu.boxes[box].category,
-                        mu.boxes[box].author,
-                        mu.boxes[box].settings,
-                        mu.boxes[box].inputs,
-                        mu.boxes[box].outputs,
-                        mu.boxes[box].modify_settings,
-                        mu.boxes[box].modify_inputs,
-                        mu.boxes[box].modify_outputs)
+                        cb.name,
+                        cb.description,
+                        cb.py_script,
+                        cb.category,
+                        cb.author,
+                        cb.settings,
+                        cb.inputs,
+                        cb.outputs,
+                        cb.modify_settings,
+                        cb.modify_inputs,
+                        cb.modify_outputs)
 
             
         print('Compilation in progress...')
@@ -1199,7 +1201,7 @@ the manager with the argument : \"mode=developer\".""")
             path_bns = [boxes_path + 'box-algorithms/' + bns[i] + '.h' for i in range(len(bns))]
             path_bns = [pbns.replace('\\', '/').replace('//', '/') for pbns in path_bns]
             print('List of Python Box existing :\n{}'.format('\n'.join(['{} - {}'.format(bns[i], path_bns[i]) for i in range(len(bns))])))
-            
+
         shutil.rmtree(copy_path)
 
 

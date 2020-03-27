@@ -8,20 +8,24 @@
 //                                                                   //
 
 // <tag> Tag Box Declaration
-#define OVP_ClassId_BoxAlgorithm_GaussianNBDesc                 OpenViBE::CIdentifier(0x66293EB5, 0x7B3F2DC2)
-#define OVP_ClassId_BoxAlgorithm_GaussianNB                 OpenViBE::CIdentifier(0x73CE51FC, 0x16823F6C)
-#define OVP_ClassId_BoxAlgorithm_ADADesc                 OpenViBE::CIdentifier(0x0E051D7B, 0x60C628CF)
-#define OVP_ClassId_BoxAlgorithm_ADA                 OpenViBE::CIdentifier(0x5CAD796F, 0x63E30E49)
-#define OVP_ClassId_BoxAlgorithm_Decision_Tree_ClassifierDesc                 OpenViBE::CIdentifier(0x0A51453D, 0x52BD199F)
-#define OVP_ClassId_BoxAlgorithm_Decision_Tree_Classifier                 OpenViBE::CIdentifier(0x47D9265C, 0x420374A9)
-#define OVP_ClassId_BoxAlgorithm_BaggingDesc                 OpenViBE::CIdentifier(0x10D31962, 0x73BF20F6)
-#define OVP_ClassId_BoxAlgorithm_Bagging                 OpenViBE::CIdentifier(0x3D452FFF, 0x48CD10E2)
-#define OVP_ClassId_BoxAlgorithm_Extra_TreesDesc                 OpenViBE::CIdentifier(0x0E0202B0, 0x0FB31636)
-#define OVP_ClassId_BoxAlgorithm_Extra_Trees                 OpenViBE::CIdentifier(0x324A7A15, 0x16926D31)
-#define OVP_ClassId_BoxAlgorithm_DataVizDesc                 OpenViBE::CIdentifier(0x29325884, 0x2D2F217A)
-#define OVP_ClassId_BoxAlgorithm_DataViz                 OpenViBE::CIdentifier(0x1126628D, 0x69240028)
-#define OVP_ClassId_BoxAlgorithm_DatasetCreatorDesc                 OpenViBE::CIdentifier(0x30CD06E1, 0x495A32C5)
-#define OVP_ClassId_BoxAlgorithm_DatasetCreator                 OpenViBE::CIdentifier(0x57C918D3, 0x4D960B9B)
+#define OVP_ClassId_BoxAlgorithm_LDADesc                 OpenViBE::CIdentifier(0x252850E6, 0x3BAD19C9)
+#define OVP_ClassId_BoxAlgorithm_LDA                 OpenViBE::CIdentifier(0x3F142126, 0x1D9E759B)
+#define OVP_ClassId_BoxAlgorithm_KNearestNeighborsDesc                 OpenViBE::CIdentifier(0x7CDE418F, 0x2F842538)
+#define OVP_ClassId_BoxAlgorithm_KNearestNeighbors                 OpenViBE::CIdentifier(0x3F11772A, 0x57D6179B)
+#define OVP_ClassId_BoxAlgorithm_GaussianNBDesc                 OpenViBE::CIdentifier(0x54933238, 0x235C30A8)
+#define OVP_ClassId_BoxAlgorithm_GaussianNB                 OpenViBE::CIdentifier(0x3F0D4D2D, 0x120E399C)
+#define OVP_ClassId_BoxAlgorithm_Extra_TreesDesc                 OpenViBE::CIdentifier(0x2C4822E1, 0x17333C17)
+#define OVP_ClassId_BoxAlgorithm_Extra_Trees                 OpenViBE::CIdentifier(0x3F0A2331, 0x4C465B9D)
+#define OVP_ClassId_BoxAlgorithm_Decision_Tree_ClassifierDesc                 OpenViBE::CIdentifier(0x03FE138B, 0x0B0B4786)
+#define OVP_ClassId_BoxAlgorithm_Decision_Tree_Classifier                 OpenViBE::CIdentifier(0x3F077935, 0x067D7D9E)
+#define OVP_ClassId_BoxAlgorithm_DataVizDesc                 OpenViBE::CIdentifier(0x336974DD, 0x72BA5E65)
+#define OVP_ClassId_BoxAlgorithm_DataViz                 OpenViBE::CIdentifier(0x3F00253C, 0x7AED419F)
+#define OVP_ClassId_BoxAlgorithm_DatasetCreatorDesc                 OpenViBE::CIdentifier(0x0B1E6586, 0x669269D4)
+#define OVP_ClassId_BoxAlgorithm_DatasetCreator                 OpenViBE::CIdentifier(0x3EFD7B3F, 0x352563A0)
+#define OVP_ClassId_BoxAlgorithm_BaggingDesc                 OpenViBE::CIdentifier(0x62D45630, 0x5A697543)
+#define OVP_ClassId_BoxAlgorithm_Bagging                 OpenViBE::CIdentifier(0x3EFA5143, 0x6F5D05A0)
+#define OVP_ClassId_BoxAlgorithm_ADADesc                 OpenViBE::CIdentifier(0x3A8946D9, 0x4E4100B2)
+#define OVP_ClassId_BoxAlgorithm_ADA                 OpenViBE::CIdentifier(0x3EF72747, 0x299527A1)
 
 
 
