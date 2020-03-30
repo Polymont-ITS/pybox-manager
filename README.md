@@ -35,21 +35,21 @@ Translated with www.DeepL.com/Translator (free version)
 
 ## Table des matières 
 
-- [1. The new boxes](#1-les-nouvelles-boites)
-  * [TrainerML / ML Boxes](#classe-trainerml---ml-boxes)
+- [1. The new boxes](#1-the-new-boxes)
+  * [TrainerML / ML Boxes](#trainerml-class---ml-boxes)
   * [Box ProcessML](#box-processml)
   * [Box DataViz](#box-dataviz)
   * [Box DatasetCreator](#box-datasetcreator)
-- [2. The Pybox Manager](#2-le-pybox-manager)
+- [2. The Pybox Manager](#2-the-pybox-manager)
   * [Box Manager](#box-manager)
   * [Stimulations / Labels Manager](#stimulations---labels-manager)
   * [Custom Settings Manager](#custom-settings-manager)
-- [3. Internal functioning and details](#3-fonctionnement-interne-et-d-tails)
-  * [Our box model : PolyBox](#notre-mod-le-de-boite---polybox)
-  * [Input management with PolyBox, two modes possible](#gestion-des-inputs-avec-polybox--deux-modes-possibles)
-  * [Duplicating the Python Scripting Box](#duplication-de-la-python-scripting-box)
-  * [PolyBox : Automatique data storage](#polybox---stockage-automatique-des-donn-es)
-  * [Managing Custom Settings](#gestion-des-custom-settings)
+- [3. Internal functioning and details](#3-internal-functioning-and-details)
+  * [Our box model : PolyBox](#our-bos-model---polybox)
+  * [Input management with PolyBox, two modes possible](#input-management-with-polybox---two-possible-modes)
+  * [Duplicating the Python Scripting Box](#duplicating-the-python-scripting-box)
+  * [PolyBox : Automatique data storage](#automatic-data-storage)
+  * [Managing Custom Settings](#managing-custom-settings)
 
 
 # 1. The new boxes 
@@ -217,7 +217,7 @@ Result in OpenVibe :
 
  
 
-# 3. Details
+# 3. Internal Functioning and Details
 #### Our Box model : PolyBox
 
 To facilitate our development phases, we have added in `pybox-manager/share/PolyBox.py` a class called `PolyBox`. This class inherits from the OVBox class. It automates the reception and storage of an input signal and allows the development of simple methods called at key moments:
