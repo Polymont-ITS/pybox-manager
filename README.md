@@ -123,7 +123,7 @@ It can be configured by indicating :
  - The path to the directory that will contain the data.
  - The number of folds you wish to obtain. 
  - The number of actions you wish to record. That is to say 30 if you wish to obtain 30 recordings of 10 seconds distributed among the different labels.
- - The names of the labels you want to record (/!\ Attention, these names must have a corresponding mp3 file in `openvibe-python/Assets/Sounds/`, you can create new labels with the manager).
+ - The names of the labels you want to record (/!\ Attention, these names must have a corresponding mp3 file in `pybox-manager/Assets/Sounds/`, you can create new labels with the manager).
  - A boolean indicating whether you want several CSVs or only one CSV. If you enter "true", then the data will be split into as many CSVs as there are actions, one CSV per action. If you enter "false", then the data will all be recorded in a single CSV, in which the start of a new recording for a label will be indicated in the stimuli. 
 
 
@@ -166,7 +166,7 @@ Delete Box deletes the currently selected box (a compilation is necessary to tak
 ## Stimulations / Labels Manager
 
 When reading and processing our signals, OpenViBE can handle stimulations. These can be used to label our data during a classification/training procedure.
-In OpenViBE, all these stimulations are indicated in the file `meta/extras/contrib/plugins/processing/python/share/StimulationsCodes.py`. 
+All these stimulations are indicated in the file `pybox-manager/share/PolyStimulations.py`. 
 
 The DatasetCreator box we have created allows you to monitor the creation of a labeled dataset for the user. To do this, the box plays a sound during each action, indicating the action the user should think about. Basically, the user will have at his disposal about ten different labels.
 
@@ -196,25 +196,12 @@ Result in OpenVibe :
 >
 > Example with a new type 'classifier'.
 
-# 3. Fonctionnement interne et détails
-## Notre modèle de boite : PolyBox
-
-Pour nos développement nous nous sommes servis du fichier `openvibe.py` déjà existant pour l'utilisation de la Python Scripting Box.
-
-Pour faciliter nos phases de développement, nous avons ajouté à `openvibe.py` une classe appelée `PolyBox`. Cette dernière hérite de la classe OVBox. Elle automatise la réception et le stockage d'un signal en entrée et permet le développement de méthodes simples appelées à des moments clés :
- - **on_initialize(self) :** appelée à l'initialisation, cette méthode a pour but de permettre à l'utilisateur de définir un comportement particulier lors de l'initialisation.
- - **on_header_received(self, header) :** appelée à chaque réception d'un header, cette méthode a pour but de permettre à l'utilisateur de définir un comportement particulier lors de la réception d'un header.
- -  **on_chunk_received(self, chunk, label, shape) :** appelée à chaque réception d'un chunk, cette méthode a pour but de permettre à l'utilisateur de définir un comportement particulier lors de la réception d'un chunk.
- - **on_end_box(self) :** appelée juste avant que la box finisse son travail, cette méthode a pour but de permettre à l'utilisateur de définir un comportement particulier lors de la fin de la box.
-
-Nous avons créée cette box afin de pouvoir lui attribuer des comportements adaptés à nos cas d'utilisations, en particulier pour facilement créer des boites proposant des algorithmes de Machine Learning en se basant sur son architecture. 
+ 
 
 # 3. Details
 #### Our Box model : PolyBox
 
-For our development we used the already existing `openvibe.py` file for the use of the Python Scripting Box.
-
-To facilitate our development phases, we have added to `openvibe.py` a class called `PolyBox`. This class inherits from the OVBox class. It automates the reception and storage of an input signal and allows the development of simple methods called at key moments:
+To facilitate our development phases, we have added in `pybox-manager/share/PolyBox.py` a class called `PolyBox`. This class inherits from the OVBox class. It automates the reception and storage of an input signal and allows the development of simple methods called at key moments:
  - **on_initialize(self) :** called at initialization, this method aims at allowing the user to define a particular behavior during initialization.
  - **on_header_received(self, header) :** called at each reception of a header, this method aims to allow the user to define a particular behavior when receiving a header.
  - **on_chunk_received(self, chunk, label, shape) :** called at each reception of a chunk, this method aims to allow the user to define a particular behavior when receiving a chunk.
@@ -250,31 +237,25 @@ The user doesn't need to indicate anything for the box to choose the right behav
 
 #### Duplicating the Python Scripting Box
 
-Toutes les modifications ont été faite, on peut maintenant compiler. Toutes ces étapes sont implémentées dans `openvibe-python/ov-manager.py`.
+Toutes les modifications ont été faite, on peut maintenant compiler. Toutes ces étapes sont implémentées dans `pybox-manager/ov-manager.py`.
 
 All the modifications we have made to the software are based on the duplication of the Python Scripting box. Since the latter allows the use of a python script, we decided to create a manager that allows us to automatically make changes in the OV code to duplicate the C++ files needed to duplicate the Python Scripting Box. This way, we can definitively associate a script to a box, and let the user configure it and integrate it into OpenViBE. 
 
-Beforehand, to duplicate the Python Scripting Box, the following initialization is necessary (this initialization is automatically managed by the manager) :
- - Duplicate respectively the files `ovpCBoxAlgorithmPython.h`, `StimulationsCodes.py` and `openvibe.py` contained in `openvibe-python/Assets/BoxManager/` instead of the respective files `meta/extras/contrib/plugins/process/python/src/box-algorithms/ovpCBoxAlgorithmPython.h`, `meta/extras/contrib/plugins/process/python/share/StimulationsCodes.py` and `meta/extras/contrib/plugins/process/python/share/openvibe.py`.
- 
- These files contain respectively the modifications necessary to use a single python program (even to run several python boxes), the addition of labels (Stimulations) to OV and the implementation of the `PolyBox` class which serves as a pattern to create a set of other boxes.
 
- Once initialization is complete, it is then possible to use the manager as many times as we want to create and configure python boxes. Each time a python box is created, the manager performs the following tasks: 
+ Each time a python box is created, the manager performs the following tasks: 
 
- 1. Go to the root directory of the python boxes: `meta/extras/contrib/plugins/processing/python/src/`.
- 2. Create the directory corresponding to the new box: `src/box-algorithms/box-name/`. Then duplicate the files `ovpNewBoxPattern.cpp` and `ovpNewBoxPattern.h` located in `openvibe-python/Assets/BoxManager/` into `ovpBoxName.cpp` and `ovpBoxName.h` respectively.
+ 1. Go to the root directory of the python boxes: `pybox-manager/src/`.
+ 2. We duplicate `pybox-manager/Assets/BoxManager/NewBoxPattern-skeletton.h` into `ovpBoxName.h`
  3. 3. Insert the CIdentifier declaration into `src/ovp_defines.h`.
  4. Add to `src/ovp_main.cpp` the imports of the newly created files for the box creation as well as the declarations.
  5.  In `src/box-algorithms/ovpBoxName.h`, replace the box name and includes/declarations.
- 6. In `src/box-algorithms/ovpBoxName.cpp`, replace the box name and declarations.
- 7. Change the box name and description in `src/box-algorithms/ovpBoxName.h`.
- 8. Set the path of the script to be executed in `src/box-algorithms/ovpBoxName.cpp`.
- 9. Remove the possibility to change the path.
- 10. Add the parameters of our box to `src/box-algorithms/ovpBoxName.h`.
- 11. We make a small modification in `src/box-algorithms/ovpBoxName.cpp` to take into account all the box parameters.
- 12. Add the box's inputs and outputs to `src/box-algorithms/ovpBoxName.h`.
+ 6. Change the box name and description in `src/box-algorithms/ovpBoxName.h`.
+ 7. Set the path of the script to be executed in `src/box-algorithms/ovpBoxName.h`.
+ 8. Remove the possibility to change the path.
+ 9. Add the parameters of our box to `src/box-algorithms/ovpBoxName.h`.
+ 10. Add the box's inputs and outputs to `src/box-algorithms/ovpBoxName.h`.
 
-All changes have been made, we can now compile. All these steps are implemented in `openvibe-python/ov-manager.py`.
+All changes have been made, we can now compile. All these steps are implemented in `pybox-manager/ov-manager.py`.
 
 
 ##### Automatic data storage

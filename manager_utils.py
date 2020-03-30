@@ -334,7 +334,7 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
                     'OVP_ClassId_BoxAlgorithm_{}Desc'.format(box_name))
 
 
-    # 7/ We change the name, the description, the author name and the category
+    # 6/ We change the name, the description, the author name and the category
     desc = desc.replace("\"", "\\\"")
 
     # we reset the spaces for the name of the box
@@ -361,14 +361,14 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
                     'virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("'
                     + category + '"); }')
 
-    # 8/ We set the python script to execute
+    # 7/ We set the python script to execute
     # On set le script python a executer
     replace_in_file(path_file_header,
                     'm_sScriptFilename = "NewScript.py";',
                     'm_sScriptFilename = "{}";'.format(path_script.replace('\\', '/')))
 
 
-    # 10/ We can then add our params
+    # 8/ We can then add our params
     tag = '// <tag> settings'
     for number, (key, kind, value) in reversed(list(settings.items())):
         if key:
@@ -376,7 +376,7 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
                 key, all_settings_type[kind], value)
             insert_line_in_file(path_file_header, new_line, tag)
 
-    # 12/ We can then add our inputs and our outputs
+    # 9/ We can then add our inputs and our outputs
     tag_inoutset = '// <tag> input & output'
     for number, (name, kind) in reversed(list(inputs.items())):
         if name:
@@ -390,7 +390,7 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
         insert_line_in_file(path_file_header, new_line, tag_inoutset)
 
 
-    # 13/ Permissions to modify boxes in OV
+    # 10/ Permissions to modify boxes in OV
     if not modify_settings :
         replace_in_file(path_file_header,
                         "prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifySetting);",
