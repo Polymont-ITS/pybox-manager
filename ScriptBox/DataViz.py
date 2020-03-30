@@ -10,8 +10,13 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import importlib
+
+flag_3D = True
+try :
+    from mpl_toolkits.mplot3d import Axes3D
+except :
+    print('Unable to import Axes3D from mpl_toolkits.mplot3d, 3D visualization disabled.')
+    flag_3D = False
 
 
 class DataViz(PolyBox) :
@@ -67,6 +72,11 @@ class DataViz(PolyBox) :
             if self.dimension_reduction == -1 :
                 print('No dimension reduction has been given, default value is 2.')
                 self.dimension_reduction = 2
+
+            elif self.dimension_reduction == 3 and not flag_3D :
+                print('3D disabled, cannot show data in 3 dimensions. Default dimension is 2.')
+                self.dimension_reduction = 3
+
 
         retrieve_path_save_model(self)
         retrieve_path_load_model(self)
