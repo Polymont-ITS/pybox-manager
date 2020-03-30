@@ -141,7 +141,7 @@ bool CPolyBox::initializePythonSafely()
 
 	//Execute the script which contains the different classes to interact with OpenViBE
 	//New reference
-	CString l_sFilePath     = Directories::getDataDir() + "/plugins/python/openvibe.py";
+	CString l_sFilePath     = Directories::getDataDir() + "/plugins/python/PolyBox.py";
 	PyObject* l_pScriptFile = PyFile_FromString((char*)l_sFilePath.toASCIIString(), (char*)"r");
 	if (l_pScriptFile == nullptr)
 	{
