@@ -2,6 +2,9 @@
 
 Ce projet a pour but d'apporter des modifications à OpenViBE et d'ouvrir ses possibilités d'un point de vue Data Science. OpenViBE est un logiciel de traitement du signal permettant l'utilisation d'algorithmes de machine learning, cependant ces algorithmes sont limités en choix. Ainsi, nous souhaitons utiliser l'ouverture laissée par la Python scripting box d'OpenViBE (qui permet d'utiliser des scripts python dans OV) pour permettre aux utilisateurs d'utiliser les algorithmes implémentés par des librairies tierces.
 
+## Dépendances
+`pip install pyqt5 pandas numpy natsort pygame sklearn matplotlib pyriemann`
+
 ## Ce que permet OpenViBE Python 
 
 - L'utilisation de composants déjà implémentés dans OpenVibe qui vous permettront :
