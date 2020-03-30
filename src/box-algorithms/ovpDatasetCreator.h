@@ -61,7 +61,7 @@ namespace OpenViBEPlugins
 
 			virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString("DatasetCreator"); }
 			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("Yannis Bendi-Ouis & Jimmy LeBlanc"); }
-			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("NewCompany"); }
+			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("Polymont IT Services"); }
 			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Monitor the user to create a dataset."); }
 			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString(""); }
 			virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("Scripting/PyBox/Acquisition and network IO"); }

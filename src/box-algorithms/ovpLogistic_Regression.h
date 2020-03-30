@@ -61,8 +61,8 @@ namespace OpenViBEPlugins
 
 			virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString("Logistic Regression"); }
 			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("Jimmy Leblanc & Yannis Bendi-Ouis"); }
-			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("NewCompany"); }
-			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Train an LDA Classifier from Sklearn."); }
+			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("Polymont IT Services"); }
+			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Train a Logistic Regression Classifier from Sklearn."); }
 			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString(""); }
 			virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("Scripting/PyBox/Classification"); }
 			virtual OpenViBE::CString getVersion(void) const             { return OpenViBE::CString("0.1"); }

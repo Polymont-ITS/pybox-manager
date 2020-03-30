@@ -61,9 +61,9 @@ namespace OpenViBEPlugins
 
 			virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString("Riemann Tangent Space"); }
 			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("Jimmy Leblanc & Yannis Bendi-Ouis"); }
-			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("NewCompany"); }
-			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Tangent space projection map a set of covariance matrices to their tangent space\n\nTangent space projection is useful to convert covariance matrices in euclidean vectors while conserving the inner structure of the manifold. After projection, standard processing and vector-based classification can be applied.(By default, LDA would be applied)\n\\\""); }
-			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString(""); }
+			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("Polymont IT Services"); }
+			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Tangent space projection map a set of covariance matrices to their tangent space."); }
+			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString("Tangent space projection map a set of covariance matrices to their tangent space\n\nTangent space projection is useful to convert covariance matrices in euclidean vectors while conserving the inner structure of the manifold. After projection, standard processing and vector-based classification can be applied.(By default, LDA would be applied)\n\\\""); }
 			virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("Scripting/PyBox/Classification"); }
 			virtual OpenViBE::CString getVersion(void) const             { return OpenViBE::CString("0.1"); }
 			virtual OpenViBE::CString getStockItemName(void) const       { return OpenViBE::CString("gtk-missing-image"); }

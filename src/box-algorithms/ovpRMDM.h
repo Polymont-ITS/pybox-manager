@@ -61,9 +61,9 @@ namespace OpenViBEPlugins
 
 			virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString("RMDM"); }
 			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("Jimmy Leblanc & Yannis Bendi-Ouis"); }
-			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("NewCompany"); }
-			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Riemann minimum distance to mean classifier.\nYou can add another classifier at the end to perform classification by passing a discriminator even though it is purely optionnal."); }
-			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString(""); }
+			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("Polymont IT Services"); }
+			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Riemann minimum distance to mean classifier."); }
+			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString("Riemann minimum distance to mean classifier.\nYou can add another classifier at the end to perform classification by passing a discriminator even though it is purely optionnal."); }
 			virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("Scripting/PyBox/Classification"); }
 			virtual OpenViBE::CString getVersion(void) const             { return OpenViBE::CString("0.1"); }
 			virtual OpenViBE::CString getStockItemName(void) const       { return OpenViBE::CString("gtk-missing-image"); }

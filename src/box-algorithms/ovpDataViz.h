@@ -61,7 +61,7 @@ namespace OpenViBEPlugins
 
 			virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString("DataViz"); }
 			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("Yannis Bendi-Ouis & Jimmy Leblanc"); }
-			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("NewCompany"); }
+			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("Polymont IT Services"); }
 			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Transform the data with a LDA or a PCA and plot the data in 2D or 3D."); }
 			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString(""); }
 			virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("Scripting/PyBox/Visualization"); }

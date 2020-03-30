@@ -32,7 +32,7 @@ namespace OpenViBEPlugins
 		class CBoxAlgorithmProcessML final : public CPolyBox
 		{
 		public:
-			CBoxAlgorithmProcessML() { m_sScriptFilename = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/TrainerML.py";}
+			CBoxAlgorithmProcessML() { m_sScriptFilename = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/ProcessML.py";}
 			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_ProcessML);
 		};
 		
@@ -61,8 +61,8 @@ namespace OpenViBEPlugins
 
 			virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString("ProcessML"); }
 			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("Jimmy Leblanc & Yannis Bendi-Ouis"); }
-			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("NewCompany"); }
-			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Make all the process to load and predict the data class with a machine learning model."); }
+			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("Polymont IT Services"); }
+			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("This box aim to use a machine learning model previously trained to predict labels of input's data."); }
 			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString(""); }
 			virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("Scripting/PyBox/Classification"); }
 			virtual OpenViBE::CString getVersion(void) const             { return OpenViBE::CString("0.1"); }
