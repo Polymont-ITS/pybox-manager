@@ -14,23 +14,42 @@ This Project aims to bring modifications to OpenVibe and to widen its data-orien
     * Create new types of openvibe settings that can be used in your new boxes.
 - The reuse of our scripts in order to simply implement your own python data management
 
+
+    1. The new boxes
+        TrainerML / ML Class Boxes
+        Box ProcessML
+        Box DataViz
+        DatasetCreator Box
+    2. The Pybox Manager
+        Box Manager
+        Stimulations / Labels Manager
+        Custom Settings Manager
+    3. Internal functioning and details
+        Our box model: PolyBox
+        Input management with PolyBox, two modes possible
+        Duplicating the Python Scripting Box
+        PolyBox: Automatic data storage
+        Managing Custom Settings
+
+Translated with www.DeepL.com/Translator (free version)
+
 ## Table des matières 
 
-- [1. Les nouvelles boites](#1-les-nouvelles-boites)
-  * [Classe TrainerML / ML Boxes](#classe-trainerml---ml-boxes)
+- [1. The new boxes](#1-les-nouvelles-boites)
+  * [TrainerML / ML Boxes](#classe-trainerml---ml-boxes)
   * [Box ProcessML](#box-processml)
   * [Box DataViz](#box-dataviz)
   * [Box DatasetCreator](#box-datasetcreator)
-- [2. Le Pybox Manager](#2-le-pybox-manager)
+- [2. The Pybox Manager](#2-le-pybox-manager)
   * [Box Manager](#box-manager)
   * [Stimulations / Labels Manager](#stimulations---labels-manager)
   * [Custom Settings Manager](#custom-settings-manager)
-- [3. Fonctionnement interne et détails](#3-fonctionnement-interne-et-d-tails)
-  * [Notre modèle de boite : PolyBox](#notre-mod-le-de-boite---polybox)
-  * [Gestion des inputs avec PolyBox, deux modes possibles](#gestion-des-inputs-avec-polybox--deux-modes-possibles)
-  * [Duplication de la Python Scripting Box](#duplication-de-la-python-scripting-box)
-  * [PolyBox : Stockage automatique des données](#polybox---stockage-automatique-des-donn-es)
-  * [Gestion des Custom Settings](#gestion-des-custom-settings)
+- [3. Internal functioning and details](#3-fonctionnement-interne-et-d-tails)
+  * [Our box model : PolyBox](#notre-mod-le-de-boite---polybox)
+  * [Input management with PolyBox, two modes possible](#gestion-des-inputs-avec-polybox--deux-modes-possibles)
+  * [Duplicating the Python Scripting Box](#duplication-de-la-python-scripting-box)
+  * [PolyBox : Automatique data storage](#polybox---stockage-automatique-des-donn-es)
+  * [Managing Custom Settings](#gestion-des-custom-settings)
 
 
 # 1. The new boxes 
