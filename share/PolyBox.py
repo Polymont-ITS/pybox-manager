@@ -3,6 +3,7 @@
 #Created By : Yannis Bendi-Ouis & 
 
 from StimulationsCodes import *
+from PolyStimulations import *
 from openvibe import *
 import sys, traceback, collections
 from StringIO import StringIO
@@ -11,7 +12,9 @@ import re
 
 
 def get_label_from_stim(stim) :
-    inv_dictstim = {v : k for k,v in OpenViBE_stimulation.items()}
+    stims_1 = list(OpenViBE_stimulation.items())
+    stims_2 = list(Poly_stimulation.items())
+    inv_dictstim = {v : k for k,v in stims_1 + stims_2}
     label = inv_dictstim[stim.identifier][7:].lower()
     label = ' '.join(label.split('_'))
     return label
