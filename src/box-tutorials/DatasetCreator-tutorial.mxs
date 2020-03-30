@@ -139,7 +139,7 @@
 					<TypeIdentifier>(0x330306dd, 0x74a95f98)</TypeIdentifier>
 					<Name>Path directory</Name>
 					<DefaultValue></DefaultValue>
-					<Value>c:/openvibe/data/</Value>
+					<Value>c:/openvibe/data3/</Value>
 					<Modifiability>false</Modifiability>
 				</Setting>
 				<Setting>
@@ -188,7 +188,7 @@
 					<TypeIdentifier>(0x007deef9, 0x2f3e95c6)</TypeIdentifier>
 					<Name>Number of actions</Name>
 					<DefaultValue></DefaultValue>
-					<Value>12</Value>
+					<Value>4</Value>
 					<Modifiability>false</Modifiability>
 				</Setting>
 			</Settings>
