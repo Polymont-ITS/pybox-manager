@@ -2,6 +2,9 @@
 
 This Project aims to bring modifications to OpenVibe and to widen its data-oriented functionnalities. OpenVibe is a signal processing software allowing the use of machine learning algorithms, however their number is reduced. Thus, we woud like to benefit from the Openvibe Python scripting box (which allows the use of python scripts in OV) in order to allow users to use Scikit-learn Machine Learning algorithms.
 
+## Dependancies
+`pip install pyqt5 pandas numpy natsort pygame sklearn matplotlib pyriemann`
+
 
 ## What OpenViBE Python allows 
 
