@@ -617,7 +617,7 @@ def get_name_duplicate(dict, name) :
 def delete_stimulation(manager_folder, label) :
     """Make the modification to remove a stimulation from openvibe."""
 
-    path_file_stim = '{}/share/StimulationsCodes.py'.format(manager_folder)
+    path_file_stim = '{}/share/PolyStimulations.py'.format(manager_folder)
     remove_line_from_file(path_file_stim, label)
     path_sound = '{}/Assets/Sounds/{}.mp3'.format(manager_folder, label.lower())
     os.remove(path_sound)
