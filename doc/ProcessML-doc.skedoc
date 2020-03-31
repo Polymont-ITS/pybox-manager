@@ -1,0 +1,49 @@
+/**
+ * \page BoxAlgorithmProcessML ProcessML
+__________________________________________________________________
+
+Detailed description
+__________________________________________________________________
+
+ * |OVP_DocBegin_BoxAlgorithmProcessML_Description|
+ This box aims to load a machine learning model from scikit-learn 
+ or pyriemann already trained and to use it to predict its input's data.
+ * |OVP_DocEnd_BoxAlgorithmProcessML_Description|
+__________________________________________________________________
+
+Settings description
+__________________________________________________________________
+
+ * |OVP_DocBegin_BoxAlgorithmProcessML_Settings|
+ * |OVP_DocEnd_BoxAlgorithmProcessML_Settings|
+
+ * |OVP_DocBegin_BoxAlgorithmProcessML_Setting1|
+ The box clock frequency. The Python process function is called at 
+ each tick.
+ * |OVP_DocEnd_BoxAlgorithmProcessML_Setting1|
+
+ * |OVP_DocBegin_BoxAlgorithmProcessML_Setting2|
+ The path to the model the user want to load.
+ * |OVP_DocEnd_BoxAlgorithmProcessML_Setting2|
+
+ * |OVP_DocBegin_BoxAlgorithmProcessML_Setting3|
+ If not empty, the path where the user want to save the predictions
+ results.
+ * |OVP_DocEnd_BoxAlgorithmProcessML_Setting3|
+
+__________________________________________________________________
+
+Examples description
+__________________________________________________________________
+
+ * |OVP_DocBegin_BoxAlgorithmProcessML_Examples|
+ See <a href="http://openvibe.inria.fr/tutorial-using-python-with-openvibe">this page</a> for commented examples.
+ * |OVP_DocEnd_BoxAlgorithmProcessML_Examples|
+__________________________________________________________________
+
+Miscellaneous description
+__________________________________________________________________
+
+ * |OVP_DocBegin_BoxAlgorithmProcessML_Miscellaneous|
+ * |OVP_DocEnd_BoxAlgorithmProcessML_Miscellaneous|
+ */

@@ -1,0 +1,84 @@
+/**
+ * \page BoxAlgorithmDatasetCreator DatasetCreator
+__________________________________________________________________
+
+Detailed description
+__________________________________________________________________
+
+ * |OVP_DocBegin_BoxAlgorithmDatasetCreator_Description|
+
+ This box aims to monitor the user to create a dataset. 
+ The user first configure the box and chooses some labels, then
+ the box will randomly determine an order between them. It will 
+ then record the user's brain activity while verbally indicating 
+ the current action. In this way, we will be able to create a 
+ labeled dataset that can be used for learning.  
+
+ * |OVP_DocEnd_BoxAlgorithmDatasetCreator_Description|
+__________________________________________________________________
+
+Settings description
+__________________________________________________________________
+
+ * |OVP_DocBegin_BoxAlgorithmDatasetCreator_Settings|
+ * |OVP_DocEnd_BoxAlgorithmDatasetCreator_Settings|
+
+ * |OVP_DocBegin_BoxAlgorithmDatasetCreator_Setting1|
+ The box clock frequency. The Python process function is called at 
+ each tick.
+ * |OVP_DocEnd_BoxAlgorithmDatasetCreator_Setting1|
+
+ * |OVP_DocBegin_BoxAlgorithmDatasetCreator_Setting2|
+ The path to the dir where the user want to save the data.
+ * |OVP_DocEnd_BoxAlgorithmDatasetCreator_Setting2|
+
+ * |OVP_DocBegin_BoxAlgorithmDatasetCreator_Setting3|
+ Name of the first label. That label has to be configured with the
+ manager to associate a sound.
+ * |OVP_DocEnd_BoxAlgorithmDatasetCreator_Setting3|
+
+  * |OVP_DocBegin_BoxAlgorithmDatasetCreator_Setting4|
+ Name of the second label. That label has to be configured with the
+ manager to associate a sound.
+ * |OVP_DocEnd_BoxAlgorithmDatasetCreator_Setting4|
+
+  * |OVP_DocBegin_BoxAlgorithmDatasetCreator_Setting5|
+ Name of the third label. That label has to be configured with the
+ manager to associate a sound.
+ * |OVP_DocEnd_BoxAlgorithmDatasetCreator_Setting5|
+
+  * |OVP_DocBegin_BoxAlgorithmDatasetCreator_Setting6|
+Name of the fourth label. That label has to be configured with the
+manager to associate a sound.
+ * |OVP_DocEnd_BoxAlgorithmDatasetCreator_Setting6|
+
+ * |OVP_DocBegin_BoxAlgorithmDatasetCreator_Setting7|
+ True if you want one csv per label, false if you want one csv 
+ containing all the labels.
+ * |OVP_DocEnd_BoxAlgorithmDatasetCreator_Setting7|
+
+ * |OVP_DocBegin_BoxAlgorithmDatasetCreator_Setting3|
+ Number of folds you want to create.
+ * |OVP_DocEnd_BoxAlgorithmDatasetCreator_Setting3|
+
+ * |OVP_DocBegin_BoxAlgorithmDatasetCreator_Setting3|
+ Number of action to record. For exemple, if you want two record for
+ 4 labels, then number of actions if 8.
+ * |OVP_DocEnd_BoxAlgorithmDatasetCreator_Setting3|
+
+__________________________________________________________________
+
+Examples description
+__________________________________________________________________
+
+ * |OVP_DocBegin_BoxAlgorithmDatasetCreator_Examples|
+ See <a href="http://openvibe.inria.fr/tutorial-using-python-with-openvibe">this page</a> for commented examples.
+ * |OVP_DocEnd_BoxAlgorithmDatasetCreator_Examples|
+__________________________________________________________________
+
+Miscellaneous description
+__________________________________________________________________
+
+ * |OVP_DocBegin_BoxAlgorithmDatasetCreator_Miscellaneous|
+ * |OVP_DocEnd_BoxAlgorithmDatasetCreator_Miscellaneous|
+ */

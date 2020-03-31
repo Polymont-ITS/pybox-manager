@@ -1,0 +1,61 @@
+/**
+ * \page BoxAlgorithmDataViz DataViz
+__________________________________________________________________
+
+Detailed description
+__________________________________________________________________
+
+ * |OVP_DocBegin_BoxAlgorithmDataViz_Description|
+ This box aims to transform the data with a LDA or a PCA and plot the data in 2D or 3D.
+ * |OVP_DocEnd_BoxAlgorithmDataViz_Description|
+__________________________________________________________________
+
+Settings description
+__________________________________________________________________
+
+ * |OVP_DocBegin_BoxAlgorithmDataViz_Settings|
+ * |OVP_DocEnd_BoxAlgorithmDataViz_Settings|
+
+ * |OVP_DocBegin_BoxAlgorithmDataViz_Setting1|
+ The box clock frequency. The Python process function is called at 
+ each tick.
+ * |OVP_DocEnd_BoxAlgorithmDataViz_Setting1|
+
+ * |OVP_DocBegin_BoxAlgorithmDataViz_Setting2|
+ If specified, path to save the model which transform the data.
+ * |OVP_DocEnd_BoxAlgorithmDataViz_Setting2|
+
+ * |OVP_DocBegin_BoxAlgorithmDataViz_Setting3|
+ If specified, path to load the model which transform the data.
+ If empty, a new model will be created depending on the input's data.
+ * |OVP_DocEnd_BoxAlgorithmDataViz_Setting3|
+
+  * |OVP_DocBegin_BoxAlgorithmDataViz_Setting4|
+ Algorithm to use to reduce the data's dimensions. Two options are available :
+ PCA or LDA. By default, the box will use PCA.
+ * |OVP_DocEnd_BoxAlgorithmDataViz_Setting4|
+
+  * |OVP_DocBegin_BoxAlgorithmDataViz_Setting5|
+ Number of dimensions to plot the data. The user can only choose between 2 or 3.
+ * |OVP_DocEnd_BoxAlgorithmDataViz_Setting5|
+
+  * |OVP_DocBegin_BoxAlgorithmDataViz_Setting6|
+ Labels of the data, if not specified then labels will be "1, 2, 3, etc".
+ * |OVP_DocEnd_BoxAlgorithmDataViz_Setting6|
+
+__________________________________________________________________
+
+Examples description
+__________________________________________________________________
+
+ * |OVP_DocBegin_BoxAlgorithmDataViz_Examples|
+ See <a href="http://openvibe.inria.fr/tutorial-using-python-with-openvibe">this page</a> for commented examples.
+ * |OVP_DocEnd_BoxAlgorithmDataViz_Examples|
+__________________________________________________________________
+
+Miscellaneous description
+__________________________________________________________________
+
+ * |OVP_DocBegin_BoxAlgorithmDataViz_Miscellaneous|
+ * |OVP_DocEnd_BoxAlgorithmDataViz_Miscellaneous|
+ */
