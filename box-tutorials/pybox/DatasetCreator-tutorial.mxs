@@ -139,7 +139,7 @@
 					<TypeIdentifier>(0x330306dd, 0x74a95f98)</TypeIdentifier>
 					<Name>Path directory</Name>
 					<DefaultValue></DefaultValue>
-					<Value>c:/openvibe/data3/</Value>
+					<Value>${Player_ScenarioDirectory}/datas/</Value>
 					<Modifiability>false</Modifiability>
 				</Setting>
 				<Setting>

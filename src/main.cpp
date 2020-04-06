@@ -1,15 +1,15 @@
 #if defined TARGET_HAS_ThirdPartyPython && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
 
 #include "box-algorithms/CPolyBox.h"
-#include "box-algorithms/ovpDataViz.h"
+#include "box-algorithms/DataViz.hpp"
+#include "box-algorithms/DatasetCreator.hpp"
+#include "box-algorithms/ProcessML.hpp"
 #include "box-algorithms/ovpADA.h"
-#include "box-algorithms/ovpDatasetCreator.h"
 #include "box-algorithms/ovpSVM.h"
 #include "box-algorithms/ovpSGD.h"
 #include "box-algorithms/ovpRMDM.h"
 #include "box-algorithms/ovpRiemann_Tangent_Space.h"
 #include "box-algorithms/ovpRandom_Forest.h"
-#include "box-algorithms/ovpProcessML.h"
 #include "box-algorithms/ovpNearestCentroid.h"
 #include "box-algorithms/ovpMLP.h"
 #include "box-algorithms/ovpLogistic_Regression.h"
