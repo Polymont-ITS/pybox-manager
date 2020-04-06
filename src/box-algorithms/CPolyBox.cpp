@@ -1,7 +1,8 @@
-#if defined TARGET_HAS_ThirdPartyPython
-//#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
-
+#if defined TARGET_HAS_ThirdPartyPython && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
 #include "CPolyBox.h"
+
+#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
+
 #include <openvibe/ovITimeArithmetics.h>
 #include <iostream>
 
@@ -298,7 +299,7 @@ bool CPolyBox::initialize()
 
 
 	//Initialize the clock frequency of the box depending on the first setting of the box
-	m_clockFrequency  = FSettingValueAutoCast(*this->getBoxAlgorithmContext(), 0);
+	m_clockFrequency = FSettingValueAutoCast(*this->getBoxAlgorithmContext(), 0);
 
 	if (strlen(m_sScriptFilename.toASCIIString()) == 0)
 	{
@@ -555,7 +556,8 @@ bool CPolyBox::uninitialize()
 	m_vEncoders.clear();
 
 	if (m_initializeSucceeded)
-	{ // we call this uninit only if init had succeeded
+	{
+		// we call this uninit only if init had succeeded
 		//Execute the uninitialize function defined in the python script
 		// il y a un souci ici si le script n'a pas ete charge ca ne passe pas
 		if (m_boxUninitialize && PyCallable_Check(m_boxUninitialize))
@@ -586,7 +588,7 @@ bool CPolyBox::uninitialize()
 	Py_CLEAR(m_boxProcess);
 	Py_CLEAR(m_boxUninitialize);
 
-	// Py_Initialize() and Py_Finalize() are called in ovp_main.cpp, we never uninitialize Python here
+	// Py_Initialize() and Py_Finalize() are called in main.cpp, we never uninitialize Python here
 
 	return true;
 }
@@ -906,8 +908,6 @@ bool CPolyBox::transferStreamedMatrixOutputChunksFromPython(const uint32_t outpu
 
 		if (PyObject_IsInstance(l_pOVChunk, m_matrixHeader) == 1)
 		{
-			uint32_t l_ui32DimensionCount, l_ui32DimensionSize, i, j;
-
 			//New reference
 			PyObject* l_pDimensionCount = PyObject_CallMethod(l_pOVChunk, (char*)"getDimensionCount", nullptr);
 			if (l_pDimensionCount == nullptr)
@@ -916,7 +916,7 @@ bool CPolyBox::transferStreamedMatrixOutputChunksFromPython(const uint32_t outpu
 				Py_CLEAR(l_pOVChunk);
 				return false;
 			}
-			l_ui32DimensionCount = PyInt_AsUnsignedLongMask(l_pDimensionCount);
+			uint32_t l_ui32DimensionCount = PyInt_AsUnsignedLongMask(l_pDimensionCount);
 			matrix->setDimensionCount(l_ui32DimensionCount);
 			Py_CLEAR(l_pDimensionCount);
 
@@ -927,11 +927,11 @@ bool CPolyBox::transferStreamedMatrixOutputChunksFromPython(const uint32_t outpu
 			PyObject* l_pDimensionLabel = PyObject_GetAttrString(l_pOVChunk, "dimensionLabels");
 
 			uint32_t offset = 0;
-			for (i = 0; i < l_ui32DimensionCount; i++)
+			for (uint32_t i = 0; i < l_ui32DimensionCount; i++)
 			{
-				l_ui32DimensionSize = PyInt_AsUnsignedLongMask(PyList_GetItem(l_pDimensionSize, Py_ssize_t(i)));
+				uint32_t l_ui32DimensionSize = PyInt_AsUnsignedLongMask(PyList_GetItem(l_pDimensionSize, Py_ssize_t(i)));
 				matrix->setDimensionSize(i, l_ui32DimensionSize);
-				for (j = 0; j < l_ui32DimensionSize; j++)
+				for (uint32_t j = 0; j < l_ui32DimensionSize; j++)
 				{
 					matrix->setDimensionLabel(i, j, PyString_AsString(PyList_GetItem(l_pDimensionLabel, offset + j)));
 				}
@@ -1312,8 +1312,6 @@ bool CPolyBox::transferSignalOutputChunksFromPython(const uint32_t output_index)
 
 		if (PyObject_IsInstance(l_pOVChunk, m_signalHeader) == 1)
 		{
-			uint32_t l_ui32DimensionCount, l_ui32DimensionSize, l_ui32DimensionIndex, l_ui32DimensionEntryIndex;
-
 			//New reference
 			PyObject* l_pDimensionCount = PyObject_CallMethod(l_pOVChunk, (char*)"getDimensionCount", nullptr);
 			if (l_pDimensionCount == nullptr)
@@ -1322,7 +1320,7 @@ bool CPolyBox::transferSignalOutputChunksFromPython(const uint32_t output_index)
 				Py_CLEAR(l_pOVChunk);
 				return false;
 			}
-			l_ui32DimensionCount = PyInt_AsUnsignedLongMask(l_pDimensionCount);
+			uint32_t l_ui32DimensionCount = PyInt_AsUnsignedLongMask(l_pDimensionCount);
 			l_pMatrix->setDimensionCount(l_ui32DimensionCount);
 			Py_CLEAR(l_pDimensionCount);
 
@@ -1333,11 +1331,11 @@ bool CPolyBox::transferSignalOutputChunksFromPython(const uint32_t output_index)
 			PyObject* l_pDimensionLabel = PyObject_GetAttrString(l_pOVChunk, "dimensionLabels");
 
 			uint32_t offset = 0;
-			for (l_ui32DimensionIndex = 0; l_ui32DimensionIndex < l_ui32DimensionCount; l_ui32DimensionIndex++)
+			for (uint32_t l_ui32DimensionIndex = 0; l_ui32DimensionIndex < l_ui32DimensionCount; l_ui32DimensionIndex++)
 			{
-				l_ui32DimensionSize = PyInt_AsUnsignedLongMask(PyList_GetItem(l_pDimensionSize, (Py_ssize_t)l_ui32DimensionIndex));
+				uint32_t l_ui32DimensionSize = PyInt_AsUnsignedLongMask(PyList_GetItem(l_pDimensionSize, (Py_ssize_t)l_ui32DimensionIndex));
 				l_pMatrix->setDimensionSize(l_ui32DimensionIndex, l_ui32DimensionSize);
-				for (l_ui32DimensionEntryIndex = 0; l_ui32DimensionEntryIndex < l_ui32DimensionSize; l_ui32DimensionEntryIndex++)
+				for (uint32_t l_ui32DimensionEntryIndex = 0; l_ui32DimensionEntryIndex < l_ui32DimensionSize; l_ui32DimensionEntryIndex++)
 				{
 					l_pMatrix->setDimensionLabel(l_ui32DimensionIndex, l_ui32DimensionEntryIndex,
 												 PyString_AsString(PyList_GetItem(l_pDimensionLabel, offset + l_ui32DimensionEntryIndex)));
@@ -1848,5 +1846,5 @@ bool CPolyBox::process()
 	return true;
 }
 
-//#endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
+#endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 #endif // TARGET_HAS_ThirdPartyPython

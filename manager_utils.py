@@ -81,8 +81,8 @@ def find_all_custom_settings(manager_folder) :
         return custom_values
 
     prefixe = 'OVPoly_ClassId_'
-    path_header = "{}/src/ovp_defines.h".format(manager_folder)
-    path_cpp = "{}/src/ovp_main.cpp".format(manager_folder)
+    path_header = "{}/src/defines.h".format(manager_folder)
+    path_cpp = "{}/src/main.cpp".format(manager_folder)
 
     custom_settings = get_custom_settings(path_header, prefixe)
     custom_settings = get_custom_settings_confirmed(path_cpp, custom_settings)
@@ -302,8 +302,8 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
     copyfile(path_pattern_header, path_file_header)
 
 
-    # 3/ We insert in ovp_defines.h the declaration of CIdentifiers
-    filename = 'ovp_defines.h'
+    # 3/ We insert in defines.h the declaration of CIdentifiers
+    filename = 'defines.h'
     tag = '// <tag> Tag Box Declaration'
     time.sleep(1)
     new_id1, new_id2, new_id3, new_id4 = generate_new_id(openvibe_folder)
@@ -314,8 +314,8 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
         .format(box_name, new_id3, new_id4)
     insert_line_in_file(filename, new_line, tag)
 
-    # 4/ We add our lines in ovp_main.cpp
-    filename = 'ovp_main.cpp'
+    # 4/ We add our lines in main.cpp
+    filename = 'main.cpp'
     tag = '#include "box-algorithms/CPolyBox.h"'
     new_line = '#include "{}"'.format(path_file_header)
     insert_line_in_file(filename, new_line, tag)
@@ -341,24 +341,24 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
     box_name = box_name.replace('_',' ')
 
     replace_in_file(path_file_header,
-                    'virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString('
+                    'virtual OpenViBE::CString getName() const                { return OpenViBE::CString('
                     '"NewBoxPattern"); }',
-                    'virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString("'
+                    'virtual OpenViBE::CString getName() const                { return OpenViBE::CString("'
                     + box_name + '"); }')
     replace_in_file(path_file_header,
-                    'virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString('
+                    'virtual OpenViBE::CString getShortDescription() const    { return OpenViBE::CString('
                     '"Default Python Description"); }',
-                    'virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("'
+                    'virtual OpenViBE::CString getShortDescription() const    { return OpenViBE::CString("'
                     + desc + '"); }')
     replace_in_file(path_file_header,
-                    'virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("'
+                    'virtual OpenViBE::CString getAuthorName() const          { return OpenViBE::CString("'
                     'NewAuthor"); }',
-                    'virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("'
+                    'virtual OpenViBE::CString getAuthorName() const          { return OpenViBE::CString("'
                     + author + '"); }')
     replace_in_file(path_file_header,
-                    'virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("'
+                    'virtual OpenViBE::CString getCategory() const            { return OpenViBE::CString("'
                     'Scripting/Pybox/"); }',
-                    'virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("'
+                    'virtual OpenViBE::CString getCategory() const            { return OpenViBE::CString("'
                     + category + '"); }')
 
     # 7/ We set the python script to execute
@@ -422,15 +422,15 @@ def delete_box(manager_folder, box_name):
     path_box = 'box-algorithms/ovp{}.h'.format(box_name)
     os.remove(path_box)
 
-    # 3/ Remove lines from ovp_defines.h
-    path = 'ovp_defines.h'
+    # 3/ Remove lines from defines.h
+    path = 'defines.h'
     tag = 'OVP_ClassId_BoxAlgorithm_{}Desc'.format(box_name)
     remove_line_from_file(path, tag)
     tag = 'OVP_ClassId_BoxAlgorithm_{}'.format(box_name)
     remove_line_from_file(path, tag)
 
-    # 4/ Remove lines from ovp_main.cpp
-    path = 'ovp_main.cpp'
+    # 4/ Remove lines from main.cpp
+    path = 'main.cpp'
     tag = 'OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithm{}Desc);'.format(
         box_name)
     remove_line_from_file(path, tag)
@@ -448,8 +448,8 @@ def create_custom_setting(manager_folder, openvibe_folder, cs) :
     """ Make all modification to openvibe to create a custom setting."""
 
     prefixe = 'OVPoly_ClassId_'
-    path_cpp = '{}/src/ovp_main.cpp'.format(manager_folder)
-    path_header = '{}/src/ovp_defines.h'.format(manager_folder)
+    path_cpp = '{}/src/main.cpp'.format(manager_folder)
+    path_header = '{}/src/defines.h'.format(manager_folder)
 
     tag = '// <tag> Custom Type Settings'
     cs_define = "{}{}".format(prefixe, cs.name)
@@ -482,8 +482,8 @@ def delete_custom_setting(manager_folder, cs) :
             f.write(new_text)
 
     prefixe = 'OVPoly_ClassId_'
-    path_cpp = '{}/src/ovp_main.cpp'.format(manager_folder)
-    path_header = '{}/src/ovp_defines.h'.format(manager_folder)
+    path_cpp = '{}/src/main.cpp'.format(manager_folder)
+    path_header = '{}/src/defines.h'.format(manager_folder)
 
     tag = '{}{}'.format(prefixe, cs.name)
     remove_lines_with_tag_in_file(path_header, tag)

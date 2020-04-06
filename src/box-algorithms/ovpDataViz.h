@@ -10,13 +10,13 @@
 ///-------------------------------------------------------------------------------------------------
 #pragma once
 
-#if defined TARGET_HAS_ThirdPartyPython
+#if defined TARGET_HAS_ThirdPartyPython && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
 
 #include <Python.h>
 
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
-#include "../ovp_defines.h"
+#include "../defines.h"
 #include "CPolyBox.h"
 #include <openvibe/ov_all.h>
 #include <toolkit/ovtk_all.h>
@@ -32,10 +32,10 @@ namespace OpenViBEPlugins
 		class CBoxAlgorithmDataViz final : public CPolyBox
 		{
 		public:
-			CBoxAlgorithmDataViz() { m_sScriptFilename = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/DataViz.py";}
-			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_DataViz);
+			CBoxAlgorithmDataViz() { m_sScriptFilename = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/DataViz.py"; }
+			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_DataViz)
 		};
-		
+
 		class CBoxAlgorithmDataVizListener final : public OpenViBEToolkit::TBoxListener<OpenViBE::Plugins::IBoxListener>
 		{
 		public:
@@ -50,39 +50,42 @@ namespace OpenViBEPlugins
 				box.setOutputType(index, OV_TypeId_StreamedMatrix);
 				return true;
 			};
-			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier);
+			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier)
 		};
-		
+
 		class CBoxAlgorithmDataVizDesc final : virtual public OpenViBE::Plugins::IBoxAlgorithmDesc
 		{
 		public:
 
-			virtual void release(void) { }
+			virtual void release() { }
 
-			virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString("DataViz"); }
-			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("Yannis Bendi-Ouis & Jimmy Leblanc"); }
-			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("Polymont IT Services"); }
-			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Transform the data with a LDA or a PCA and plot the data in 2D or 3D."); }
-			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString(""); }
-			virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("Scripting/PyBox/Visualization"); }
-			virtual OpenViBE::CString getVersion(void) const             { return OpenViBE::CString("0.1"); }
-			virtual OpenViBE::CString getStockItemName(void) const       { return OpenViBE::CString("gtk-missing-image"); }
+			virtual OpenViBE::CString getName() const { return OpenViBE::CString("DataViz"); }
+			virtual OpenViBE::CString getAuthorName() const { return OpenViBE::CString("Yannis Bendi-Ouis & Jimmy Leblanc"); }
+			virtual OpenViBE::CString getAuthorCompanyName() const { return OpenViBE::CString("Polymont IT Services"); }
+			virtual OpenViBE::CString getShortDescription() const
+			{
+				return OpenViBE::CString("Transform the data with a LDA or a PCA and plot the data in 2D or 3D.");
+			}
+			virtual OpenViBE::CString getDetailedDescription() const { return OpenViBE::CString(""); }
+			virtual OpenViBE::CString getCategory() const { return OpenViBE::CString("Scripting/PyBox/Visualization"); }
+			virtual OpenViBE::CString getVersion() const { return OpenViBE::CString("0.1"); }
+			virtual OpenViBE::CString getStockItemName() const { return OpenViBE::CString("gtk-missing-image"); }
 
-			virtual OpenViBE::CIdentifier getCreatedClass(void) const    { return OVP_ClassId_BoxAlgorithm_DataViz; }
-			virtual OpenViBE::Plugins::IPluginObject* create(void)       { return new CBoxAlgorithmDataViz; }
-			virtual OpenViBE::Plugins::IBoxListener* createBoxListener(void) const               { return new CBoxAlgorithmDataVizListener; }
+			virtual OpenViBE::CIdentifier getCreatedClass() const { return OVP_ClassId_BoxAlgorithm_DataViz; }
+			virtual OpenViBE::Plugins::IPluginObject* create() { return new CBoxAlgorithmDataViz; }
+			virtual OpenViBE::Plugins::IBoxListener* createBoxListener() const { return new CBoxAlgorithmDataVizListener; }
 			virtual void releaseBoxListener(OpenViBE::Plugins::IBoxListener* pBoxListener) const { delete pBoxListener; }
 
 			virtual bool getBoxPrototype(OpenViBE::Kernel::IBoxProto& prototype) const
 			{
 				prototype.addSetting("Clock frequency (Hz)", OV_TypeId_Integer, "64");
 				// <tag> settings
-                prototype.addSetting("Path to save the model", OV_TypeId_Filename, "");
-                prototype.addSetting("Path to load the model", OV_TypeId_Filename, "");
-                prototype.addSetting("Algorithm (PCA or LDA)", OV_TypeId_String, "PCA");
-                prototype.addSetting("Dimension reduction", OV_TypeId_Integer, "2");
-                prototype.addSetting("Labels", OV_TypeId_String, "");
-				
+				prototype.addSetting("Path to save the model", OV_TypeId_Filename, "");
+				prototype.addSetting("Path to load the model", OV_TypeId_Filename, "");
+				prototype.addSetting("Algorithm (PCA or LDA)", OV_TypeId_String, "PCA");
+				prototype.addSetting("Dimension reduction", OV_TypeId_Integer, "2");
+				prototype.addSetting("Labels", OV_TypeId_String, "");
+
 				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddInput);
 				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);
 				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddOutput);
@@ -99,14 +102,14 @@ namespace OpenViBEPlugins
 				prototype.addOutputSupport(OV_TypeId_StreamedMatrix);
 
 				// <tag> input & output
-                prototype.addOutput("stim_out", OV_TypeId_Stimulations);
-                prototype.addInput("input_StreamMatrix", OV_TypeId_StreamedMatrix);
-                prototype.addInput("input_Stimulations", OV_TypeId_Stimulations);
-				
+				prototype.addOutput("stim_out", OV_TypeId_Stimulations);
+				prototype.addInput("input_StreamMatrix", OV_TypeId_StreamedMatrix);
+				prototype.addInput("input_Stimulations", OV_TypeId_Stimulations);
+
 				return true;
 			}
 
-			_IsDerivedFromClass_Final_(OpenViBE::Plugins::IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_DataVizDesc);
+			_IsDerivedFromClass_Final_(OpenViBE::Plugins::IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_DataVizDesc)
 		};
 	};
 };

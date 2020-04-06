@@ -10,13 +10,13 @@
 ///-------------------------------------------------------------------------------------------------
 #pragma once
 
-#if defined TARGET_HAS_ThirdPartyPython
+#if defined TARGET_HAS_ThirdPartyPython && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
 
 #include <Python.h>
 
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
-#include "../ovp_defines.h"
+#include "../defines.h"
 #include "CPolyBox.h"
 #include <openvibe/ov_all.h>
 #include <toolkit/ovtk_all.h>
@@ -33,7 +33,7 @@ namespace OpenViBEPlugins
 		{
 		public:
 			CBoxAlgorithmNewBoxPattern() { m_sScriptFilename = "NewScript.py";}
-			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_NewBoxPattern);
+			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_NewBoxPattern)
 		};
 		
 		class CBoxAlgorithmNewBoxPatternListener final : public OpenViBEToolkit::TBoxListener<OpenViBE::Plugins::IBoxListener>
@@ -50,27 +50,27 @@ namespace OpenViBEPlugins
 				box.setOutputType(index, OV_TypeId_StreamedMatrix);
 				return true;
 			};
-			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier);
+			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier)
 		};
 		
 		class CBoxAlgorithmNewBoxPatternDesc final : virtual public OpenViBE::Plugins::IBoxAlgorithmDesc
 		{
 		public:
 
-			virtual void release(void) { }
+			virtual void release() { }
 
-			virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString("NewBoxPattern"); }
-			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("NewAuthor"); }
-			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("NewCompany"); }
-			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("Default Python Description"); }
-			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString(""); }
-			virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("Scripting/Pybox/"); }
-			virtual OpenViBE::CString getVersion(void) const             { return OpenViBE::CString("0.1"); }
-			virtual OpenViBE::CString getStockItemName(void) const       { return OpenViBE::CString("gtk-missing-image"); }
+			virtual OpenViBE::CString getName() const                { return OpenViBE::CString("NewBoxPattern"); }
+			virtual OpenViBE::CString getAuthorName() const          { return OpenViBE::CString("NewAuthor"); }
+			virtual OpenViBE::CString getAuthorCompanyName() const   { return OpenViBE::CString("NewCompany"); }
+			virtual OpenViBE::CString getShortDescription() const    { return OpenViBE::CString("Default Python Description"); }
+			virtual OpenViBE::CString getDetailedDescription() const { return OpenViBE::CString(""); }
+			virtual OpenViBE::CString getCategory() const            { return OpenViBE::CString("Scripting/Pybox/"); }
+			virtual OpenViBE::CString getVersion() const             { return OpenViBE::CString("0.1"); }
+			virtual OpenViBE::CString getStockItemName() const       { return OpenViBE::CString("gtk-missing-image"); }
 
-			virtual OpenViBE::CIdentifier getCreatedClass(void) const    { return OVP_ClassId_BoxAlgorithm_NewBoxPattern; }
-			virtual OpenViBE::Plugins::IPluginObject* create(void)       { return new CBoxAlgorithmNewBoxPattern; }
-			virtual OpenViBE::Plugins::IBoxListener* createBoxListener(void) const               { return new CBoxAlgorithmNewBoxPatternListener; }
+			virtual OpenViBE::CIdentifier getCreatedClass() const    { return OVP_ClassId_BoxAlgorithm_NewBoxPattern; }
+			virtual OpenViBE::Plugins::IPluginObject* create()       { return new CBoxAlgorithmNewBoxPattern; }
+			virtual OpenViBE::Plugins::IBoxListener* createBoxListener() const               { return new CBoxAlgorithmNewBoxPatternListener; }
 			virtual void releaseBoxListener(OpenViBE::Plugins::IBoxListener* pBoxListener) const { delete pBoxListener; }
 
 			virtual bool getBoxPrototype(OpenViBE::Kernel::IBoxProto& prototype) const
@@ -98,7 +98,7 @@ namespace OpenViBEPlugins
 				return true;
 			}
 
-			_IsDerivedFromClass_Final_(OpenViBE::Plugins::IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_NewBoxPatternDesc);
+			_IsDerivedFromClass_Final_(OpenViBE::Plugins::IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_NewBoxPatternDesc)
 		};
 	};
 };

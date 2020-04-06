@@ -1,15 +1,25 @@
+///-------------------------------------------------------------------------------------------------
+/// 
+/// \file ovpADA.h
+/// \brief Class NewBoxPattern
+/// \author Thibaut Monseigne (Inria) & Jimmy Leblanc (Polymont) & Yannis Bendi-Ouis (Polymont) 
+/// \version 1.0.
+/// \date 12/03/2020.
+/// \copyright <a href="https://choosealicense.com/licenses/agpl-3.0/%22%3EGNU Affero General Public License v3.0</a>.
+/// 
+///-------------------------------------------------------------------------------------------------
 #pragma once
-#if defined TARGET_HAS_ThirdPartyPython
+
+// Windows debug build doesn't typically link as most people don't have the python debug library.
+#if defined TARGET_HAS_ThirdPartyPython && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
 
 #include <Python.h>
 
 #if defined(PY_MAJOR_VERSION)// && (PY_MAJOR_VERSION == 2)
 
-#include "../ovp_defines.h"
 #include <openvibe/ov_all.h>
 #include <toolkit/ovtk_all.h>
 
-#include <string>
 #include <vector>
 
 namespace OpenViBEPlugins

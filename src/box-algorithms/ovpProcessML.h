@@ -10,13 +10,13 @@
 ///-------------------------------------------------------------------------------------------------
 #pragma once
 
-#if defined TARGET_HAS_ThirdPartyPython
+#if defined TARGET_HAS_ThirdPartyPython && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
 
 #include <Python.h>
 
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
-#include "../ovp_defines.h"
+#include "../defines.h"
 #include "CPolyBox.h"
 #include <openvibe/ov_all.h>
 #include <toolkit/ovtk_all.h>
@@ -32,10 +32,10 @@ namespace OpenViBEPlugins
 		class CBoxAlgorithmProcessML final : public CPolyBox
 		{
 		public:
-			CBoxAlgorithmProcessML() { m_sScriptFilename = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/ProcessML.py";}
-			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_ProcessML);
+			CBoxAlgorithmProcessML() { m_sScriptFilename = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/ProcessML.py"; }
+			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_ProcessML)
 		};
-		
+
 		class CBoxAlgorithmProcessMLListener final : public OpenViBEToolkit::TBoxListener<OpenViBE::Plugins::IBoxListener>
 		{
 		public:
@@ -50,36 +50,39 @@ namespace OpenViBEPlugins
 				box.setOutputType(index, OV_TypeId_StreamedMatrix);
 				return true;
 			};
-			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier);
+			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier)
 		};
-		
+
 		class CBoxAlgorithmProcessMLDesc final : virtual public OpenViBE::Plugins::IBoxAlgorithmDesc
 		{
 		public:
 
-			virtual void release(void) { }
+			virtual void release() { }
 
-			virtual OpenViBE::CString getName(void) const                { return OpenViBE::CString("ProcessML"); }
-			virtual OpenViBE::CString getAuthorName(void) const          { return OpenViBE::CString("Jimmy Leblanc & Yannis Bendi-Ouis"); }
-			virtual OpenViBE::CString getAuthorCompanyName(void) const   { return OpenViBE::CString("Polymont IT Services"); }
-			virtual OpenViBE::CString getShortDescription(void) const    { return OpenViBE::CString("This box aim to use a machine learning model previously trained to predict labels of input's data."); }
-			virtual OpenViBE::CString getDetailedDescription(void) const { return OpenViBE::CString(""); }
-			virtual OpenViBE::CString getCategory(void) const            { return OpenViBE::CString("Scripting/PyBox/Classification"); }
-			virtual OpenViBE::CString getVersion(void) const             { return OpenViBE::CString("0.1"); }
-			virtual OpenViBE::CString getStockItemName(void) const       { return OpenViBE::CString("gtk-missing-image"); }
+			virtual OpenViBE::CString getName() const { return OpenViBE::CString("ProcessML"); }
+			virtual OpenViBE::CString getAuthorName() const { return OpenViBE::CString("Jimmy Leblanc & Yannis Bendi-Ouis"); }
+			virtual OpenViBE::CString getAuthorCompanyName() const { return OpenViBE::CString("Polymont IT Services"); }
+			virtual OpenViBE::CString getShortDescription() const
+			{
+				return OpenViBE::CString("This box aim to use a machine learning model previously trained to predict labels of input's data.");
+			}
+			virtual OpenViBE::CString getDetailedDescription() const { return OpenViBE::CString(""); }
+			virtual OpenViBE::CString getCategory() const { return OpenViBE::CString("Scripting/PyBox/Classification"); }
+			virtual OpenViBE::CString getVersion() const { return OpenViBE::CString("0.1"); }
+			virtual OpenViBE::CString getStockItemName() const { return OpenViBE::CString("gtk-missing-image"); }
 
-			virtual OpenViBE::CIdentifier getCreatedClass(void) const    { return OVP_ClassId_BoxAlgorithm_ProcessML; }
-			virtual OpenViBE::Plugins::IPluginObject* create(void)       { return new CBoxAlgorithmProcessML; }
-			virtual OpenViBE::Plugins::IBoxListener* createBoxListener(void) const               { return new CBoxAlgorithmProcessMLListener; }
+			virtual OpenViBE::CIdentifier getCreatedClass() const { return OVP_ClassId_BoxAlgorithm_ProcessML; }
+			virtual OpenViBE::Plugins::IPluginObject* create() { return new CBoxAlgorithmProcessML; }
+			virtual OpenViBE::Plugins::IBoxListener* createBoxListener() const { return new CBoxAlgorithmProcessMLListener; }
 			virtual void releaseBoxListener(OpenViBE::Plugins::IBoxListener* pBoxListener) const { delete pBoxListener; }
 
 			virtual bool getBoxPrototype(OpenViBE::Kernel::IBoxProto& prototype) const
 			{
 				prototype.addSetting("Clock frequency (Hz)", OV_TypeId_Integer, "64");
 				// <tag> settings
-                prototype.addSetting("Model filename", OV_TypeId_Filename, "");
-                prototype.addSetting("Predictions filename", OV_TypeId_Filename, "");
-				
+				prototype.addSetting("Model filename", OV_TypeId_Filename, "");
+				prototype.addSetting("Predictions filename", OV_TypeId_Filename, "");
+
 				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddInput);
 				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);
 				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddOutput);
@@ -96,13 +99,13 @@ namespace OpenViBEPlugins
 				prototype.addOutputSupport(OV_TypeId_StreamedMatrix);
 
 				// <tag> input & output
-                prototype.addOutput("stim_out", OV_TypeId_Stimulations);
-                prototype.addInput("input_StreamMatrix", OV_TypeId_StreamedMatrix);
-				
+				prototype.addOutput("stim_out", OV_TypeId_Stimulations);
+				prototype.addInput("input_StreamMatrix", OV_TypeId_StreamedMatrix);
+
 				return true;
 			}
 
-			_IsDerivedFromClass_Final_(OpenViBE::Plugins::IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_ProcessMLDesc);
+			_IsDerivedFromClass_Final_(OpenViBE::Plugins::IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_ProcessMLDesc)
 		};
 	};
 };
