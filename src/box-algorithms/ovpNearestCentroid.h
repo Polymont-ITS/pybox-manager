@@ -1,6 +1,6 @@
 ///-------------------------------------------------------------------------------------------------
 /// 
-/// \file NewBoxPattern.h
+/// \file ovpNearestCentroid.h
 /// \brief Class NewBoxPattern
 /// \author Thibaut Monseigne (Inria) & Jimmy Leblanc (Polymont) & Yannis Bendi-Ouis (Polymont) 
 /// \version 1.0.
@@ -10,20 +10,10 @@
 ///-------------------------------------------------------------------------------------------------
 #pragma once
 
-#if defined TARGET_HAS_ThirdPartyPython && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
-
-#include <Python.h>
-
-#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
-
-#include "../defines.h"
 #include "CPolyBox.h"
-#include <openvibe/ov_all.h>
-#include <toolkit/ovtk_all.h>
 
-#include <string>
-#include <vector>
-//#include <map>
+#if defined TARGET_HAS_ThirdPartyPython && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
+#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
 namespace OpenViBEPlugins
 {
@@ -32,7 +22,7 @@ namespace OpenViBEPlugins
 		class CBoxAlgorithmNearestCentroid final : public CPolyBox
 		{
 		public:
-			CBoxAlgorithmNearestCentroid() { m_sScriptFilename = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/TrainerML.py"; }
+			CBoxAlgorithmNearestCentroid() { m_script = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/TrainerML.py"; }
 			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_NearestCentroid)
 		};
 
@@ -43,13 +33,13 @@ namespace OpenViBEPlugins
 			{
 				box.setInputType(index, OV_TypeId_StreamedMatrix);
 				return true;
-			};
+			}
 
 			bool onOutputAdded(OpenViBE::Kernel::IBox& box, const uint32_t index) override
 			{
 				box.setOutputType(index, OV_TypeId_StreamedMatrix);
 				return true;
-			};
+			}
 			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier)
 		};
 
@@ -57,23 +47,23 @@ namespace OpenViBEPlugins
 		{
 		public:
 
-			virtual void release() { }
+			void release() override { }
 
-			virtual OpenViBE::CString getName() const { return OpenViBE::CString("NearestCentroid"); }
-			virtual OpenViBE::CString getAuthorName() const { return OpenViBE::CString("Jimmy Leblanc & Yannis Bendi-Ouis"); }
-			virtual OpenViBE::CString getAuthorCompanyName() const { return OpenViBE::CString("Polymont IT Services"); }
-			virtual OpenViBE::CString getShortDescription() const { return OpenViBE::CString("Train a Nearest Centroid Classifier from Sklearn."); }
-			virtual OpenViBE::CString getDetailedDescription() const { return OpenViBE::CString(""); }
-			virtual OpenViBE::CString getCategory() const { return OpenViBE::CString("Scripting/PyBox/Classification"); }
-			virtual OpenViBE::CString getVersion() const { return OpenViBE::CString("0.1"); }
-			virtual OpenViBE::CString getStockItemName() const { return OpenViBE::CString("gtk-missing-image"); }
+			OpenViBE::CString getName() const override { return OpenViBE::CString("NearestCentroid"); }
+			OpenViBE::CString getAuthorName() const override { return OpenViBE::CString("Jimmy Leblanc & Yannis Bendi-Ouis"); }
+			OpenViBE::CString getAuthorCompanyName() const override { return OpenViBE::CString("Polymont IT Services"); }
+			OpenViBE::CString getShortDescription() const override { return OpenViBE::CString("Train a Nearest Centroid Classifier from Sklearn."); }
+			OpenViBE::CString getDetailedDescription() const override { return OpenViBE::CString(""); }
+			OpenViBE::CString getCategory() const override { return OpenViBE::CString("Scripting/PyBox/Classification"); }
+			OpenViBE::CString getVersion() const override { return OpenViBE::CString("0.1"); }
+			OpenViBE::CString getStockItemName() const override { return OpenViBE::CString("gtk-missing-image"); }
 
-			virtual OpenViBE::CIdentifier getCreatedClass() const { return OVP_ClassId_BoxAlgorithm_NearestCentroid; }
-			virtual OpenViBE::Plugins::IPluginObject* create() { return new CBoxAlgorithmNearestCentroid; }
-			virtual OpenViBE::Plugins::IBoxListener* createBoxListener() const { return new CBoxAlgorithmNearestCentroidListener; }
-			virtual void releaseBoxListener(OpenViBE::Plugins::IBoxListener* pBoxListener) const { delete pBoxListener; }
+			OpenViBE::CIdentifier getCreatedClass() const override { return OVP_ClassId_BoxAlgorithm_NearestCentroid; }
+			OpenViBE::Plugins::IPluginObject* create() override { return new CBoxAlgorithmNearestCentroid; }
+			OpenViBE::Plugins::IBoxListener* createBoxListener() const override { return new CBoxAlgorithmNearestCentroidListener; }
+			void releaseBoxListener(OpenViBE::Plugins::IBoxListener* pBoxListener) const override { delete pBoxListener; }
 
-			virtual bool getBoxPrototype(OpenViBE::Kernel::IBoxProto& prototype) const
+			bool getBoxPrototype(OpenViBE::Kernel::IBoxProto& prototype) const override
 			{
 				prototype.addSetting("Clock frequency (Hz)", OV_TypeId_Integer, "64");
 				// <tag> settings
@@ -110,8 +100,8 @@ namespace OpenViBEPlugins
 
 			_IsDerivedFromClass_Final_(OpenViBE::Plugins::IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_NearestCentroidDesc)
 		};
-	};
-};
+	}
+}
 
 #endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 

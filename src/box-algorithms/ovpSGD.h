@@ -1,6 +1,6 @@
 ///-------------------------------------------------------------------------------------------------
 /// 
-/// \file NewBoxPattern.h
+/// \file ovpSGD.h
 /// \brief Class NewBoxPattern
 /// \author Thibaut Monseigne (Inria) & Jimmy Leblanc (Polymont) & Yannis Bendi-Ouis (Polymont) 
 /// \version 1.0.
@@ -10,20 +10,10 @@
 ///-------------------------------------------------------------------------------------------------
 #pragma once
 
-#if defined TARGET_HAS_ThirdPartyPython && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
-
-#include <Python.h>
-
-#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
-
-#include "../defines.h"
 #include "CPolyBox.h"
-#include <openvibe/ov_all.h>
-#include <toolkit/ovtk_all.h>
 
-#include <string>
-#include <vector>
-//#include <map>
+#if defined TARGET_HAS_ThirdPartyPython && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
+#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
 namespace OpenViBEPlugins
 {
@@ -32,7 +22,7 @@ namespace OpenViBEPlugins
 		class CBoxAlgorithmSGD final : public CPolyBox
 		{
 		public:
-			CBoxAlgorithmSGD() { m_sScriptFilename = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/TrainerML.py"; }
+			CBoxAlgorithmSGD() { m_script = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/TrainerML.py"; }
 			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_SGD)
 		};
 
@@ -43,13 +33,13 @@ namespace OpenViBEPlugins
 			{
 				box.setInputType(index, OV_TypeId_StreamedMatrix);
 				return true;
-			};
+			}
 
 			bool onOutputAdded(OpenViBE::Kernel::IBox& box, const uint32_t index) override
 			{
 				box.setOutputType(index, OV_TypeId_StreamedMatrix);
 				return true;
-			};
+			}
 			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier)
 		};
 
@@ -122,8 +112,8 @@ namespace OpenViBEPlugins
 
 			_IsDerivedFromClass_Final_(OpenViBE::Plugins::IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_SGDDesc)
 		};
-	};
-};
+	}
+}
 
 #endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 

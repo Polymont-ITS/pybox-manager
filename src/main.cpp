@@ -29,27 +29,29 @@
 #include <string>
 #include <iostream>
 
-using namespace OpenViBE::Kernel;
+using namespace OpenViBE;
+using namespace /*OpenViBE::*/Kernel;
+using namespace OpenViBEPlugins;
 
 class CPythonInitializer
 {
 public:
 	CPythonInitializer();
 	~CPythonInitializer();
-	OpenViBE::boolean IsPythonAvailable();
+	bool IsPythonAvailable();
 private:
 #ifdef TARGET_OS_Windows
 	bool checkPythonPath();
 #endif
 	//		PyThreadState *m_pMainPyThreadState;
-	OpenViBE::boolean m_bPythonAvailable;
+	bool m_bPythonAvailable;
 };
 
 #ifdef TARGET_OS_Windows
 bool CPythonInitializer::checkPythonPath()
 {
 #ifdef HAVE_WORKING_PYCHECK
-	const OpenViBE::CString testCmd = "\"" + OpenViBE::Directories::getBinDir() + "\\openvibe-py2-check.exe\"";
+	const CString testCmd = "\"" + Directories::getBinDir() + "\\openvibe-py2-check.exe\"";
 	if (std::system(testCmd.toASCIIString()))
 	{
 		std::cout << "Warning: The Python version found does not seem to be compatible and using it would cause Designer to crash.";
@@ -58,27 +60,19 @@ bool CPythonInitializer::checkPythonPath()
 		return false;
 	}
 #endif
-	std::string l_sPath = Py_GetPath();
+	std::string path = Py_GetPath();
 
-	int found = l_sPath.find_first_of(";");
+	int found = path.find_first_of(";");
 	while (found != std::string::npos)
 	{
 		if (found > 0)
 		{
-			std::string l_sFilename = l_sPath.substr(0, found);
-			bool l_bExists          = (_access(l_sFilename.c_str(), 0) == 0);
-			if (l_bExists)
-			{
-				// std::cout << "Found Python in : " << l_sPath.substr(0,found) << std::endl;
-				return true;
-			}
-			else
-			{
-				//std::cout << "NOT found : " << l_sPath.substr(0,found) << std::endl;
-			}
+			std::string filename = path.substr(0, found);
+			const bool exists    = (_access(filename.c_str(), 0) == 0);
+			if (exists) { return true; }
 		}
-		l_sPath = l_sPath.substr(found + 1);
-		found   = l_sPath.find_first_of(";");
+		path  = path.substr(found + 1);
+		found = path.find_first_of(";");
 	}
 
 	std::cout << "Python directory not found. You probably have a corrupted python installation!" << std::endl;
@@ -124,7 +118,7 @@ CPythonInitializer::~CPythonInitializer()
 	}
 }
 
-OpenViBE::boolean CPythonInitializer::IsPythonAvailable() { return m_bPythonAvailable; }
+bool CPythonInitializer::IsPythonAvailable() { return m_bPythonAvailable; }
 
 
 OVP_Declare_Begin()
@@ -132,24 +126,24 @@ OVP_Declare_Begin()
 	if (pythonInitializer.IsPythonAvailable())
 	{
 		// <tag> OVP_Declare_New
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDataVizDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmADADesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDatasetCreatorDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmSVMDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmSGDDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmRMDMDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmRiemann_Tangent_SpaceDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmRandom_ForestDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmProcessMLDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmNearestCentroidDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmMLPDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmLogistic_RegressionDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmLDADesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmKNearestNeighborsDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmGaussianNBDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmExtra_TreesDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmDecision_Tree_ClassifierDesc);
-		OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithmBaggingDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmDataVizDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmADADesc);
+		OVP_Declare_New(Python::CBoxAlgorithmDatasetCreatorDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmSVMDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmSGDDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmRMDMDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmRiemann_Tangent_SpaceDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmRandom_ForestDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmProcessMLDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmNearestCentroidDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmMLPDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmLogistic_RegressionDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmLDADesc);
+		OVP_Declare_New(Python::CBoxAlgorithmKNearestNeighborsDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmGaussianNBDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmExtra_TreesDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmDecision_Tree_ClassifierDesc);
+		OVP_Declare_New(Python::CBoxAlgorithmBaggingDesc);
 
 
 		// <tag> Custom Type Settings
@@ -285,7 +279,7 @@ OVP_Declare_Begin()
 		rPluginModuleContext.getTypeManager().registerEnumerationEntry(OVPoly_ClassId_ADA_algorithm, "SAMME.R", 1);
 	}
 
-OVP_Declare_End();
+OVP_Declare_End()
 
 #else
 #pragma message ("WARNING: Python 2.x headers are required to build the Python plugin, different includes found, skipped")

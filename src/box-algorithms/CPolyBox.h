@@ -17,6 +17,7 @@
 
 #if defined(PY_MAJOR_VERSION)// && (PY_MAJOR_VERSION == 2)
 
+#include "defines.h"
 #include <openvibe/ov_all.h>
 #include <toolkit/ovtk_all.h>
 
@@ -41,7 +42,7 @@ namespace OpenViBEPlugins
 		protected:
 
 			uint64_t m_clockFrequency = 0;
-			OpenViBE::CString m_sScriptFilename;
+			OpenViBE::CString m_script;
 
 			std::vector<OpenViBEToolkit::TDecoder<CPolyBox>*> m_vDecoders;
 			std::vector<OpenViBEToolkit::TEncoder<CPolyBox>*> m_vEncoders;
@@ -76,7 +77,7 @@ namespace OpenViBEPlugins
 			bool transferStimulationInputChunksToPython(const uint32_t index);
 			bool transferStimulationOutputChunksFromPython(const uint32_t index);
 		};
-	};
+	}
 }
 
 #endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)

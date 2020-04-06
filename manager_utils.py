@@ -105,7 +105,7 @@ def find_all_boxes(manager_folder, io_dic_type, settings_dic_type):
 
                 # Path Script
                 script = re.findall(
-                    r"m_sScriptFilename = \"(.*.py)\";", file_h)[0]
+                    r"m_script = \"(.*.py)\";", file_h)[0]
 
                 # Description
                 desc = re.findall(r"virtual OpenViBE::CString getShortDescription\(void\) const    "
@@ -341,31 +341,31 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
     box_name = box_name.replace('_',' ')
 
     replace_in_file(path_file_header,
-                    'virtual OpenViBE::CString getName() const                { return OpenViBE::CString('
+                    'OpenViBE::CString getName() const override                { return OpenViBE::CString('
                     '"NewBoxPattern"); }',
-                    'virtual OpenViBE::CString getName() const                { return OpenViBE::CString("'
+                    'OpenViBE::CString getName() const override                { return OpenViBE::CString("'
                     + box_name + '"); }')
     replace_in_file(path_file_header,
-                    'virtual OpenViBE::CString getShortDescription() const    { return OpenViBE::CString('
+                    'OpenViBE::CString getShortDescription() const override    { return OpenViBE::CString('
                     '"Default Python Description"); }',
-                    'virtual OpenViBE::CString getShortDescription() const    { return OpenViBE::CString("'
+                    'OpenViBE::CString getShortDescription() const override    { return OpenViBE::CString("'
                     + desc + '"); }')
     replace_in_file(path_file_header,
-                    'virtual OpenViBE::CString getAuthorName() const          { return OpenViBE::CString("'
+                    'OpenViBE::CString getAuthorName() const override          { return OpenViBE::CString("'
                     'NewAuthor"); }',
-                    'virtual OpenViBE::CString getAuthorName() const          { return OpenViBE::CString("'
+                    'OpenViBE::CString getAuthorName() const override          { return OpenViBE::CString("'
                     + author + '"); }')
     replace_in_file(path_file_header,
-                    'virtual OpenViBE::CString getCategory() const            { return OpenViBE::CString("'
+                    'OpenViBE::CString getCategory() const override            { return OpenViBE::CString("'
                     'Scripting/Pybox/"); }',
-                    'virtual OpenViBE::CString getCategory() const            { return OpenViBE::CString("'
+                    'OpenViBE::CString getCategory() const override            { return OpenViBE::CString("'
                     + category + '"); }')
 
     # 7/ We set the python script to execute
     # On set le script python a executer
     replace_in_file(path_file_header,
-                    'm_sScriptFilename = "NewScript.py";',
-                    'm_sScriptFilename = "{}";'.format(path_script.replace('\\', '/')))
+                    'm_script = "NewScript.py";',
+                    'm_script = "{}";'.format(path_script.replace('\\', '/')))
 
 
     # 8/ We can then add our params

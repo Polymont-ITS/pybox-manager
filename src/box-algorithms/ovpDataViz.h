@@ -1,6 +1,6 @@
 ///-------------------------------------------------------------------------------------------------
 /// 
-/// \file NewBoxPattern.h
+/// \file ovpDataViz.h
 /// \brief Class NewBoxPattern
 /// \author Thibaut Monseigne (Inria) & Jimmy Leblanc (Polymont) & Yannis Bendi-Ouis (Polymont) 
 /// \version 1.0.
@@ -10,20 +10,10 @@
 ///-------------------------------------------------------------------------------------------------
 #pragma once
 
-#if defined TARGET_HAS_ThirdPartyPython && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
-
-#include <Python.h>
-
-#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
-
-#include "../defines.h"
 #include "CPolyBox.h"
-#include <openvibe/ov_all.h>
-#include <toolkit/ovtk_all.h>
 
-#include <string>
-#include <vector>
-//#include <map>
+#if defined TARGET_HAS_ThirdPartyPython && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
+#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
 namespace OpenViBEPlugins
 {
@@ -32,7 +22,7 @@ namespace OpenViBEPlugins
 		class CBoxAlgorithmDataViz final : public CPolyBox
 		{
 		public:
-			CBoxAlgorithmDataViz() { m_sScriptFilename = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/DataViz.py"; }
+			CBoxAlgorithmDataViz() { m_script = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/DataViz.py"; }
 			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_DataViz)
 		};
 
@@ -43,13 +33,13 @@ namespace OpenViBEPlugins
 			{
 				box.setInputType(index, OV_TypeId_StreamedMatrix);
 				return true;
-			};
+			}
 
 			bool onOutputAdded(OpenViBE::Kernel::IBox& box, const uint32_t index) override
 			{
 				box.setOutputType(index, OV_TypeId_StreamedMatrix);
 				return true;
-			};
+			}
 			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier)
 		};
 
@@ -57,26 +47,26 @@ namespace OpenViBEPlugins
 		{
 		public:
 
-			virtual void release() { }
+			void release() override { }
 
-			virtual OpenViBE::CString getName() const { return OpenViBE::CString("DataViz"); }
-			virtual OpenViBE::CString getAuthorName() const { return OpenViBE::CString("Yannis Bendi-Ouis & Jimmy Leblanc"); }
-			virtual OpenViBE::CString getAuthorCompanyName() const { return OpenViBE::CString("Polymont IT Services"); }
-			virtual OpenViBE::CString getShortDescription() const
+			OpenViBE::CString getName() const override { return OpenViBE::CString("DataViz"); }
+			OpenViBE::CString getAuthorName() const override { return OpenViBE::CString("Yannis Bendi-Ouis & Jimmy Leblanc"); }
+			OpenViBE::CString getAuthorCompanyName() const override { return OpenViBE::CString("Polymont IT Services"); }
+			OpenViBE::CString getShortDescription() const override
 			{
 				return OpenViBE::CString("Transform the data with a LDA or a PCA and plot the data in 2D or 3D.");
 			}
-			virtual OpenViBE::CString getDetailedDescription() const { return OpenViBE::CString(""); }
-			virtual OpenViBE::CString getCategory() const { return OpenViBE::CString("Scripting/PyBox/Visualization"); }
-			virtual OpenViBE::CString getVersion() const { return OpenViBE::CString("0.1"); }
-			virtual OpenViBE::CString getStockItemName() const { return OpenViBE::CString("gtk-missing-image"); }
+			OpenViBE::CString getDetailedDescription() const override { return OpenViBE::CString(""); }
+			OpenViBE::CString getCategory() const override { return OpenViBE::CString("Scripting/PyBox/Visualization"); }
+			OpenViBE::CString getVersion() const override { return OpenViBE::CString("0.1"); }
+			OpenViBE::CString getStockItemName() const override { return OpenViBE::CString("gtk-missing-image"); }
 
-			virtual OpenViBE::CIdentifier getCreatedClass() const { return OVP_ClassId_BoxAlgorithm_DataViz; }
-			virtual OpenViBE::Plugins::IPluginObject* create() { return new CBoxAlgorithmDataViz; }
-			virtual OpenViBE::Plugins::IBoxListener* createBoxListener() const { return new CBoxAlgorithmDataVizListener; }
-			virtual void releaseBoxListener(OpenViBE::Plugins::IBoxListener* pBoxListener) const { delete pBoxListener; }
+			OpenViBE::CIdentifier getCreatedClass() const override { return OVP_ClassId_BoxAlgorithm_DataViz; }
+			OpenViBE::Plugins::IPluginObject* create() override { return new CBoxAlgorithmDataViz; }
+			OpenViBE::Plugins::IBoxListener* createBoxListener() const override { return new CBoxAlgorithmDataVizListener; }
+			void releaseBoxListener(OpenViBE::Plugins::IBoxListener* pBoxListener) const override { delete pBoxListener; }
 
-			virtual bool getBoxPrototype(OpenViBE::Kernel::IBoxProto& prototype) const
+			bool getBoxPrototype(OpenViBE::Kernel::IBoxProto& prototype) const override
 			{
 				prototype.addSetting("Clock frequency (Hz)", OV_TypeId_Integer, "64");
 				// <tag> settings
@@ -111,8 +101,8 @@ namespace OpenViBEPlugins
 
 			_IsDerivedFromClass_Final_(OpenViBE::Plugins::IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_DataVizDesc)
 		};
-	};
-};
+	}
+}
 
 #endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
 
