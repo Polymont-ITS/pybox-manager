@@ -154,7 +154,7 @@
 					<TypeIdentifier>(0x330306dd, 0x74a95f98)</TypeIdentifier>
 					<Name>Filename</Name>
 					<DefaultValue></DefaultValue>
-					<Value>C:/openvibe/data3/fold_1/fold_1.csv</Value>
+					<Value>${Player_ScenarioDirectory}/datas/data-tutorial.csv</Value>
 					<Modifiability>false</Modifiability>
 				</Setting>
 			</Settings>
