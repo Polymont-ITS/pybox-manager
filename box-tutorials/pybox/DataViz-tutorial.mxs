@@ -256,7 +256,22 @@
 			</Target>
 		</Link>
 	</Links>
-	<Comments></Comments>
+	<Comments>
+		<Comment>
+			<Identifier>(0x00007426, 0x0000717e)</Identifier>
+			<Text>You must wait the end of reading file to have display</Text>
+			<Attributes>
+				<Attribute>
+					<Identifier>(0x473d9a43, 0x97fc0a97)</Identifier>
+					<Value>720</Value>
+				</Attribute>
+				<Attribute>
+					<Identifier>(0x7234b86b, 0x2b8651a5)</Identifier>
+					<Value>32</Value>
+				</Attribute>
+			</Attributes>
+		</Comment>
+	</Comments>
 	<Metadata>
 		<Entry>
 			<Identifier>(0x000070c2, 0x000055b1)</Identifier>
