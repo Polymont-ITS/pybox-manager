@@ -24,7 +24,7 @@ namespace OpenViBE
 			class CBoxAlgorithmDataViz final : public CPolyBox
 			{
 			public:
-				CBoxAlgorithmDataViz() { m_script = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/DataViz.py"; }
+				CBoxAlgorithmDataViz() { m_script = Directories::getDataDir() + "/plugins/python3/pybox/DataViz.py"; }
 				_IsDerivedFromClass_Final_(OpenViBE::Toolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_DataViz)
 			};
 

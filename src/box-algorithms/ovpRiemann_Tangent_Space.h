@@ -24,7 +24,7 @@ namespace OpenViBE
 			class CBoxAlgorithmRiemann_Tangent_Space final : public CPolyBox
 			{
 			public:
-				CBoxAlgorithmRiemann_Tangent_Space() { m_script = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/TrainerML.py"; }
+				CBoxAlgorithmRiemann_Tangent_Space() { m_script = Directories::getDataDir() + "/plugins/python3/pybox/TrainerML.py"; }
 				_IsDerivedFromClass_Final_(OpenViBE::Toolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >,
 										   OVP_ClassId_BoxAlgorithm_Riemann_Tangent_Space)
 			};

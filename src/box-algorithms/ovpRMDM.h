@@ -24,7 +24,7 @@ namespace OpenViBE
 			class CBoxAlgorithmRMDM final : public CPolyBox
 			{
 			public:
-				CBoxAlgorithmRMDM() { m_script = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/TrainerML.py"; }
+				CBoxAlgorithmRMDM() { m_script = Directories::getDataDir() + "/plugins/python3/pybox/TrainerML.py"; }
 				_IsDerivedFromClass_Final_(OpenViBE::Toolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_RMDM)
 			};
 

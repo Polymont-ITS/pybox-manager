@@ -24,7 +24,7 @@ namespace OpenViBE
 			class CBoxAlgorithmDecision_Tree_Classifier final : public CPolyBox
 			{
 			public:
-				CBoxAlgorithmDecision_Tree_Classifier() { m_script = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/TrainerML.py"; }
+				CBoxAlgorithmDecision_Tree_Classifier() { m_script = Directories::getDataDir() + "/plugins/python3/pybox/TrainerML.py"; }
 				_IsDerivedFromClass_Final_(OpenViBE::Toolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >,
 										   OVP_ClassId_BoxAlgorithm_Decision_Tree_Classifier)
 			};

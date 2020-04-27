@@ -25,7 +25,7 @@ namespace OpenViBE
 			class CBoxAlgorithmKNearestNeighbors final : public CPolyBox
 			{
 			public:
-				CBoxAlgorithmKNearestNeighbors() { m_script = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/TrainerML.py"; }
+				CBoxAlgorithmKNearestNeighbors() { m_script = Directories::getDataDir() + "/plugins/python3/pybox/TrainerML.py"; }
 				_IsDerivedFromClass_Final_(OpenViBE::Toolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_KNearestNeighbors)
 			};
 

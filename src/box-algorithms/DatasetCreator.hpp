@@ -24,7 +24,7 @@ namespace OpenViBE
 			class CBoxAlgorithmDatasetCreator final : public CPolyBox
 			{
 			public:
-				CBoxAlgorithmDatasetCreator() { m_script = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/DatasetCreator.py"; }
+				CBoxAlgorithmDatasetCreator() { m_script = Directories::getDataDir() + "/plugins/python3/pybox/DatasetCreator.py"; }
 				_IsDerivedFromClass_Final_(OpenViBE::Toolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_DatasetCreator)
 			};
 

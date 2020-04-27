@@ -24,7 +24,7 @@ namespace OpenViBE
 			class CBoxAlgorithmProcessML final : public CPolyBox
 			{
 			public:
-				CBoxAlgorithmProcessML() { m_script = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/ProcessML.py"; }
+				CBoxAlgorithmProcessML() { m_script = Directories::getDataDir() + "/plugins/python3/pybox/ProcessML.py"; }
 				_IsDerivedFromClass_Final_(OpenViBE::Toolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_ProcessML)
 			};
 

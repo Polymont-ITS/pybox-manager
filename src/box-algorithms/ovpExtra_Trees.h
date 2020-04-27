@@ -24,7 +24,7 @@ namespace OpenViBE
 			class CBoxAlgorithmExtra_Trees final : public CPolyBox
 			{
 			public:
-				CBoxAlgorithmExtra_Trees() { m_script = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/TrainerML.py"; }
+				CBoxAlgorithmExtra_Trees() { m_script = Directories::getDataDir() + "/plugins/python3/pybox/TrainerML.py"; }
 				_IsDerivedFromClass_Final_(OpenViBE::Toolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_Extra_Trees)
 			};
 
