@@ -112,12 +112,10 @@ def find_all_boxes(manager_folder, io_dic_type, settings_dic_type):
                                   r"{ return CString\(\"(.*?)\"\); }", file_h, flags=re.DOTALL)[0]
                 desc = desc.replace("\"", "\\\"")
 
-                author = re.search(r'virtual CString getAuthorName\(void\) const          '
-                    '{ return CString\(\"[a-zA-Z 0-9\-&]*\"\); }', file_h).group()
+                author = re.search(r'virtual CString getAuthorName\(void\) const          { return CString\(\"[a-zA-Z 0-9\-&]*\"\); }', file_h).group()
                 author = author[89:-5]
 
-                category = re.search(r'virtual CString getCategory\(void\) const            '
-                    '{ return CString\(\"[/a-zA-Z ]+\"\); }', file_h).group()
+                category = re.search(r'virtual CString getCategory\(void\) const            { return CString\(\"[/a-zA-Z ]+\"\); }', file_h).group()
                 category = category[89:-5]
                 category = category[16:]
 
@@ -423,11 +421,9 @@ def delete_box(manager_folder, box_name):
 
     # 4/ Remove lines from main.cpp
     path = 'main.cpp'
-    tag = 'OVP_Declare_New(Python::CBoxAlgorithm{}Desc);'.format(
-        box_name)
+    tag = 'OVP_Declare_New(Python::CBoxAlgorithm{}Desc);'.format(box_name)
     remove_line_from_file(path, tag)
-    tag = '#include "box-algorithms/ovp{}.h"'.format(
-        box_name, box_name)
+    tag = '#include "box-algorithms/ovp{}.h"'.format(box_name)
     remove_line_from_file(path, tag)
 
     os.chdir(old_location)
@@ -556,7 +552,7 @@ def get_name_duplicate(dict, name) :
 
         try:
             prefix_1 = res.group(1)
-            idx_1 = res.group(2)
+            idx_1 = res.group(2)	# useless ?
             max_idx = 1 
 
             # Does we already have a duplicate ?
@@ -589,7 +585,7 @@ def get_name_duplicate(dict, name) :
     current_name = name
 
     regex = '(.+?_)(\d+)'
-    res = re.search(regex, current_name)
+    res = re.search(regex, current_name)	# useless ?
 
 
     # We already have doublon
