@@ -10,7 +10,7 @@
 ///-------------------------------------------------------------------------------------------------
 #pragma once
 
-#include "CPolyBox.h"
+#include "CPolyBox.hpp"
 
 #if defined TARGET_HAS_ThirdPartyPython3 && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
@@ -37,11 +37,6 @@ namespace OpenViBE
 					return true;
 				}
 
-				bool onOutputAdded(Kernel::IBox& box, const size_t index) override
-				{
-					box.setOutputType(index, OV_TypeId_StreamedMatrix);
-					return true;
-				}
 				_IsDerivedFromClass_Final_(OpenViBE::Toolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier)
 			};
 
@@ -56,9 +51,9 @@ namespace OpenViBE
 				CString getAuthorCompanyName() const override { return CString("Polymont IT Services"); }
 				CString getShortDescription() const override { return CString("Monitor the user to create a dataset."); }
 				CString getDetailedDescription() const override { return CString(""); }
-				CString getCategory() const override { return CString("Scripting/PyBox/Acquisition and network IO"); }
+				CString getCategory() const override { return CString("Scripting/PyBox"); }
 				CString getVersion() const override { return CString("0.1"); }
-				CString getStockItemName() const override { return CString("gtk-missing-image"); }
+				CString getStockItemName() const override { return CString("gtk-convert"); }
 
 				CIdentifier getCreatedClass() const override { return OVP_ClassId_BoxAlgorithm_DatasetCreator; }
 				IPluginObject* create() override { return new CBoxAlgorithmDatasetCreator; }
@@ -69,19 +64,17 @@ namespace OpenViBE
 				{
 					prototype.addSetting("Clock frequency (Hz)", OV_TypeId_Integer, "64");
 					// <tag> settings
-					prototype.addSetting("Path directory", OV_TypeId_Filename, "");
-					prototype.addSetting("Label_1", OV_TypeId_String, "");
-					prototype.addSetting("Label_2", OV_TypeId_String, "");
-					prototype.addSetting("Label_3", OV_TypeId_String, "");
-					prototype.addSetting("Label_4", OV_TypeId_String, "");
-					prototype.addSetting("Several CSV", OV_TypeId_Boolean, "");
-					prototype.addSetting("Number of folds", OV_TypeId_Integer, "");
-					prototype.addSetting("Number of actions", OV_TypeId_Integer, "");
+					prototype.addSetting("Path directory", OV_TypeId_Filename, "${Player_ScenarioDirectory}/datas/");
+					prototype.addSetting("Label_1", OV_TypeId_String, "right");
+					prototype.addSetting("Label_2", OV_TypeId_String, "left");
+					prototype.addSetting("Label_3", OV_TypeId_String, "up");
+					prototype.addSetting("Label_4", OV_TypeId_String, "down");
+					prototype.addSetting("Several CSV", OV_TypeId_Boolean, "false");
+					prototype.addSetting("Number of folds", OV_TypeId_Integer, "1");
+					prototype.addSetting("Number of actions", OV_TypeId_Integer, "4");
 
 					prototype.addFlag(Kernel::BoxFlag_CanAddInput);
 					prototype.addFlag(Kernel::BoxFlag_CanModifyInput);
-					prototype.addFlag(Kernel::BoxFlag_CanAddOutput);
-					prototype.addFlag(Kernel::BoxFlag_CanModifyOutput);
 					prototype.addFlag(Kernel::BoxFlag_CanAddSetting);
 					prototype.addFlag(Kernel::BoxFlag_CanModifySetting);
 

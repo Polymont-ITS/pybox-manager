@@ -81,7 +81,7 @@ def find_all_custom_settings(manager_folder) :
         return custom_values
 
     prefixe = 'OVPoly_ClassId_'
-    path_header = "{}/src/defines.h".format(manager_folder)
+    path_header = "{}/src/defines.hpp".format(manager_folder)
     path_cpp = "{}/src/main.cpp".format(manager_folder)
 
     custom_settings = get_custom_settings(path_header, prefixe)
@@ -300,8 +300,8 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
     copyfile(path_pattern_header, path_file_header)
 
 
-    # 3/ We insert in defines.h the declaration of CIdentifiers
-    filename = 'defines.h'
+    # 3/ We insert in defines.hpp the declaration of CIdentifiers
+    filename = 'defines.hpp'
     tag = '// <tag> Tag Box Declaration'
     time.sleep(1)
     new_id1, new_id2, new_id3, new_id4 = generate_new_id(openvibe_folder)
@@ -314,7 +314,7 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
 
     # 4/ We add our lines in main.cpp
     filename = 'main.cpp'
-    tag = '#include "box-algorithms/CPolyBox.h"'
+    tag = '#include "box-algorithms/CPolyBox.hpp"'
     new_line = '#include "{}"'.format(path_file_header)
     insert_line_in_file(filename, new_line, tag)
 
@@ -412,8 +412,8 @@ def delete_box(manager_folder, box_name):
     path_box = 'box-algorithms/ovp{}.h'.format(box_name)
     os.remove(path_box)
 
-    # 3/ Remove lines from defines.h
-    path = 'defines.h'
+    # 3/ Remove lines from defines.hpp
+    path = 'defines.hpp'
     tag = 'OVP_ClassId_BoxAlgorithm_{}Desc'.format(box_name)
     remove_line_from_file(path, tag)
     tag = 'OVP_ClassId_BoxAlgorithm_{}'.format(box_name)
@@ -437,7 +437,7 @@ def create_custom_setting(manager_folder, openvibe_folder, cs) :
 
     prefixe = 'OVPoly_ClassId_'
     path_cpp = '{}/src/main.cpp'.format(manager_folder)
-    path_header = '{}/src/defines.h'.format(manager_folder)
+    path_header = '{}/src/defines.hpp'.format(manager_folder)
 
     tag = '// <tag> Custom Type Settings'
     cs_define = "{}{}".format(prefixe, cs.name)
@@ -471,7 +471,7 @@ def delete_custom_setting(manager_folder, cs) :
 
     prefixe = 'OVPoly_ClassId_'
     path_cpp = '{}/src/main.cpp'.format(manager_folder)
-    path_header = '{}/src/defines.h'.format(manager_folder)
+    path_header = '{}/src/defines.hpp'.format(manager_folder)
 
     tag = '{}{}'.format(prefixe, cs.name)
     remove_lines_with_tag_in_file(path_header, tag)

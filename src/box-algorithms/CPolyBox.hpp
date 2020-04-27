@@ -17,7 +17,7 @@
 
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
 
-#include "defines.h"
+#include "defines.hpp"
 #include <openvibe/ov_all.h>
 #include <toolkit/ovtk_all.h>
 
@@ -29,6 +29,40 @@ namespace OpenViBE
 	{
 		namespace PyBox
 		{
+			/// <summary>	Enumeration of Adaptation Methods for classifier. </summary>
+			enum class EClassifier
+			{
+				NearestCentroid, NearestNeighbors, GaussianNaiveBayes, StochasticGradientDescent, LogisticRegression, DecisionTree, ExtraTrees,
+				Bagging, RandomForest, SVM, LDA, AdaBoost, MultiLayerPerceptron, MDM, TangentSpace, None
+			};
+
+			/// <summary>	Convert classifier to string.</summary>
+			/// <param name="type">	The type of classifier.</param>
+			/// <returns>	std::string </returns>
+			inline std::string toString(const EClassifier type)
+			{
+				switch (type)
+				{
+					case EClassifier::None: return "None";
+					case EClassifier::NearestCentroid: return "Nearest Centroid";
+					case EClassifier::NearestNeighbors: return "Nearest Neighbors";
+					case EClassifier::GaussianNaiveBayes: return "Gaussian Naive Bayes";
+					case EClassifier::StochasticGradientDescent: return "Stochastic Gradient Descent";
+					case EClassifier::LogisticRegression: return "Logistic Regression";
+					case EClassifier::DecisionTree: return "Decision Tree";
+					case EClassifier::ExtraTrees: return "Extra Trees";
+					case EClassifier::Bagging: return "Bagging";
+					case EClassifier::RandomForest: return "Random Forest";
+					case EClassifier::SVM: return "Support Vector Machine";
+					case EClassifier::LDA: return "Linear Discriminant Analysis";
+					case EClassifier::AdaBoost: return "AdaBoost";
+					case EClassifier::MultiLayerPerceptron: return "Multi Layer Perceptron";
+					case EClassifier::MDM: return "Riemann Minimum Distance to Mean";
+					case EClassifier::TangentSpace: return "Riemann Tangent Space";
+					default: return "Invalid";
+				}
+			}
+
 			class CPolyBox : virtual public Toolkit::TBoxAlgorithm<IBoxAlgorithm>
 			{
 			public:
@@ -62,7 +96,7 @@ namespace OpenViBE
 
 
 				//std::map<char,PyObject *> m_PyObjectMap;
-				PyObject *m_box = nullptr, *m_boxInput = nullptr, *m_boxOutput = nullptr, *m_boxSetting = nullptr, *m_boxTime = nullptr;
+				PyObject *m_box            = nullptr, *m_boxInput   = nullptr, *m_boxOutput       = nullptr, *m_boxSetting = nullptr, *m_boxTime = nullptr;
 				PyObject *m_boxInitialize  = nullptr, *m_boxProcess = nullptr, *m_boxUninitialize = nullptr;
 				bool m_initializeSucceeded = false;
 

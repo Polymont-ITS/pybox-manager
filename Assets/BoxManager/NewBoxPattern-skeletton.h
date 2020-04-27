@@ -10,7 +10,7 @@
 ///-------------------------------------------------------------------------------------------------
 #pragma once
 
-#include "CPolyBox.h"
+#include "CPolyBox.hpp"
 
 #if defined TARGET_HAS_ThirdPartyPython3 && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
@@ -56,7 +56,7 @@ namespace OpenViBE { namespace Plugins
 			CString getDetailedDescription() const override { return CString(""); }
 			CString getCategory() const override            { return CString("Scripting/Pybox/"); }
 			CString getVersion() const override             { return CString("0.1"); }
-			CString getStockItemName() const override       { return CString("gtk-missing-image"); }
+			CString getStockItemName() const override       { return CString("gtk-convert"); }
 
 			CIdentifier getCreatedClass() const override    { return OVP_ClassId_BoxAlgorithm_NewBoxPattern; }
 			IPluginObject* create() override       { return new CBoxAlgorithmNewBoxPattern; }

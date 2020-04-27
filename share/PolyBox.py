@@ -64,8 +64,7 @@ class PolyBox(OVBox):
 					break
 
 			if not flag:
-				print(
-					'WARNING : The DatasetCreator does not have any output Stimulation. The program may never stop.')
+				print('WARNING : The DatasetCreator does not have any output Stimulation. The program may never stop.')
 
 		def get_labels(self):
 			# retrieve labels in form : label1, label2, label3, mon label4
@@ -75,8 +74,7 @@ class PolyBox(OVBox):
 				if len(string) > 0:
 					labels_cut = string.lower().split(',')
 					for label in labels_cut:
-						self.labels += [
-							'_'.join([w for w in label.split(' ') if w != ''])]
+						self.labels += ['_'.join([w for w in label.split(' ') if w != ''])]
 
 		def init_acquiring_channel(self):
 			# We get data for every input channel

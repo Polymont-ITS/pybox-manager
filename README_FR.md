@@ -247,7 +247,7 @@ Lors de chaque création de box python, le manager effectue les tâches suivante
 
  1. On se place à dans le dossier racine des box python : `pybox-manager/src/`.
  2. On duplique `pybox-manager/Assets/BoxManager/NewBoxPattern-skeletton.h` en `box-algorithms/ovpBoxName.h`
- 3. On insère dans `src/defines.h` la déclaration des CIdentifier.
+ 3. On insère dans `src/defines.hpp` la déclaration des CIdentifier.
  4. On ajoute dans `src/main.cpp` les imports des fichiers récemment créés pour la création de la box ainsi que les déclarations.
  5. On remplace dans `src/box-algorithms/ovpBoxName.h` le nom de la boite et celui des includes/déclarations.
  6. On change le nom, la description, les auteurs et la catégorie de la boite dans `src/box-algorithms/ovpBoxName.h`.
@@ -263,4 +263,4 @@ Il est cependant possible d'empêcher ce comportement. Pour ce faire, il suffit 
 
 ### Gestion des Custom Settings
 
-On ajoute à `meta/sdk/toolkit/include/toolkit/ovtk_defines.h` la déclaration de nos nouveaux Custom Settings et à `meta/sdk/toolkit/src/ovtk_main.cpp` la création du custom setting ainsi que la déclaration de ses différentes valeurs.
+On ajoute à `meta/sdk/toolkit/include/toolkit/ovtk_defines.hpp` la déclaration de nos nouveaux Custom Settings et à `meta/sdk/toolkit/src/ovtk_main.cpp` la création du custom setting ainsi que la déclaration de ses différentes valeurs.

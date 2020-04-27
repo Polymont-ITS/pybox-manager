@@ -106,8 +106,8 @@
 			</Attributes>
 		</Box>
 		<Box>
-			<Identifier>(0x000055a6, 0x000023fe)</Identifier>
-			<Name>ProcessML</Name>
+			<Identifier>(0x00004501, 0x000079b6)</Identifier>
+			<Name>Process Sklearn</Name>
 			<AlgorithmClassIdentifier>(0x681d3dfe, 0x060e2afb)</AlgorithmClassIdentifier>
 			<Inputs>
 				<Input>
@@ -132,8 +132,8 @@
 				<Setting>
 					<TypeIdentifier>(0x330306dd, 0x74a95f98)</TypeIdentifier>
 					<Name>Model filename</Name>
-					<DefaultValue></DefaultValue>
-					<Value>${Player_ScenarioDirectory}/datas/model.pick</Value>
+					<DefaultValue>${Player_ScenarioDirectory}/model.clf</DefaultValue>
+					<Value>${Player_ScenarioDirectory}/model.clf</Value>
 					<Modifiability>false</Modifiability>
 				</Setting>
 				<Setting>
@@ -146,10 +146,6 @@
 			</Settings>
 			<Attributes>
 				<Attribute>
-					<Identifier>(0x17ee7c08, 0x94c14893)</Identifier>
-					<Value></Value>
-				</Attribute>
-				<Attribute>
 					<Identifier>(0x1fa7a38f, 0x54edbe0b)</Identifier>
 					<Value>144</Value>
 				</Attribute>
@@ -158,12 +154,8 @@
 					<Value>480</Value>
 				</Attribute>
 				<Attribute>
-					<Identifier>(0x30a4e5c9, 0x83502953)</Identifier>
-					<Value></Value>
-				</Attribute>
-				<Attribute>
 					<Identifier>(0x4e7b798a, 0x183beafb)</Identifier>
-					<Value>(0x8f8a2610, 0x3d1bfb27)</Value>
+					<Value>(0xb942ac8a, 0x83cd7760)</Value>
 				</Attribute>
 				<Attribute>
 					<Identifier>(0x527ad68d, 0x16d746a0)</Identifier>
@@ -198,24 +190,24 @@
 	</Boxes>
 	<Links>
 		<Link>
-			<Identifier>(0x00003f63, 0x00006d87)</Identifier>
+			<Identifier>(0x00002056, 0x00007dc0)</Identifier>
+			<Source>
+				<BoxIdentifier>(0x00004501, 0x000079b6)</BoxIdentifier>
+				<BoxOutputIndex>0</BoxOutputIndex>
+			</Source>
+			<Target>
+				<BoxIdentifier>(0x00002a38, 0x00000aed)</BoxIdentifier>
+				<BoxInputIndex>0</BoxInputIndex>
+			</Target>
+		</Link>
+		<Link>
+			<Identifier>(0x00002361, 0x0000065a)</Identifier>
 			<Source>
 				<BoxIdentifier>(0x00001a44, 0x00001322)</BoxIdentifier>
 				<BoxOutputIndex>0</BoxOutputIndex>
 			</Source>
 			<Target>
-				<BoxIdentifier>(0x000055a6, 0x000023fe)</BoxIdentifier>
-				<BoxInputIndex>0</BoxInputIndex>
-			</Target>
-		</Link>
-		<Link>
-			<Identifier>(0x00005345, 0x000058a2)</Identifier>
-			<Source>
-				<BoxIdentifier>(0x000055a6, 0x000023fe)</BoxIdentifier>
-				<BoxOutputIndex>0</BoxOutputIndex>
-			</Source>
-			<Target>
-				<BoxIdentifier>(0x00002a38, 0x00000aed)</BoxIdentifier>
+				<BoxIdentifier>(0x00004501, 0x000079b6)</BoxIdentifier>
 				<BoxInputIndex>0</BoxInputIndex>
 			</Target>
 		</Link>
