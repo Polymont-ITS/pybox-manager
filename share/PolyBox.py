@@ -6,7 +6,7 @@ from StimulationsCodes import *
 from PolyStimulations import *
 from openvibe import *
 import sys, traceback, collections
-from StringIO import StringIO
+from io import StringIO
 import re
 
 
