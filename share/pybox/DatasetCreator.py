@@ -215,7 +215,7 @@ class DatasetCreator(OVBox):
         chunk = self.input[inputIndex].pop()
 
         # Plusieurs lignes sont envoyées en même temps, il faut les séparer
-        indices = [(len(CHANNELS_NAME)*i, len(CHANNELS_NAME)*(i+1)) for i in range(len(chunk)/len(CHANNELS_NAME))]
+        indices = [(len(CHANNELS_NAME)*i, len(CHANNELS_NAME)*(i+1)) for i in range(int(len(chunk)/len(CHANNELS_NAME)))]
         for begin, end in indices:
             self.data_recorded += [chunk[begin:end]]
 
@@ -291,7 +291,7 @@ class DatasetCreator(OVBox):
 
         def create_labels_queue(self):
             nb_label = len(self.labels)
-            nb_total = self.nb_action_per_session / nb_label
+            nb_total = int(self.nb_action_per_session / nb_label) # in Python 3 / create float automatically and range hate that
             nb_reste = self.nb_action_per_session - nb_total*nb_label
 
             choice_label = []
