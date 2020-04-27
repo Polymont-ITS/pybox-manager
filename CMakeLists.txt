@@ -28,7 +28,7 @@ INCLUDE("FindOpenViBEModuleSystem")
 
 # OpenViBE Third Party
 INCLUDE("FindThirdPartyBoost")
-INCLUDE("FindThirdPartyPython")
+INCLUDE("FindThirdPartyPython3")
 
 # ---------------------------------
 # Target macros
@@ -47,8 +47,7 @@ INSTALL(TARGETS ${PROJECT_NAME}
 	ARCHIVE DESTINATION ${DIST_LIBDIR})
 
 INSTALL(DIRECTORY box-tutorials DESTINATION ${DIST_DATADIR}/openvibe/scenarios/)
-INSTALL(DIRECTORY share/ DESTINATION ${DIST_DATADIR}/openvibe/plugins/python)
-#INSTALL(DIRECTORY share/ DESTINATION ${DIST_DATADIR}/openvibe/plugins/python3) # For 3.0.0 Version
+INSTALL(DIRECTORY share/ DESTINATION ${DIST_DATADIR}/openvibe/plugins/python3)
 
 # ---------------------------------
 # Test applications (uncomment to enable your test directory)

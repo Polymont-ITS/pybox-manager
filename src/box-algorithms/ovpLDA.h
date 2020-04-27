@@ -12,100 +12,103 @@
 
 #include "CPolyBox.h"
 
-#if defined TARGET_HAS_ThirdPartyPython && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
-#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
+#if defined TARGET_HAS_ThirdPartyPython3 && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
+#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
 
-namespace OpenViBEPlugins
+namespace OpenViBE
 {
-	namespace Python
+	namespace Plugins
 	{
-		class CBoxAlgorithmLDA final : public CPolyBox
+		namespace PyBox
 		{
-		public:
-			CBoxAlgorithmLDA() { m_script = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/TrainerML.py"; }
-			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_LDA)
-		};
-
-		class CBoxAlgorithmLDAListener final : public OpenViBEToolkit::TBoxListener<OpenViBE::Plugins::IBoxListener>
-		{
-		public:
-			bool onInputAdded(OpenViBE::Kernel::IBox& box, const uint32_t index) override
+			class CBoxAlgorithmLDA final : public CPolyBox
 			{
-				box.setInputType(index, OV_TypeId_StreamedMatrix);
-				return true;
-			}
+			public:
+				CBoxAlgorithmLDA() { m_script = "../../extras/contrib/applications/developer-tools/pybox-manager/ScriptBox/TrainerML.py"; }
+				_IsDerivedFromClass_Final_(OpenViBE::Toolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_LDA)
+			};
 
-			bool onOutputAdded(OpenViBE::Kernel::IBox& box, const uint32_t index) override
+			class CBoxAlgorithmLDAListener final : public Toolkit::TBoxListener<IBoxListener>
 			{
-				box.setOutputType(index, OV_TypeId_StreamedMatrix);
-				return true;
-			}
-			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier)
-		};
+			public:
+				bool onInputAdded(Kernel::IBox& box, const size_t index) override
+				{
+					box.setInputType(index, OV_TypeId_StreamedMatrix);
+					return true;
+				}
 
-		class CBoxAlgorithmLDADesc final : virtual public OpenViBE::Plugins::IBoxAlgorithmDesc
-		{
-		public:
+				bool onOutputAdded(Kernel::IBox& box, const size_t index) override
+				{
+					box.setOutputType(index, OV_TypeId_StreamedMatrix);
+					return true;
+				}
+				_IsDerivedFromClass_Final_(OpenViBE::Toolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier)
+			};
 
-			void release() override { }
-
-			OpenViBE::CString getName() const override { return OpenViBE::CString("LDA"); }
-			OpenViBE::CString getAuthorName() const override { return OpenViBE::CString("Jimmy Leblanc & Yannis Bendi-Ouis"); }
-			OpenViBE::CString getAuthorCompanyName() const override { return OpenViBE::CString("Polymont IT Services"); }
-			OpenViBE::CString getShortDescription() const override
+			class CBoxAlgorithmLDADesc final : virtual public IBoxAlgorithmDesc
 			{
-				return OpenViBE::CString("Train a Linear Discriminant Analysis Classifier from Sklearn.");
-			}
-			OpenViBE::CString getDetailedDescription() const override { return OpenViBE::CString(""); }
-			OpenViBE::CString getCategory() const override { return OpenViBE::CString("Scripting/PyBox/Classification"); }
-			OpenViBE::CString getVersion() const override { return OpenViBE::CString("0.1"); }
-			OpenViBE::CString getStockItemName() const override { return OpenViBE::CString("gtk-missing-image"); }
+			public:
 
-			OpenViBE::CIdentifier getCreatedClass() const override { return OVP_ClassId_BoxAlgorithm_LDA; }
-			OpenViBE::Plugins::IPluginObject* create() override { return new CBoxAlgorithmLDA; }
-			OpenViBE::Plugins::IBoxListener* createBoxListener() const override { return new CBoxAlgorithmLDAListener; }
-			void releaseBoxListener(OpenViBE::Plugins::IBoxListener* pBoxListener) const override { delete pBoxListener; }
+				void release() override { }
 
-			bool getBoxPrototype(OpenViBE::Kernel::IBoxProto& prototype) const override
-			{
-				prototype.addSetting("Clock frequency (Hz)", OV_TypeId_Integer, "64");
-				// <tag> settings
-				prototype.addSetting("Filename to save model to", OV_TypeId_Filename, "");
-				prototype.addSetting("Filename to load model from", OV_TypeId_Filename, "");
-				prototype.addSetting("Classifier", OVPoly_ClassId_Classifier_Algorithm, "Linear Discriminant Analysis");
-				prototype.addSetting("Test set share", OV_TypeId_Float, "0.2");
-				prototype.addSetting("Labels", OV_TypeId_String, "");
-				prototype.addSetting("solver", OVPoly_ClassId_LDA_solver, "svd");
-				prototype.addSetting("n_components", OV_TypeId_String, "");
+				CString getName() const override { return CString("LDA"); }
+				CString getAuthorName() const override { return CString("Jimmy Leblanc & Yannis Bendi-Ouis"); }
+				CString getAuthorCompanyName() const override { return CString("Polymont IT Services"); }
+				CString getShortDescription() const override
+				{
+					return CString("Train a Linear Discriminant Analysis Classifier from Sklearn.");
+				}
+				CString getDetailedDescription() const override { return CString(""); }
+				CString getCategory() const override { return CString("Scripting/PyBox/Classification"); }
+				CString getVersion() const override { return CString("0.1"); }
+				CString getStockItemName() const override { return CString("gtk-missing-image"); }
 
-				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddInput);
-				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);
-				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddOutput);
-				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyOutput);
-				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddSetting);
-				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifySetting);
+				CIdentifier getCreatedClass() const override { return OVP_ClassId_BoxAlgorithm_LDA; }
+				IPluginObject* create() override { return new CBoxAlgorithmLDA; }
+				IBoxListener* createBoxListener() const override { return new CBoxAlgorithmLDAListener; }
+				void releaseBoxListener(IBoxListener* pBoxListener) const override { delete pBoxListener; }
 
-				prototype.addInputSupport(OV_TypeId_Signal);
-				prototype.addInputSupport(OV_TypeId_Stimulations);
-				prototype.addInputSupport(OV_TypeId_StreamedMatrix);
+				bool getBoxPrototype(Kernel::IBoxProto& prototype) const override
+				{
+					prototype.addSetting("Clock frequency (Hz)", OV_TypeId_Integer, "64");
+					// <tag> settings
+					prototype.addSetting("Filename to save model to", OV_TypeId_Filename, "");
+					prototype.addSetting("Filename to load model from", OV_TypeId_Filename, "");
+					prototype.addSetting("Classifier", OVPoly_ClassId_Classifier_Algorithm, "Linear Discriminant Analysis");
+					prototype.addSetting("Test set share", OV_TypeId_Float, "0.2");
+					prototype.addSetting("Labels", OV_TypeId_String, "");
+					prototype.addSetting("solver", OVPoly_ClassId_LDA_solver, "svd");
+					prototype.addSetting("n_components", OV_TypeId_String, "");
 
-				prototype.addOutputSupport(OV_TypeId_Signal);
-				prototype.addOutputSupport(OV_TypeId_Stimulations);
-				prototype.addOutputSupport(OV_TypeId_StreamedMatrix);
+					prototype.addFlag(Kernel::BoxFlag_CanAddInput);
+					prototype.addFlag(Kernel::BoxFlag_CanModifyInput);
+					prototype.addFlag(Kernel::BoxFlag_CanAddOutput);
+					prototype.addFlag(Kernel::BoxFlag_CanModifyOutput);
+					prototype.addFlag(Kernel::BoxFlag_CanAddSetting);
+					prototype.addFlag(Kernel::BoxFlag_CanModifySetting);
 
-				// <tag> input & output
-				prototype.addOutput("stim_out", OV_TypeId_Stimulations);
-				prototype.addInput("input_StreamMatrix", OV_TypeId_StreamedMatrix);
-				prototype.addInput("input_Stimulations", OV_TypeId_Stimulations);
+					prototype.addInputSupport(OV_TypeId_Signal);
+					prototype.addInputSupport(OV_TypeId_Stimulations);
+					prototype.addInputSupport(OV_TypeId_StreamedMatrix);
 
-				return true;
-			}
+					prototype.addOutputSupport(OV_TypeId_Signal);
+					prototype.addOutputSupport(OV_TypeId_Stimulations);
+					prototype.addOutputSupport(OV_TypeId_StreamedMatrix);
 
-			_IsDerivedFromClass_Final_(OpenViBE::Plugins::IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_LDADesc)
-		};
+					// <tag> input & output
+					prototype.addOutput("stim_out", OV_TypeId_Stimulations);
+					prototype.addInput("input_StreamMatrix", OV_TypeId_StreamedMatrix);
+					prototype.addInput("input_Stimulations", OV_TypeId_Stimulations);
+
+					return true;
+				}
+
+				_IsDerivedFromClass_Final_(OpenViBE::Plugins::IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_LDADesc)
+			};
+		}
 	}
 }
 
-#endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
+#endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
 
-#endif // TARGET_HAS_ThirdPartyPython
+#endif // TARGET_HAS_ThirdPartyPython3

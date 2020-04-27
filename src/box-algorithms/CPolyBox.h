@@ -11,11 +11,11 @@
 #pragma once
 
 // Windows debug build doesn't typically link as most people don't have the python debug library.
-#if defined TARGET_HAS_ThirdPartyPython && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
+#if defined TARGET_HAS_ThirdPartyPython3 && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
 
 #include <Python.h>
 
-#if defined(PY_MAJOR_VERSION)// && (PY_MAJOR_VERSION == 2)
+#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
 
 #include "defines.h"
 #include <openvibe/ov_all.h>
@@ -23,63 +23,67 @@
 
 #include <vector>
 
-namespace OpenViBEPlugins
+namespace OpenViBE
 {
-	namespace Python
+	namespace Plugins
 	{
-		class CPolyBox : virtual public OpenViBEToolkit::TBoxAlgorithm<OpenViBE::Plugins::IBoxAlgorithm>
+		namespace PyBox
 		{
-		public:
-			void release() override { delete this; }
+			class CPolyBox : virtual public Toolkit::TBoxAlgorithm<IBoxAlgorithm>
+			{
+			public:
+				void release() override { delete this; }
 
-			uint64_t getClockFrequency() override { return m_clockFrequency << 32; }
-			bool initialize() override;
-			bool uninitialize() override;
-			bool processClock(OpenViBE::CMessageClock& messageClock) override;
-			bool processInput(uint32_t index) override;
-			bool process() override;
+				uint64_t getClockFrequency() override { return m_clockFrequency << 32; }
+				bool initialize() override;
+				bool uninitialize() override;
+				bool processClock(CMessageClock& messageClock) override;
+				bool processInput(size_t index) override;
+				bool process() override;
 
-		protected:
+			protected:
 
-			uint64_t m_clockFrequency = 0;
-			OpenViBE::CString m_script;
+				uint64_t m_clockFrequency = 0;
+				CString m_script;
 
-			std::vector<OpenViBEToolkit::TDecoder<CPolyBox>*> m_vDecoders;
-			std::vector<OpenViBEToolkit::TEncoder<CPolyBox>*> m_vEncoders;
+				std::vector<Toolkit::TDecoder<CPolyBox>*> m_decoders;
+				std::vector<Toolkit::TEncoder<CPolyBox>*> m_encoders;
 
-			// These are all borrowed references in python v2.7. Do not free them.
-			static bool m_isInitialized;
+				// These are all borrowed references in python v2.7. Do not free them.
+				static bool m_isInitialized;
 
-			static PyObject *m_mainModule, *m_mainDictionnary;
-			static PyObject *m_matrixHeader, *m_matrixBuffer, *m_matrixEnd;
-			static PyObject *m_signalHeader, *m_signalBuffer, *m_signalEnd;
-			static PyObject *m_stimulationHeader, *m_stimulation, *m_stimulationSet, *m_stimulationEnd;
-			static PyObject* m_buffer;
-			static PyObject* m_execFileFunction;
-			static PyObject *m_sysStdout, *m_sysStderr;
-
-
-			//std::map<char,PyObject *> m_PyObjectMap;
-			PyObject *m_box            = nullptr, *m_boxInput   = nullptr, *m_boxOutput       = nullptr, *m_boxSetting = nullptr, *m_boxCurrentTime = nullptr;
-			PyObject *m_boxInitialize  = nullptr, *m_boxProcess = nullptr, *m_boxUninitialize = nullptr;
-			bool m_initializeSucceeded = false;
+				static PyObject *m_mainModule, *m_mainDictionnary;
+				static PyObject *m_matrixHeader, *m_matrixBuffer, *m_matrixEnd;
+				static PyObject *m_signalHeader, *m_signalBuffer, *m_signalEnd;
+				static PyObject *m_stimulationHeader, *m_stimulation, *m_stimulationSet, *m_stimulationEnd;
+				static PyObject* m_buffer;
+				static PyObject* m_execFileFunction;
+				static PyObject *m_stdout, *m_stderr;
 
 
-			bool logSysStdout();
-			bool logSysStderr();
-			void buildPythonSettings();
+				//std::map<char,PyObject *> m_PyObjectMap;
+				PyObject *m_box = nullptr, *m_boxInput = nullptr, *m_boxOutput = nullptr, *m_boxSetting = nullptr, *m_boxTime = nullptr;
+				PyObject *m_boxInitialize  = nullptr, *m_boxProcess = nullptr, *m_boxUninitialize = nullptr;
+				bool m_initializeSucceeded = false;
 
-			bool initializePythonSafely();
-			bool transferStreamedMatrixInputChunksToPython(const uint32_t index);
-			bool transferStreamedMatrixOutputChunksFromPython(const uint32_t index);
-			bool transferSignalInputChunksToPython(const uint32_t index);
-			bool transferSignalOutputChunksFromPython(const uint32_t index);
-			bool transferStimulationInputChunksToPython(const uint32_t index);
-			bool transferStimulationOutputChunksFromPython(const uint32_t index);
-		};
+
+				bool logSysStd(const bool out);
+				bool logSysStdout() { return logSysStd(true); }
+				bool logSysStderr() { return logSysStd(false); }
+				void buildPythonSettings();
+
+				bool initializePythonSafely();
+				bool transferStreamedMatrixInputChunksToPython(const size_t index);
+				bool transferStreamedMatrixOutputChunksFromPython(const size_t index);
+				bool transferSignalInputChunksToPython(const size_t index);
+				bool transferSignalOutputChunksFromPython(const size_t index);
+				bool transferStimulationInputChunksToPython(const size_t index);
+				bool transferStimulationOutputChunksFromPython(const size_t index);
+			};
+		}
 	}
 }
 
-#endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
+#endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
 
-#endif // TARGET_HAS_ThirdPartyPython
+#endif // TARGET_HAS_ThirdPartyPython3
