@@ -230,7 +230,7 @@ class TrainerML(PolyBox):
 
         if x_test.shape[0] > 0:
             predictions = self.clf.predict(x_test)
-            report = classification_report(y_test, predictions, labels=self.data.keys())
+            report = classification_report(y_test, predictions, labels=list(self.data.keys()))
             matrix = confusion_matrix(y_test, predictions)
 
             print("Report :\n{}\n".format(report))
