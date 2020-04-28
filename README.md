@@ -266,7 +266,7 @@ All the modifications we have made to the software are based on the duplication 
 
  1. Go to the root directory of the python boxes: `pybox-manager/src/`.
  2. We duplicate `pybox-manager/Assets/BoxManager/NewBoxPattern-skeletton.h` into `ovpBoxName.h`
- 3. Insert the CIdentifier declaration into `src/defines.h`.
+ 3. Insert the CIdentifier declaration into `src/defines.hpp`.
  4. Add to `src/main.cpp` the imports of the newly created files for the box creation as well as the declarations.
  5. In `src/box-algorithms/ovpBoxName.h`, replace the box name and includes/declarations.
  6. Change the box name and description in `src/box-algorithms/ovpBoxName.h`.
@@ -284,4 +284,4 @@ However, it is possible to prevent this behavior voluntarily. To do this, simply
 
 ### Managing Custom Settings
 
-We add to `meta/sdk/toolkit/include/toolkit/ovtk_defines.h` the declaration of our new Custom Settings and to `meta/sdk/toolkit/src/ovtk_main.cpp` the creation of the custom setting and the declaration of its different values.
+We add to `meta/sdk/toolkit/include/toolkit/ovtk_defines.hpp` the declaration of our new Custom Settings and to `meta/sdk/toolkit/src/ovtk_main.cpp` the creation of the custom setting and the declaration of its different values.

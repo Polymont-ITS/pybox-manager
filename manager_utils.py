@@ -81,7 +81,7 @@ def find_all_custom_settings(manager_folder) :
         return custom_values
 
     prefixe = 'OVPoly_ClassId_'
-    path_header = "{}/src/defines.h".format(manager_folder)
+    path_header = "{}/src/defines.hpp".format(manager_folder)
     path_cpp = "{}/src/main.cpp".format(manager_folder)
 
     custom_settings = get_custom_settings(path_header, prefixe)
@@ -108,16 +108,14 @@ def find_all_boxes(manager_folder, io_dic_type, settings_dic_type):
                     r"m_script = \"(.*.py)\";", file_h)[0]
 
                 # Description
-                desc = re.findall(r"virtual OpenViBE::CString getShortDescription\(void\) const    "
-                                  r"{ return OpenViBE::CString\(\"(.*?)\"\); }", file_h, flags=re.DOTALL)[0]
+                desc = re.findall(r"virtual CString getShortDescription\(void\) const    "
+                                  r"{ return CString\(\"(.*?)\"\); }", file_h, flags=re.DOTALL)[0]
                 desc = desc.replace("\"", "\\\"")
 
-                author = re.search(r'virtual OpenViBE::CString getAuthorName\(void\) const          '
-                    '{ return OpenViBE::CString\(\"[a-zA-Z 0-9\-&]*\"\); }', file_h).group()
+                author = re.search(r'virtual CString getAuthorName\(void\) const          { return CString\(\"[a-zA-Z 0-9\-&]*\"\); }', file_h).group()
                 author = author[89:-5]
 
-                category = re.search(r'virtual OpenViBE::CString getCategory\(void\) const            '
-                    '{ return OpenViBE::CString\(\"[/a-zA-Z ]+\"\); }', file_h).group()
+                category = re.search(r'virtual CString getCategory\(void\) const            { return CString\(\"[/a-zA-Z ]+\"\); }', file_h).group()
                 category = category[89:-5]
                 category = category[16:]
 
@@ -172,9 +170,9 @@ def find_all_boxes(manager_folder, io_dic_type, settings_dic_type):
                     outputs_compt += 1
 
                 # modify permission
-                permission_input = re.search(r"(\/\/)?prototype\.addFlag\(OpenViBE::Kernel::BoxFlag_CanModifyInput\);", file_h)
-                permission_output = re.search(r"(\/\/)?prototype\.addFlag\(OpenViBE::Kernel::BoxFlag_CanModifyOutput\);", file_h)
-                permission_setting = re.search(r"(\/\/)?prototype\.addFlag\(OpenViBE::Kernel::BoxFlag_CanModifySetting\);", file_h)
+                permission_input = re.search(r"(\/\/)?prototype\.addFlag\(Kernel::BoxFlag_CanModifyInput\);", file_h)
+                permission_output = re.search(r"(\/\/)?prototype\.addFlag\(Kernel::BoxFlag_CanModifyOutput\);", file_h)
+                permission_setting = re.search(r"(\/\/)?prototype\.addFlag\(Kernel::BoxFlag_CanModifySetting\);", file_h)
 
                 if permission_input.group()[:2] == '//' :
                     box.modify_inputs = False
@@ -302,8 +300,8 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
     copyfile(path_pattern_header, path_file_header)
 
 
-    # 3/ We insert in defines.h the declaration of CIdentifiers
-    filename = 'defines.h'
+    # 3/ We insert in defines.hpp the declaration of CIdentifiers
+    filename = 'defines.hpp'
     tag = '// <tag> Tag Box Declaration'
     time.sleep(1)
     new_id1, new_id2, new_id3, new_id4 = generate_new_id(openvibe_folder)
@@ -316,12 +314,12 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
 
     # 4/ We add our lines in main.cpp
     filename = 'main.cpp'
-    tag = '#include "box-algorithms/CPolyBox.h"'
+    tag = '#include "box-algorithms/CPolyBox.hpp"'
     new_line = '#include "{}"'.format(path_file_header)
     insert_line_in_file(filename, new_line, tag)
 
     tag = '// <tag> OVP_Declare_New'
-    new_line = '\t\tOVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithm{}Desc);'.format(
+    new_line = '\t\tOVP_Declare_New(Python::CBoxAlgorithm{}Desc);'.format(
         box_name)
     insert_line_in_file(filename, new_line, tag)
 
@@ -341,25 +339,17 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
     box_name = box_name.replace('_',' ')
 
     replace_in_file(path_file_header,
-                    'OpenViBE::CString getName() const override                { return OpenViBE::CString('
-                    '"NewBoxPattern"); }',
-                    'OpenViBE::CString getName() const override                { return OpenViBE::CString("'
-                    + box_name + '"); }')
+                    'CString getName() const override                { return CString("NewBoxPattern"); }',
+                    'CString getName() const override                { return CString("' + box_name + '"); }')
     replace_in_file(path_file_header,
-                    'OpenViBE::CString getShortDescription() const override    { return OpenViBE::CString('
-                    '"Default Python Description"); }',
-                    'OpenViBE::CString getShortDescription() const override    { return OpenViBE::CString("'
-                    + desc + '"); }')
+                    'CString getShortDescription() const override    { return CString("Default Python Description"); }',
+                    'CString getShortDescription() const override    { return CString("' + desc + '"); }')
     replace_in_file(path_file_header,
-                    'OpenViBE::CString getAuthorName() const override          { return OpenViBE::CString("'
-                    'NewAuthor"); }',
-                    'OpenViBE::CString getAuthorName() const override          { return OpenViBE::CString("'
-                    + author + '"); }')
+                    'CString getAuthorName() const override          { return CString("NewAuthor"); }',
+                    'CString getAuthorName() const override          { return CString("' + author + '"); }')
     replace_in_file(path_file_header,
-                    'OpenViBE::CString getCategory() const override            { return OpenViBE::CString("'
-                    'Scripting/Pybox/"); }',
-                    'OpenViBE::CString getCategory() const override            { return OpenViBE::CString("'
-                    + category + '"); }')
+                    'CString getCategory() const override            { return CString("Scripting/Pybox/"); }',
+                    'CString getCategory() const override            { return CString("' + category + '"); }')
 
     # 7/ We set the python script to execute
     # On set le script python a executer
@@ -393,16 +383,16 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
     # 10/ Permissions to modify boxes in OV
     if not modify_settings :
         replace_in_file(path_file_header,
-                        "prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifySetting);",
-                        "//prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifySetting);")
+                        "prototype.addFlag(Kernel::BoxFlag_CanModifySetting);",
+                        "//prototype.addFlag(Kernel::BoxFlag_CanModifySetting);")
     if not modify_inputs :
         replace_in_file(path_file_header,
-                        "prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);",
-                        "//prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);")
+                        "prototype.addFlag(Kernel::BoxFlag_CanModifyInput);",
+                        "//prototype.addFlag(Kernel::BoxFlag_CanModifyInput);")
     if not modify_outputs :
         replace_in_file(path_file_header,
-                        "prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyOutput);",
-                        "//prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyOutput);")
+                        "prototype.addFlag(Kernel::BoxFlag_CanModifyOutput);",
+                        "//prototype.addFlag(Kernel::BoxFlag_CanModifyOutput);")
 
     os.chdir(old_location)
 
@@ -422,8 +412,8 @@ def delete_box(manager_folder, box_name):
     path_box = 'box-algorithms/ovp{}.h'.format(box_name)
     os.remove(path_box)
 
-    # 3/ Remove lines from defines.h
-    path = 'defines.h'
+    # 3/ Remove lines from defines.hpp
+    path = 'defines.hpp'
     tag = 'OVP_ClassId_BoxAlgorithm_{}Desc'.format(box_name)
     remove_line_from_file(path, tag)
     tag = 'OVP_ClassId_BoxAlgorithm_{}'.format(box_name)
@@ -431,11 +421,9 @@ def delete_box(manager_folder, box_name):
 
     # 4/ Remove lines from main.cpp
     path = 'main.cpp'
-    tag = 'OVP_Declare_New(OpenViBEPlugins::Python::CBoxAlgorithm{}Desc);'.format(
-        box_name)
+    tag = 'OVP_Declare_New(Python::CBoxAlgorithm{}Desc);'.format(box_name)
     remove_line_from_file(path, tag)
-    tag = '#include "box-algorithms/ovp{}.h"'.format(
-        box_name, box_name)
+    tag = '#include "box-algorithms/ovp{}.h"'.format(box_name)
     remove_line_from_file(path, tag)
 
     os.chdir(old_location)
@@ -449,7 +437,7 @@ def create_custom_setting(manager_folder, openvibe_folder, cs) :
 
     prefixe = 'OVPoly_ClassId_'
     path_cpp = '{}/src/main.cpp'.format(manager_folder)
-    path_header = '{}/src/defines.h'.format(manager_folder)
+    path_header = '{}/src/defines.hpp'.format(manager_folder)
 
     tag = '// <tag> Custom Type Settings'
     cs_define = "{}{}".format(prefixe, cs.name)
@@ -483,7 +471,7 @@ def delete_custom_setting(manager_folder, cs) :
 
     prefixe = 'OVPoly_ClassId_'
     path_cpp = '{}/src/main.cpp'.format(manager_folder)
-    path_header = '{}/src/defines.h'.format(manager_folder)
+    path_header = '{}/src/defines.hpp'.format(manager_folder)
 
     tag = '{}{}'.format(prefixe, cs.name)
     remove_lines_with_tag_in_file(path_header, tag)
@@ -564,7 +552,7 @@ def get_name_duplicate(dict, name) :
 
         try:
             prefix_1 = res.group(1)
-            idx_1 = res.group(2)
+            idx_1 = res.group(2)	# useless ?
             max_idx = 1 
 
             # Does we already have a duplicate ?
@@ -597,7 +585,7 @@ def get_name_duplicate(dict, name) :
     current_name = name
 
     regex = '(.+?_)(\d+)'
-    res = re.search(regex, current_name)
+    res = re.search(regex, current_name)	# useless ?
 
 
     # We already have doublon

@@ -134,6 +134,7 @@ class DataViz(PolyBox):
         # Transform data
         self.x_data = self.model.transform(self.x_data)
         self.y_data = np.array(self.y_data)
+
     def make_plot(self):
 
         fig = plt.figure(figsize=(12, 12))

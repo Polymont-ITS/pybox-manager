@@ -10,70 +10,70 @@
 ///-------------------------------------------------------------------------------------------------
 #pragma once
 
-#include "CPolyBox.h"
+#include "CPolyBox.hpp"
 
-#if defined TARGET_HAS_ThirdPartyPython && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
-#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
+#if defined TARGET_HAS_ThirdPartyPython3 && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
+#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
 
-namespace OpenViBEPlugins
+namespace OpenViBE { namespace Plugins
 {
-	namespace Python
+	namespace PyBox
 	{
 		class CBoxAlgorithmNewBoxPattern final : public CPolyBox
 		{
 		public:
 			CBoxAlgorithmNewBoxPattern() { m_script = "NewScript.py";}
-			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxAlgorithm < OpenViBE::Plugins::IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_NewBoxPattern)
+			_IsDerivedFromClass_Final_(Toolkit::TBoxAlgorithm < IBoxAlgorithm >, OVP_ClassId_BoxAlgorithm_NewBoxPattern)
 		};
 		
-		class CBoxAlgorithmNewBoxPatternListener final : public OpenViBEToolkit::TBoxListener<OpenViBE::Plugins::IBoxListener>
+		class CBoxAlgorithmNewBoxPatternListener final : public Toolkit::TBoxListener<IBoxListener>
 		{
 		public:
-			bool onInputAdded(OpenViBE::Kernel::IBox& box, const uint32_t index) override
+			bool onInputAdded(Kernel::IBox& box, const size_t index) override
 			{
 				box.setInputType(index, OV_TypeId_StreamedMatrix);
 				return true;
 			}
 
-			bool onOutputAdded(OpenViBE::Kernel::IBox& box, const uint32_t index) override
+			bool onOutputAdded(Kernel::IBox& box, const size_t index) override
 			{
 				box.setOutputType(index, OV_TypeId_StreamedMatrix);
 				return true;
 			}
-			_IsDerivedFromClass_Final_(OpenViBEToolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier)
+			_IsDerivedFromClass_Final_(Toolkit::TBoxListener < IBoxListener >, OV_UndefinedIdentifier)
 		};
 		
-		class CBoxAlgorithmNewBoxPatternDesc final : virtual public OpenViBE::Plugins::IBoxAlgorithmDesc
+		class CBoxAlgorithmNewBoxPatternDesc final : virtual public IBoxAlgorithmDesc
 		{
 		public:
 
 			void release() override { }
 
-			OpenViBE::CString getName() const override                { return OpenViBE::CString("NewBoxPattern"); }
-			OpenViBE::CString getAuthorName() const override          { return OpenViBE::CString("NewAuthor"); }
-			OpenViBE::CString getAuthorCompanyName() const override   { return OpenViBE::CString("NewCompany"); }
-			OpenViBE::CString getShortDescription() const override    { return OpenViBE::CString("Default Python Description"); }
-			OpenViBE::CString getDetailedDescription() const override { return OpenViBE::CString(""); }
-			OpenViBE::CString getCategory() const override            { return OpenViBE::CString("Scripting/Pybox/"); }
-			OpenViBE::CString getVersion() const override             { return OpenViBE::CString("0.1"); }
-			OpenViBE::CString getStockItemName() const override       { return OpenViBE::CString("gtk-missing-image"); }
+			CString getName() const override                { return CString("NewBoxPattern"); }
+			CString getAuthorName() const override          { return CString("NewAuthor"); }
+			CString getAuthorCompanyName() const override   { return CString("NewCompany"); }
+			CString getShortDescription() const override    { return CString("Default Python Description"); }
+			CString getDetailedDescription() const override { return CString(""); }
+			CString getCategory() const override            { return CString("Scripting/Pybox/"); }
+			CString getVersion() const override             { return CString("0.1"); }
+			CString getStockItemName() const override       { return CString("gtk-convert"); }
 
-			OpenViBE::CIdentifier getCreatedClass() const override    { return OVP_ClassId_BoxAlgorithm_NewBoxPattern; }
-			OpenViBE::Plugins::IPluginObject* create() override       { return new CBoxAlgorithmNewBoxPattern; }
-			OpenViBE::Plugins::IBoxListener* createBoxListener() const override              { return new CBoxAlgorithmNewBoxPatternListener; }
-			void releaseBoxListener(OpenViBE::Plugins::IBoxListener* pBoxListener) const override{ delete pBoxListener; }
+			CIdentifier getCreatedClass() const override    { return OVP_ClassId_BoxAlgorithm_NewBoxPattern; }
+			IPluginObject* create() override       { return new CBoxAlgorithmNewBoxPattern; }
+			IBoxListener* createBoxListener() const override              { return new CBoxAlgorithmNewBoxPatternListener; }
+			void releaseBoxListener(IBoxListener* pBoxListener) const override{ delete pBoxListener; }
 
-			bool getBoxPrototype(OpenViBE::Kernel::IBoxProto& prototype) const override
+			bool getBoxPrototype(Kernel::IBoxProto& prototype) const override
 			{
 				prototype.addSetting("Clock frequency (Hz)", OV_TypeId_Integer, "64");
 				// <tag> settings
 				
-				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddInput);
-				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyInput);
-				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddOutput);
-				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifyOutput);
-				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanAddSetting);
-				prototype.addFlag(OpenViBE::Kernel::BoxFlag_CanModifySetting);
+				prototype.addFlag(Kernel::BoxFlag_CanAddInput);
+				prototype.addFlag(Kernel::BoxFlag_CanModifyInput);
+				prototype.addFlag(Kernel::BoxFlag_CanAddOutput);
+				prototype.addFlag(Kernel::BoxFlag_CanModifyOutput);
+				prototype.addFlag(Kernel::BoxFlag_CanAddSetting);
+				prototype.addFlag(Kernel::BoxFlag_CanModifySetting);
 
 				prototype.addInputSupport(OV_TypeId_Signal);
 				prototype.addInputSupport(OV_TypeId_Stimulations);
@@ -88,11 +88,11 @@ namespace OpenViBEPlugins
 				return true;
 			}
 
-			_IsDerivedFromClass_Final_(OpenViBE::Plugins::IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_NewBoxPatternDesc)
+			_IsDerivedFromClass_Final_(IBoxAlgorithmDesc, OVP_ClassId_BoxAlgorithm_NewBoxPatternDesc)
 		};
 	}
 }
+}
+#endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
 
-#endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 2)
-
-#endif // TARGET_HAS_ThirdPartyPython
+#endif // TARGET_HAS_ThirdPartyPython3

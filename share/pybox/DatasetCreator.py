@@ -29,7 +29,6 @@ from pandas import Series, DataFrame, read_csv
 import numpy as np
 import pandas as pd
 from natsort import natsorted
-from pygame import mixer
 from PolyStimulations import Poly_stimulation
 import os
 import pickle
@@ -56,12 +55,6 @@ CHANNELS_NAME = ['AF3', 'F7', 'F3', 'FC5', 'T7', 'P7', 'O1', 'O2', 'P8', 'T8', '
 CHANNELS_STIMULATION = ['Event Id', 'Event Date', 'Event Duration']
 
 PREFIXE_STIM = 'OVPoly_'
-
-#------------------------------------------------------------
-def get_path_sounds():
-    path_current_file = inspect.getfile(lambda: None)
-    indice = path_current_file.find('pybox-manager')
-    return path_current_file[:indice] + 'pybox-manager/Assets/Sounds/'
 
 #------------------------------------------------------------
 def ovdf(df, rewrite_stim=True):
@@ -145,12 +138,6 @@ class DatasetCreator(OVBox):
                     if len(label) > 0:
                         self.labels += [label.lower()]
 
-        def verify_sound_label(self):
-            sounds = os.listdir(get_path_sounds())
-            for label in self.labels:
-                if not label + '.mp3' in sounds:
-                    raise Exception('There is no sound for ' + label)
-
         def init_dict(self):
             self.dic_fold = {'fold_{}'.format(i): None for i in range(1, self.nb_fold+1)}
             self.dic_dicount = {'fold_{}'.format(i): None for i in range(1, self.nb_fold+1)}
@@ -189,7 +176,6 @@ class DatasetCreator(OVBox):
         retrieve_settings(self)
         verify_stim_output(self)
         verify_labels_correct(self)
-        verify_sound_label(self)
         init_dict(self)
 
         self.verify_arborescence()
@@ -229,7 +215,7 @@ class DatasetCreator(OVBox):
         chunk = self.input[inputIndex].pop()
 
         # Plusieurs lignes sont envoyées en même temps, il faut les séparer
-        indices = [(len(CHANNELS_NAME)*i, len(CHANNELS_NAME)*(i+1)) for i in range(len(chunk)/len(CHANNELS_NAME))]
+        indices = [(len(CHANNELS_NAME)*i, len(CHANNELS_NAME)*(i+1)) for i in range(int(len(chunk)/len(CHANNELS_NAME)))]
         for begin, end in indices:
             self.data_recorded += [chunk[begin:end]]
 
@@ -305,7 +291,7 @@ class DatasetCreator(OVBox):
 
         def create_labels_queue(self):
             nb_label = len(self.labels)
-            nb_total = self.nb_action_per_session / nb_label
+            nb_total = int(self.nb_action_per_session / nb_label) # in Python 3 / create float automatically and range hate that
             nb_reste = self.nb_action_per_session - nb_total*nb_label
 
             choice_label = []
@@ -326,9 +312,6 @@ class DatasetCreator(OVBox):
         for key in self.dic_fold.keys():
             self.dic_fold[key] = {l: [] for l in self.labels}
 
-        # Initialize the mixer
-        mixer.init()
-
     #----------------------------------------
     def empty_tampon(self):
         # Supprime les données tampons entre deux records
@@ -342,8 +325,6 @@ class DatasetCreator(OVBox):
         if len(self.labels_queue) > 0:
             self.current_label = self.labels_queue.pop(0)
             print('Current label : {}'.format(self.current_label))
-            mixer.music.load(get_path_sounds() + '{}.mp3'.format(self.current_label))
-            mixer.music.play()
 
     #----------------------------------------
     def end_record(self):
@@ -373,8 +354,6 @@ class DatasetCreator(OVBox):
 
             # End record
             print('Stop.')
-            mixer.music.load(get_path_sounds() + 'stop.mp3')
-            mixer.music.play()
 
         retrieve_record(self)
         self.is_tampon = True
