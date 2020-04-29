@@ -2,6 +2,9 @@
 #include <tuple>
 #include <vector>
 
+#if defined TARGET_HAS_ThirdPartyPython3 && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
+#if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
+
 using namespace std;
 using namespace OpenViBE;
 using namespace /*OpenViBE::*/Kernel;
@@ -249,3 +252,6 @@ bool CBoxAlgorithmTrainerMLListener::onSettingValueChanged(IBox& box, const size
 		return true;
 	}
 }
+
+#endif // #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
+#endif // TARGET_HAS_ThirdPartyPython3
