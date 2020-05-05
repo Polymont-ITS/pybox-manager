@@ -4,7 +4,6 @@
 
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
 
-#include <openvibe/ovTimeArithmetics.h>
 #include <fstream>
 #include <iostream>
 
@@ -46,7 +45,7 @@ static bool getLenFromPyObject(PyObject* obj, size_t& len)
 static void getTimeFromPyObject(PyObject* obj, const char* attr, uint64_t& time)
 {
 	PyObject* pyTime = PyObject_GetAttrString(obj, attr);
-	time             = TimeArithmetics::secondsToTime(PyFloat_AsDouble(pyTime));
+	time             = CTime(PyFloat_AsDouble(pyTime)).time();
 	Py_CLEAR(pyTime);
 }
 
@@ -396,7 +395,7 @@ bool CPolyBox::initialize()
 		return false;
 	}
 
-	m_boxTime = PyFloat_FromDouble(TimeArithmetics::timeToSeconds(this->getPlayerContext().getCurrentTime()));
+	m_boxTime = PyFloat_FromDouble(CTime(this->getPlayerContext().getCurrentTime()).toSeconds());
 	if (m_boxTime == nullptr)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to convert the current time into a PyFloat.\n";
@@ -580,7 +579,7 @@ bool CPolyBox::transferStreamedMatrixInputChunksToPython(const size_t index)
 				Py_CLEAR(pyLabelDim);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(CTime(boxCtx.getInputChunkStartTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
 				Py_CLEAR(pySizeDim);
@@ -588,7 +587,7 @@ bool CPolyBox::transferStreamedMatrixInputChunksToPython(const size_t index)
 				Py_CLEAR(pyArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(CTime(boxCtx.getInputChunkEndTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
 				Py_CLEAR(pySizeDim);
@@ -643,13 +642,13 @@ bool CPolyBox::transferStreamedMatrixInputChunksToPython(const size_t index)
 				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(CTime(boxCtx.getInputChunkStartTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
 				Py_CLEAR(pyArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(CTime(boxCtx.getInputChunkEndTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
 				Py_CLEAR(pyArg);
@@ -700,13 +699,13 @@ bool CPolyBox::transferStreamedMatrixInputChunksToPython(const size_t index)
 				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(CTime(boxCtx.getInputChunkStartTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
 				Py_CLEAR(pyArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(CTime(boxCtx.getInputChunkEndTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
 				Py_CLEAR(pyArg);
@@ -890,7 +889,7 @@ bool CPolyBox::transferSignalInputChunksToPython(const size_t index)
 				Py_CLEAR(pyLabelDim);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(CTime(boxCtx.getInputChunkStartTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
 				Py_CLEAR(pySizeDim);
@@ -898,7 +897,7 @@ bool CPolyBox::transferSignalInputChunksToPython(const size_t index)
 				Py_CLEAR(pyArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(CTime(boxCtx.getInputChunkEndTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
 				Py_CLEAR(pySizeDim);
@@ -963,13 +962,13 @@ bool CPolyBox::transferSignalInputChunksToPython(const size_t index)
 				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(CTime(boxCtx.getInputChunkStartTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (startTime) in tuple pyArg.\n";
 				Py_CLEAR(pyArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(CTime(boxCtx.getInputChunkEndTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (endTime) in tuple pyArg.\n";
 				Py_CLEAR(pyArg);
@@ -1020,13 +1019,13 @@ bool CPolyBox::transferSignalInputChunksToPython(const size_t index)
 				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(CTime(boxCtx.getInputChunkStartTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
 				Py_CLEAR(pyArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(CTime(boxCtx.getInputChunkEndTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
 				Py_CLEAR(pyArg);
@@ -1168,13 +1167,13 @@ bool CPolyBox::transferStimulationInputChunksToPython(const size_t index)
 				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(CTime(boxCtx.getInputChunkStartTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
 				Py_CLEAR(pyArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(CTime(boxCtx.getInputChunkEndTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
 				Py_CLEAR(pyArg);
@@ -1210,13 +1209,13 @@ bool CPolyBox::transferStimulationInputChunksToPython(const size_t index)
 				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(CTime(boxCtx.getInputChunkStartTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
 				Py_CLEAR(pyArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(CTime(boxCtx.getInputChunkEndTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
 				Py_CLEAR(pyArg);
@@ -1250,13 +1249,13 @@ bool CPolyBox::transferStimulationInputChunksToPython(const size_t index)
 					Py_CLEAR(pyArg);
 					return false;
 				}
-				if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(date))) != 0)
+				if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(CTime(date).toSeconds())) != 0)
 				{
 					this->getLogManager() << LogLevel_Error << "Failed to set item 1 (date) in tuple pyArg.\n";
 					Py_CLEAR(pyArg);
 					return false;
 				}
-				if (PyTuple_SetItem(pyArg, 2, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(duration))) != 0)
+				if (PyTuple_SetItem(pyArg, 2, PyFloat_FromDouble(CTime(duration).toSeconds())) != 0)
 				{
 					this->getLogManager() << LogLevel_Error << "Failed to set item 2 (duration) in tuple pyArg.\n";
 					Py_CLEAR(pyArg);
@@ -1298,13 +1297,13 @@ bool CPolyBox::transferStimulationInputChunksToPython(const size_t index)
 				this->getLogManager() << LogLevel_Error << "Failed to create a new tuple pyArg.\n";
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkStartTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 0, PyFloat_FromDouble(CTime(boxCtx.getInputChunkStartTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 0 (start time) in tuple pyArg.\n";
 				Py_CLEAR(pyArg);
 				return false;
 			}
-			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(TimeArithmetics::timeToSeconds(boxCtx.getInputChunkEndTime(index, idx)))) != 0)
+			if (PyTuple_SetItem(pyArg, 1, PyFloat_FromDouble(CTime(boxCtx.getInputChunkEndTime(index, idx)).toSeconds())) != 0)
 			{
 				this->getLogManager() << LogLevel_Error << "Failed to set item 1 (end time) in tuple pyArg.\n";
 				Py_CLEAR(pyArg);
@@ -1458,7 +1457,7 @@ bool CPolyBox::process()
 	}
 
 	//update the python current time
-	m_boxTime = PyFloat_FromDouble(TimeArithmetics::timeToSeconds(this->getPlayerContext().getCurrentTime()));
+	m_boxTime = PyFloat_FromDouble(CTime(this->getPlayerContext().getCurrentTime()).toSeconds());
 	if (m_boxTime == nullptr)
 	{
 		this->getLogManager() << LogLevel_Error << "Failed to convert the current time into a PyFloat during update.\n";
