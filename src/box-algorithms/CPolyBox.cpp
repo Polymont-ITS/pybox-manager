@@ -1,6 +1,6 @@
 #if defined TARGET_HAS_ThirdPartyPython3 && !(defined(WIN32) && defined(TARGET_BUILDTYPE_Debug))
 
-#include "CPolybox.hpp"
+#include "CPolyBox.hpp"
 
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
 
