@@ -49,14 +49,14 @@ namespace OpenViBE { namespace Plugins
 
 			void release() override { }
 
-			CString getName() const override                { return CString("NewBoxPattern"); }
-			CString getAuthorName() const override          { return CString("NewAuthor"); }
-			CString getAuthorCompanyName() const override   { return CString("NewCompany"); }
-			CString getShortDescription() const override    { return CString("Default Python Description"); }
-			CString getDetailedDescription() const override { return CString(""); }
-			CString getCategory() const override            { return CString("Scripting/Pybox/"); }
-			CString getVersion() const override             { return CString("0.1"); }
-			CString getStockItemName() const override       { return CString("gtk-convert"); }
+			CString getName() const override                { return "NewBoxPattern"; }
+			CString getAuthorName() const override          { return "NewAuthor"; }
+			CString getAuthorCompanyName() const override   { return "NewCompany"; }
+			CString getShortDescription() const override    { return "Default Python Description"; }
+			CString getDetailedDescription() const override { return ""; }
+			CString getCategory() const override            { return "Scripting/Pybox/"; }
+			CString getVersion() const override             { return "0.1"; }
+			CString getStockItemName() const override       { return "gtk-convert"; }
 
 			CIdentifier getCreatedClass() const override    { return OVP_ClassId_BoxAlgorithm_NewBoxPattern; }
 			IPluginObject* create() override       { return new CBoxAlgorithmNewBoxPattern; }

@@ -109,13 +109,13 @@ def find_all_boxes(manager_folder, io_dic_type, settings_dic_type):
 
                 # Description
                 desc = re.findall(r"virtual CString getShortDescription\(void\) const    "
-                                  r"{ return CString\(\"(.*?)\"\); }", file_h, flags=re.DOTALL)[0]
+                                  r"{ return \"(.*?)\"; }", file_h, flags=re.DOTALL)[0]
                 desc = desc.replace("\"", "\\\"")
 
-                author = re.search(r'virtual CString getAuthorName\(void\) const          { return CString\(\"[a-zA-Z 0-9\-&]*\"\); }', file_h).group()
+                author = re.search(r'virtual CString getAuthorName\(void\) const          { return \"[a-zA-Z 0-9\-&]*\"; }', file_h).group()
                 author = author[89:-5]
 
-                category = re.search(r'virtual CString getCategory\(void\) const            { return CString\(\"[/a-zA-Z ]+\"\); }', file_h).group()
+                category = re.search(r'virtual CString getCategory\(void\) const            { return \"[/a-zA-Z ]+\"; }', file_h).group()
                 category = category[89:-5]
                 category = category[16:]
 
@@ -339,17 +339,17 @@ def create_box(openvibe_folder, manager_folder, setting_type, io_type, box_name,
     box_name = box_name.replace('_',' ')
 
     replace_in_file(path_file_header,
-                    'CString getName() const override                { return CString("NewBoxPattern"); }',
-                    'CString getName() const override                { return CString("' + box_name + '"); }')
+                    'CString getName() const override                { return "NewBoxPattern"; }',
+                    'CString getName() const override                { return "' + box_name + '"; }')
     replace_in_file(path_file_header,
-                    'CString getShortDescription() const override    { return CString("Default Python Description"); }',
-                    'CString getShortDescription() const override    { return CString("' + desc + '"); }')
+                    'CString getShortDescription() const override    { return "Default Python Description"; }',
+                    'CString getShortDescription() const override    { return "' + desc + '"; }')
     replace_in_file(path_file_header,
-                    'CString getAuthorName() const override          { return CString("NewAuthor"); }',
-                    'CString getAuthorName() const override          { return CString("' + author + '"); }')
+                    'CString getAuthorName() const override          { return "NewAuthor"; }',
+                    'CString getAuthorName() const override          { return "' + author + '"; }')
     replace_in_file(path_file_header,
-                    'CString getCategory() const override            { return CString("Scripting/Pybox/"); }',
-                    'CString getCategory() const override            { return CString("' + category + '"); }')
+                    'CString getCategory() const override            { return "Scripting/Pybox/"; }',
+                    'CString getCategory() const override            { return "' + category + '"; }')
 
     # 7/ We set the python script to execute
     # On set le script python a executer
