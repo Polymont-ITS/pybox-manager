@@ -37,7 +37,7 @@ public:
 
 	bool onSettingValueChanged(Kernel::IBox& box, const size_t index) override;
 
-	_IsDerivedFromClass_Final_(Toolkit::TBoxListener<IBoxListener>, OV_UndefinedIdentifier)
+	_IsDerivedFromClass_Final_(Toolkit::TBoxListener<IBoxListener>, CIdentifier::undefined())
 };
 
 class CBoxAlgorithmTrainerMLDesc final : virtual public IBoxAlgorithmDesc

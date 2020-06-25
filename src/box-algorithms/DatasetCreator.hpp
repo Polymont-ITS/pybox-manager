@@ -35,7 +35,7 @@ public:
 		return true;
 	}
 
-	_IsDerivedFromClass_Final_(OpenViBE::Toolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, OV_UndefinedIdentifier)
+	_IsDerivedFromClass_Final_(OpenViBE::Toolkit::TBoxListener < OpenViBE::Plugins::IBoxListener >, CIdentifier::undefined())
 };
 
 class CBoxAlgorithmDatasetCreatorDesc final : virtual public IBoxAlgorithmDesc

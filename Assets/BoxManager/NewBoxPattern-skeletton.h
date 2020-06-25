@@ -40,7 +40,7 @@ namespace OpenViBE { namespace Plugins
 				box.setOutputType(index, OV_TypeId_StreamedMatrix);
 				return true;
 			}
-			_IsDerivedFromClass_Final_(Toolkit::TBoxListener < IBoxListener >, OV_UndefinedIdentifier)
+			_IsDerivedFromClass_Final_(Toolkit::TBoxListener < IBoxListener >, CIdentifier::undefined())
 		};
 		
 		class CBoxAlgorithmNewBoxPatternDesc final : virtual public IBoxAlgorithmDesc

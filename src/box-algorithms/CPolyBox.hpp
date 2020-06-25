@@ -18,7 +18,7 @@
 #if defined(PY_MAJOR_VERSION) && (PY_MAJOR_VERSION == 3)
 
 #include "defines.hpp"
-#include <openvibe/ov_all.h>
+#include <openvibe/ov_all.hpp>
 #include <toolkit/ovtk_all.h>
 
 #include <vector>

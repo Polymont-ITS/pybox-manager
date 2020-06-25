@@ -55,7 +55,7 @@ static void getTimesFromPyObject(PyObject* obj, CTime& start, CTime& end)
 	getTimeFromPyObject(obj, "endTime", end);
 }
 
-static bool setMatrixInfosFromPyObject(PyObject* obj, IMatrix* matrix)
+static bool setMatrixInfosFromPyObject(PyObject* obj, CMatrix* matrix)
 {
 	PyObject* pyNDim = PyObject_CallMethod(obj, "getDimensionCount", nullptr);
 	if (pyNDim == nullptr) { return false; }
@@ -531,7 +531,7 @@ bool CPolyBox::transferStreamedMatrixInputChunksToPython(const size_t index)
 
 		if (m_decoders[index]->isHeaderReceived())
 		{
-			IMatrix* matrix = dynamic_cast<TStreamedMatrixDecoder<CPolyBox>*>(m_decoders[index])->getOutputMatrix();
+			CMatrix* matrix = dynamic_cast<TStreamedMatrixDecoder<CPolyBox>*>(m_decoders[index])->getOutputMatrix();
 			size_t nDim     = matrix->getDimensionCount();
 
 			PyObject* pySizeDim = PyList_New(nDim);
@@ -561,7 +561,7 @@ bool CPolyBox::transferStreamedMatrixInputChunksToPython(const size_t index)
 				}
 				for (size_t j = 0; j < dimSize; ++j)
 				{
-					if (PyList_Append(pyLabelDim, PyUnicode_FromString(matrix->getDimensionLabel(i, j))) == -1)
+					if (PyList_Append(pyLabelDim, PyUnicode_FromString(matrix->getDimensionLabel(i, j).c_str())) == -1)
 					{
 						getLogManager() << LogLevel_Error << "Failed to append \"" << matrix->getDimensionLabel(i, j) << "\" in dimension label list.\n";
 						Py_CLEAR(pySizeDim);
@@ -670,9 +670,9 @@ bool CPolyBox::transferStreamedMatrixInputChunksToPython(const size_t index)
 			}
 			Py_CLEAR(pyArg);
 
-			IMatrix* matrix    = dynamic_cast<TStreamedMatrixDecoder<CPolyBox>*>(m_decoders[index])->getOutputMatrix();
+			CMatrix* matrix    = dynamic_cast<TStreamedMatrixDecoder<CPolyBox>*>(m_decoders[index])->getOutputMatrix();
 			double* bufferBase = matrix->getBuffer();
-			for (size_t i = 0; i < matrix->getBufferElementCount(); ++i)
+			for (size_t i = 0; i < matrix->getSize(); ++i)
 			{
 				if (PyList_Append(pyMatrixBuffer, PyFloat_FromDouble(bufferBase[i])) == -1)
 				{
@@ -737,7 +737,7 @@ bool CPolyBox::transferStreamedMatrixInputChunksToPython(const size_t index)
 bool CPolyBox::transferStreamedMatrixOutputChunksFromPython(const size_t index)
 {
 	IBoxIO& boxCtx  = this->getDynamicBoxContext();
-	IMatrix* matrix = dynamic_cast<TStreamedMatrixEncoder<CPolyBox>*>(m_encoders[index])->getInputMatrix();
+	CMatrix* matrix = dynamic_cast<TStreamedMatrixEncoder<CPolyBox>*>(m_encoders[index])->getInputMatrix();
 
 	if (!PyList_Check(m_boxOutput))
 	{
@@ -788,7 +788,7 @@ bool CPolyBox::transferStreamedMatrixOutputChunksFromPython(const size_t index)
 		else if (PyObject_IsInstance(pyChunk, m_matrixBuffer) == 1)
 		{
 			double* bufferBase = matrix->getBuffer();
-			for (size_t i = 0; i < matrix->getBufferElementCount(); ++i) { bufferBase[i] = PyFloat_AsDouble(PyList_GetItem(pyChunk, i)); }
+			for (size_t i = 0; i < matrix->getSize(); ++i) { bufferBase[i] = PyFloat_AsDouble(PyList_GetItem(pyChunk, i)); }
 
 			CTime startTime, endTime;
 			getTimesFromPyObject(pyChunk, startTime, endTime);
@@ -841,7 +841,7 @@ bool CPolyBox::transferSignalInputChunksToPython(const size_t index)
 
 		if (m_decoders[index]->isHeaderReceived())
 		{
-			IMatrix* matrix = dynamic_cast<TSignalDecoder<CPolyBox>*>(m_decoders[index])->getOutputMatrix();
+			CMatrix* matrix = dynamic_cast<TSignalDecoder<CPolyBox>*>(m_decoders[index])->getOutputMatrix();
 			size_t nDim     = matrix->getDimensionCount();
 
 			PyObject* pySizeDim = PyList_New(nDim);
@@ -871,7 +871,7 @@ bool CPolyBox::transferSignalInputChunksToPython(const size_t index)
 				}
 				for (size_t j = 0; j < dimSize; ++j)
 				{
-					if (PyList_Append(pyLabelDim, PyUnicode_FromString(matrix->getDimensionLabel(i, j))) == -1)
+					if (PyList_Append(pyLabelDim, PyUnicode_FromString(matrix->getDimensionLabel(i, j).c_str())) == -1)
 					{
 						getLogManager() << LogLevel_Error << "Failed to append \"" << matrix->getDimensionLabel(i, j) << "\" in dimension label list.\n";
 						Py_CLEAR(pySizeDim);
@@ -990,9 +990,9 @@ bool CPolyBox::transferSignalInputChunksToPython(const size_t index)
 			}
 			Py_CLEAR(pyArg);
 
-			IMatrix* matrix    = dynamic_cast<TSignalDecoder<CPolyBox>*>(m_decoders[index])->getOutputMatrix();
+			CMatrix* matrix    = dynamic_cast<TSignalDecoder<CPolyBox>*>(m_decoders[index])->getOutputMatrix();
 			double* bufferBase = matrix->getBuffer();
-			for (size_t i = 0; i < matrix->getBufferElementCount(); ++i)
+			for (size_t i = 0; i < matrix->getSize(); ++i)
 			{
 				if (PyList_Append(pySignalBuffer, PyFloat_FromDouble(bufferBase[i])) == -1)
 				{
@@ -1056,7 +1056,7 @@ bool CPolyBox::transferSignalInputChunksToPython(const size_t index)
 bool CPolyBox::transferSignalOutputChunksFromPython(const size_t index)
 {
 	IBoxIO& boxCtx  = this->getDynamicBoxContext();
-	IMatrix* matrix = dynamic_cast<TSignalEncoder<CPolyBox>*>(m_encoders[index])->getInputMatrix();
+	CMatrix* matrix = dynamic_cast<TSignalEncoder<CPolyBox>*>(m_encoders[index])->getInputMatrix();
 
 	if (!PyList_Check(m_boxOutput))
 	{
@@ -1116,7 +1116,7 @@ bool CPolyBox::transferSignalOutputChunksFromPython(const size_t index)
 		else if (PyObject_IsInstance(pyChunk, m_signalBuffer) == 1)
 		{
 			double* bufferBase = matrix->getBuffer();
-			for (size_t i = 0; i < matrix->getBufferElementCount(); ++i) { bufferBase[i] = PyFloat_AsDouble(PyList_GetItem(pyChunk, i)); }
+			for (size_t i = 0; i < matrix->getSize(); ++i) { bufferBase[i] = PyFloat_AsDouble(PyList_GetItem(pyChunk, i)); }
 
 			CTime startTime, endTime;
 			getTimesFromPyObject(pyChunk, startTime, endTime);
